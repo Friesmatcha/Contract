@@ -523,7 +523,7 @@ API、Worker 输出一行一个 JSON 到标准输出，由 Docker/部署平台�
 
 ### 15.4 环境与密钥
 
-至少区分 `local/test/staging/production`。非敏感配置使用环境变量和组织配置表；千问密钥、会话密钥、数据库密码和对象存储凭据使用部署平台 Secret 注入。启动时校验必需配置，错误立即退出并给出不含秘密的配置名。
+至少区分 `local/test/staging/production`。非敏感配置使用环境变量和组织配置表；千问密钥、会话密钥、数据库密码和对象存储凭据使用部署平台 Secret 注入。启动时校验必需配置。Worker、Scheduler、Migration 和其他非 HTTP 进程遇到错误时立即退出，并只给出不含秘密的配置名；API 进程可以启动仅挂载健康检查的降级实例，使 `live` 继续反映进程存活、Internal `ready` 安全返回 `503 SERVICE_NOT_READY`，不得在配置无效时挂载业务路由。
 
 ## 16. 建议代码目录
 
