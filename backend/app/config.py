@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     database_url: SecretStr
     redis_url: SecretStr
     allowed_origins: list[str] = Field(default_factory=list)
+    smtp_host: str | None = None
+    smtp_port: int = Field(default=587, ge=1, le=65535)
+    smtp_from: str | None = None
+    frontend_base_url: str | None = None
 
     @field_validator("database_url", "redis_url")
     @classmethod
@@ -45,6 +49,10 @@ class Settings(BaseSettings):
         if "*" in value:
             raise ValueError("wildcard origins are not allowed")
         return value
+
+    @property
+    def session_cookie_secure(self) -> bool:
+        return self.app_env not in {"local", "test"}
 
 
 class SettingsConfigurationError(RuntimeError):

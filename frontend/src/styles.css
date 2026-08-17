@@ -32,6 +32,70 @@ select {
   padding: 24px;
 }
 
+.auth-page,
+.session-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-panel,
+.session-panel {
+  display: grid;
+  width: min(100%, 400px);
+  gap: 18px;
+}
+
+.auth-kicker {
+  margin: 0;
+  color: #6b7078;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.auth-panel h1,
+.session-panel h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 650;
+}
+
+.auth-copy {
+  margin: -8px 0 0;
+  color: #535860;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.auth-form {
+  display: grid;
+  gap: 16px;
+}
+
+.auth-form label {
+  display: grid;
+  gap: 7px;
+  color: #353a40;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auth-form .el-button {
+  width: 100%;
+}
+
+.auth-link {
+  color: #3765a3;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
 .bootstrap-panel {
   width: min(100%, 460px);
   text-align: center;

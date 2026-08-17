@@ -1,5 +1,6 @@
 import { ApiClientError, ApiError, apiFetch, toSafeDisplayError } from '@/api/client'
 import type { CursorPage } from '@/api/types'
+import { setCsrfToken } from '@/features/auth/csrf'
 import { expect, test, vi } from 'vitest'
 
 test('always includes browser credentials', async () => {
@@ -16,6 +17,24 @@ test('always includes browser credentials', async () => {
     '/api/v1/health/live',
     expect.objectContaining({ credentials: 'include' }),
   )
+})
+
+test('adds the current CSRF token to unsafe requests', async () => {
+  setCsrfToken('csrf_test')
+  const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response(JSON.stringify({ accepted: true }), { status: 200 }),
+  )
+
+  await apiFetch('/api/v1/auth/logout', { method: 'POST' })
+
+  expect(fetchMock).toHaveBeenCalledWith(
+    '/api/v1/auth/logout',
+    expect.objectContaining({
+      headers: expect.objectContaining({ get: expect.any(Function) }),
+    }),
+  )
+  const requestHeaders = fetchMock.mock.calls.at(0)?.[1]?.headers as Headers
+  expect(requestHeaders.get('X-CSRF-Token')).toBe('csrf_test')
 })
 
 test('parses the shared API error shape', async () => {

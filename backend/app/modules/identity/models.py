@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
@@ -123,3 +124,76 @@ class OrganizationMembership(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, 
         default="pending_invitation",
         server_default="pending_invitation",
     )
+
+
+class AuthSession(UuidPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "auth_sessions"
+    __table_args__ = (
+        UniqueConstraint("token_hash", name="uq_auth_sessions_token_hash"),
+        CheckConstraint("char_length(token_hash) = 64", name="token_hash_valid"),
+        CheckConstraint("char_length(csrf_hash) = 64", name="csrf_hash_valid"),
+        Index("ix_auth_sessions_user_active", "user_id", "revoked_at"),
+        Index("ix_auth_sessions_expires_at", "idle_expires_at", "absolute_expires_at"),
+    )
+
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    csrf_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    idle_expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    absolute_expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    revoked_at: Mapped[datetime | None]
+    last_seen_at: Mapped[datetime] = mapped_column(nullable=False)
+    ip: Mapped[str | None] = mapped_column(String(64))
+    user_agent: Mapped[str | None] = mapped_column(String(512))
+
+
+class AuthOneTimeToken(UuidPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "auth_one_time_tokens"
+    __table_args__ = (
+        UniqueConstraint("token_hash", name="uq_auth_one_time_tokens_token_hash"),
+        CheckConstraint("purpose IN ('password_reset', 'invitation')", name="purpose_valid"),
+        CheckConstraint("char_length(token_hash) = 64", name="token_hash_valid"),
+        CheckConstraint(
+            "(purpose = 'password_reset' AND user_id IS NOT NULL AND membership_id IS NULL) OR "
+            "(purpose = 'invitation' AND user_id IS NULL AND membership_id IS NOT NULL)",
+            name="subject_matches_purpose",
+        ),
+        Index("ix_auth_one_time_tokens_expires_at", "expires_at"),
+        Index("ix_auth_one_time_tokens_membership_active", "membership_id", "used_at"),
+        Index(
+            "uq_auth_one_time_tokens_active_password_reset",
+            "user_id",
+            unique=True,
+            postgresql_where=text("purpose = 'password_reset' AND used_at IS NULL"),
+        ),
+        Index(
+            "uq_auth_one_time_tokens_active_invitation",
+            "membership_id",
+            unique=True,
+            postgresql_where=text("purpose = 'invitation' AND used_at IS NULL"),
+        ),
+    )
+
+    user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
+    membership_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("organization_memberships.id", ondelete="RESTRICT")
+    )
+    purpose: Mapped[str] = mapped_column(String(32), nullable=False)
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    used_at: Mapped[datetime | None]
+
+
+class AuthRateLimit(Base):
+    __tablename__ = "auth_rate_limits"
+    __table_args__ = (
+        CheckConstraint("attempts > 0", name="attempts_positive"),
+        Index("ix_auth_rate_limits_window_started_at", "window_started_at"),
+    )
+
+    action: Mapped[str] = mapped_column(String(64), primary_key=True)
+    key_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    window_started_at: Mapped[datetime] = mapped_column(primary_key=True)
+    attempts: Mapped[int] = mapped_column(nullable=False, default=1, server_default="1")

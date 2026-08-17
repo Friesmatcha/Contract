@@ -13,9 +13,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from backend.app.config import get_settings
 
-DEFAULT_TEST_DATABASE_URL = (
-    "postgresql+psycopg://contract:replace-me@127.0.0.1:5432/contract_test"
-)
+DEFAULT_TEST_DATABASE_URL = "postgresql+psycopg://contract:replace-me@127.0.0.1:5432/contract_test"
 
 
 def _ensure_test_database(database_url: str) -> None:
@@ -58,8 +56,8 @@ def clean_database(database_engine: Engine) -> Iterator[None]:
         connection.execute(text("ALTER TABLE audit_logs DISABLE TRIGGER audit_logs_no_truncate"))
         connection.execute(
             text(
-                "TRUNCATE TABLE audit_logs, idempotency_records, organization_memberships, "
-                "users, organizations CASCADE"
+                "TRUNCATE TABLE auth_rate_limits, audit_logs, idempotency_records, "
+                "organization_memberships, users, organizations CASCADE"
             )
         )
         connection.execute(text("ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_truncate"))

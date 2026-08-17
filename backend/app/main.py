@@ -12,8 +12,10 @@ from backend.app.api.health import router as health_router
 from backend.app.config import Settings, SettingsConfigurationError, get_settings
 from backend.app.db import check_database, create_database_engine, create_session_factory
 from backend.app.errors import error_response
+from backend.app.integrations.notifications.smtp import create_mailer
 from backend.app.logging import configure_logging
 from backend.app.middleware import request_context_middleware
+from backend.app.modules.identity.api import router as identity_router
 from backend.app.shared.errors import ApplicationError
 
 logger = logging.getLogger(__name__)
@@ -46,6 +48,9 @@ def create_app(
 
     app = FastAPI(title="Contract Review API", version="0.1.0", lifespan=lifespan)
     app.state.configuration_error = configuration_error
+    app.state.settings = settings
+    if settings is not None:
+        app.state.mailer = create_mailer(settings)
 
     if settings is not None:
         configure_logging(settings.log_level, service="api", environment=settings.app_env)
@@ -54,13 +59,21 @@ def create_app(
             allow_origins=settings.allowed_origins,
             allow_credentials=True,
             allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-            allow_headers=["Content-Type", "X-CSRF-Token", "X-Request-ID", "Idempotency-Key"],
+            allow_headers=[
+                "Content-Type",
+                "X-CSRF-Token",
+                "X-Request-ID",
+                "Idempotency-Key",
+                "X-Organization-ID",
+            ],
         )
     else:
         configure_logging("INFO", service="api", environment="unknown")
 
     app.middleware("http")(request_context_middleware)
     app.include_router(health_router, prefix="/api/v1")
+    if settings is not None:
+        app.include_router(identity_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:

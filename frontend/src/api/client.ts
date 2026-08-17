@@ -1,4 +1,5 @@
 import type { SafeDisplayError } from '@/api/types'
+import { getCsrfToken } from '@/features/auth/csrf'
 
 export interface ApiErrorPayload {
   error: {
@@ -54,8 +55,13 @@ function isApiErrorPayload(value: unknown): value is ApiErrorPayload {
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
+  const method = (init.method || 'GET').toUpperCase()
   if (init.body !== undefined && !(init.body instanceof FormData) && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
+  }
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method) && !headers.has('X-CSRF-Token')) {
+    const csrfToken = getCsrfToken()
+    if (csrfToken) headers.set('X-CSRF-Token', csrfToken)
   }
 
   const response = await fetch(path, {

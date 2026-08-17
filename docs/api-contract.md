@@ -42,11 +42,16 @@
 | `X-CSRF-Token` | 已登录的 POST/PATCH/PUT/DELETE 必填 | 使用 `GET /auth/session` 返回的 CSRF 原值；GET/HEAD 不需要 |
 | `Origin` | 浏览器请求必填 | 服务端校验同源；不开放任意 CORS Origin |
 | `X-Request-ID` | 否 | 客户端可提供符合长度/字符集限制的值；否则服务端生成并在响应中返回 |
+| `X-Organization-ID` | 按接口需要 | 仅用于不含组织路径的组织级接口选择当前组织；服务端必须重新校验会话与有效成员关系，客户端值不是授权依据 |
 | `Idempotency-Key` | 指定写接口必填 | 见 2.3；客户端只提供键，幂等作用域由服务端从可信上下文生成 |
 | `X-Support-Access-Grant` | 平台管理员临时查看业务 JSON 时必填 | 有效临时支持授权 UUID；组织上下文由授权记录确定，最长有效 4 小时 |
 | `If-Match` | 否 | 本契约统一使用请求体 `version` 做人工编辑乐观锁；服务端可额外返回 ETag |
 
 响应都返回 `X-Request-ID`。除登录、密码重置和邀请接受等尚无会话的接口外，所有写请求都同时校验 Origin 和 CSRF。公共认证请求至少校验 Origin，并按 IP/账号限流。
+
+### 2.2.1 当前组织选择
+
+组织路径或已验证资源归属存在时，服务端从该路径/资源建立 Tenant Context，忽略 `X-Organization-ID`。没有组织路径但需要组织上下文的接口（例如组织审计日志）使用 `X-Organization-ID` 选择；服务端仅在会话用户拥有该组织的有效成员关系时建立上下文。缺失该 Header 且用户有且仅有一个有效成员关系时可自动选择该组织；多个有效成员关系时返回 `409 ORGANIZATION_CONTEXT_REQUIRED`。前端可本地记住用户选择，但每个请求都必须由后端重新校验，不能通过 Header 提升权限或改变资源归属。
 
 ### 2.3 版本与幂等
 
@@ -118,7 +123,7 @@ request fingerprint 必须由通过 Schema 校验并应用默认值后的关键�
 
 ### 3.1 会话认证
 
-系统使用服务端不透明会话 Cookie，不使用 JWT，不使用 Refresh Token。登录成功后服务端设置 `Secure; HttpOnly; SameSite=Lax` Cookie；响应 JSON 不返回会话令牌。会话默认闲置 8 小时、绝对有效期 7 天，密码重置、停用用户和关键权限变化会撤销会话。
+系统使用服务端不透明会话 Cookie，不使用 JWT，不使用 Refresh Token。生产环境登录成功后服务端设置 `Secure; HttpOnly; SameSite=Lax` Cookie；本地开发和自动化测试可使用非 Secure Cookie，且不得部署到公网。响应 JSON 不返回会话令牌。会话默认闲置 8 小时、绝对有效期 7 天，密码重置、停用用户和关键权限变化会撤销会话。密码至少 12 个字符、最多 128 个字符；不强制字符类别，以支持密码管理器生成的长口令。密码重置令牌有效期 30 分钟，邀请令牌有效期 7 天，二者均使用至少 256 位随机值并且数据库只保存哈希。
 
 ### 3.2 登录
 
