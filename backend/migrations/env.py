@@ -4,14 +4,19 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from backend.app.config import get_settings
+from backend.app.modules.identity.models import Organization, OrganizationMembership, User
+from backend.app.shared.audit import AuditLog
+from backend.app.shared.db import Base
+from backend.app.shared.idempotency import IdempotencyRecord
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 settings = get_settings()
 config.set_main_option("sqlalchemy.url", settings.database_url.get_secret_value())
-target_metadata = None
+target_metadata = Base.metadata
+_registered_models = (Organization, OrganizationMembership, User, AuditLog, IdempotencyRecord)
 
 
 def run_migrations_offline() -> None:

@@ -227,8 +227,8 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 | `notifications` | `organization_id`, `user_id`, `warning_id`, `channel`, `status`, `attempts`, `next_attempt_at`, `read_at`, `error_code` | 站内通知首期必做；外部投递失败不回滚预警 |
 | `reports` | `organization_id`, `review_task_id`, `display_no`, `format`, `status`, `snapshot_json`, `template_version`, `file_object_id`, `generated_at`, `error_code` | 报告使用不可变快照；重新生成创建新记录，不覆盖旧文件 |
 | `feedback` | `organization_id`, `review_task_id`, `subject_type`, `subject_id`, `label`, `original_json`, `corrected_json`, `note`, `created_by` | 标签为 `correct/incorrect/modified/ignored`；不自动用于线上训练 |
-| `idempotency_records` | `organization_id`, `route_key`, `idempotency_key`, `request_hash`, `response_status`, `resource_type`, `resource_id`, `expires_at` | `(organization_id, route_key, idempotency_key)` 唯一；相同键不同请求摘要返回冲突 |
-| `audit_logs` | `organization_id`, `actor_id`, `action`, `resource_type`, `resource_id`, `request_id`, `ip`, `user_agent`, `before_summary_json`, `after_summary_json`, `created_at` | 追加写；正文、密码、令牌、密钥不得写入 |
+| `idempotency_records` | `scope`, `operation_key`, `idempotency_key`, `request_fingerprint`, `response_status`, `resource_type`, `resource_id`, `expires_at` | `scope` 仅由服务端生成，格式为 `organization:<organization_id>` 或 `platform:<authenticated_user_id>`；`(scope, idempotency_key)` 唯一；相同键不同 fingerprint 返回冲突 |
+| `audit_logs` | `organization_id`, `actor_id`, `actor_membership_id`, `action`, `resource_type`, `resource_id`, `request_id`, `ip`, `user_agent`, `before_summary_json`, `after_summary_json`, `created_at` | 组织成员事件以 `(organization_id, actor_membership_id, actor_id)` 复合外键同时约束组织、membership 和用户归因；平台/系统事件允许 membership 为空；记录只追加，正文、密码、令牌、密钥不得写入 |
 
 ### 6.7 主要关系
 
@@ -309,7 +309,9 @@ erDiagram
 
 ### 8.2 幂等与并发
 
-- 创建合同、上传完成、创建审核和创建报告支持 `Idempotency-Key`。数据库保存组织、路由、键、请求摘要和响应引用，默认保留 24 小时。
+- 契约指定的组织级和平台级写接口支持 `Idempotency-Key`。服务端在认证、授权和可信 Tenant Context 建立后生成 `organization:<organization_id>` 或 `platform:<authenticated_user_id>`，客户端不能提交 scope。数据库保存服务端 scope、operation key、键、请求 fingerprint 和响应引用，按 `(scope, idempotency_key)` 唯一，默认保留 24 小时。
+- fingerprint 由 Method、规范化路由模板和通过 Schema 校验后的关键 Path/Query/Body 生成确定性摘要；Cookie、Authorization、会话/CSRF、密码、令牌、API Key 和 Secret 不进入持久化摘要。同 scope 下相同键用于不同 operation 必须冲突，不能跨接口重放。
+- 幂等预占、业务写入和对应审计遵循同一事务边界。数据库唯一约束处理并发竞争；只有事务已提交的成功结果可以重放，事务回滚不得留下成功记录。授权在幂等查询和重放前执行，冲突响应不得泄露其他 scope、请求或资源信息。
 - 文件以 SHA-256 标识内容；同一任务、同一文件版本和同一解析配置只产生一个成功的 `document_version`。
 - 规则和模型结果使用稳定输入指纹。重试若输入与版本未改变，复用成功阶段；人工选择“重新审核”则创建新的 `review_task`。
 - 人工编辑资源包含递增 `version`，使用 `If-Match` 或请求体版本进行乐观锁。版本不一致返回 `409 RESOURCE_VERSION_CONFLICT`。

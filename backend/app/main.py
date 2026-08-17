@@ -14,6 +14,7 @@ from backend.app.db import check_database, create_database_engine, create_sessio
 from backend.app.errors import error_response
 from backend.app.logging import configure_logging
 from backend.app.middleware import request_context_middleware
+from backend.app.shared.errors import ApplicationError
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,16 @@ def create_app(
             code="VALIDATION_ERROR",
             message="请求参数未通过校验。",
             request_id=getattr(request.state, "request_id", "req_unknown"),
+        )
+
+    @app.exception_handler(ApplicationError)
+    async def application_exception(request: Request, exc: ApplicationError) -> JSONResponse:
+        return error_response(
+            status_code=exc.status_code,
+            code=exc.code,
+            message=exc.message,
+            request_id=getattr(request.state, "request_id", "req_unknown"),
+            details=exc.details,
         )
 
     @app.exception_handler(Exception)

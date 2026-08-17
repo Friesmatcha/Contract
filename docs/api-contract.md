@@ -42,7 +42,7 @@
 | `X-CSRF-Token` | 已登录的 POST/PATCH/PUT/DELETE 必填 | 使用 `GET /auth/session` 返回的 CSRF 原值；GET/HEAD 不需要 |
 | `Origin` | 浏览器请求必填 | 服务端校验同源；不开放任意 CORS Origin |
 | `X-Request-ID` | 否 | 客户端可提供符合长度/字符集限制的值；否则服务端生成并在响应中返回 |
-| `Idempotency-Key` | 指定写接口必填 | 见 2.4；同一组织、路由和键只能对应同一请求摘要 |
+| `Idempotency-Key` | 指定写接口必填 | 见 2.3；客户端只提供键，幂等作用域由服务端从可信上下文生成 |
 | `X-Support-Access-Grant` | 平台管理员临时查看业务 JSON 时必填 | 有效临时支持授权 UUID；组织上下文由授权记录确定，最长有效 4 小时 |
 | `If-Match` | 否 | 本契约统一使用请求体 `version` 做人工编辑乐观锁；服务端可额外返回 ETag |
 
@@ -50,7 +50,20 @@
 
 ### 2.3 版本与幂等
 
-以下接口必须携带 `Idempotency-Key`：创建合同、上传文件、创建审核、重试审核、生成报告、发送/重发邀请、创建临时支持授权、创建规则集/模板及其版本。键保留期默认 24 小时；相同键但请求摘要不同返回 `409 IDEMPOTENCY_KEY_REUSED`。重复请求返回第一次请求的相同 HTTP 状态和资源引用。
+以下接口必须携带 `Idempotency-Key`：创建组织、创建合同、上传文件、创建审核、重试审核、生成报告、发送/重发邀请、创建临时支持授权、创建规则集/模板及其版本。键保留期默认 24 小时。
+
+客户端只能提交 `Idempotency-Key`，不得通过 Header、Path、Query 或 Body 提交或控制 `idempotency_scope`、organization scope、tenant scope 或 platform scope。幂等作用域必须在认证、授权和租户/资源归属校验后由服务端生成；幂等命中和结果重放不得绕过当前请求的权限校验：
+
+| 写接口类型 | 服务端作用域 | 可信来源 |
+| --- | --- | --- |
+| 组织级写接口 | `organization:<organization_id>` | 后端验证后的 Tenant Context；路径或资源中的组织 ID 在完成 membership、角色和资源归属校验前不是可信作用域 |
+| 无 organization context 的平台级写接口 | `platform:<authenticated_user_id>` | 有效会话中的用户 ID，且当前用户已经通过 Platform Admin 权限校验 |
+
+逻辑唯一性固定为 `(idempotency_scope, idempotency_key)`，路由不参与唯一键。同一组织内的不同用户共享组织作用域；不同组织可以使用相同键而互不冲突。不同平台操作主体可以使用相同键而互不冲突；同一平台操作主体的键在全部平台级写接口中共享作用域。服务端不得从客户端字段拼接作用域，也不得在冲突响应中返回原作用域、原请求摘要、原操作者或跨组织资源信息。
+
+request fingerprint 必须由通过 Schema 校验并应用默认值后的关键请求语义规范化生成，至少包含 HTTP Method、规范化路由模板/operation key、可信 Path 参数、排序后的 Query 参数和规范化 Body；文件请求使用内容摘要及影响业务结果的元数据，不把原文件内容写入幂等记录。规范化结果使用确定性编码并只持久化密码学散列摘要，不持久化原始请求副本。`Cookie`、`Authorization`、会话令牌、CSRF Token、密码、一次性令牌、API Key、Secret、`X-Request-ID` 和 `Idempotency-Key` 本身不得进入可持久化摘要。operation key 属于 fingerprint，因此同一 scope 下把同一个键用于不同接口会得到不同 fingerprint，并返回冲突，而不会错误重放另一个接口的结果。
+
+同一 scope、同一键且 fingerprint 相同，在原业务事务成功提交后返回原始成功状态和资源引用，或语义等价的重放结果；同一 scope、同一键但 fingerprint 不同，返回 `409 IDEMPOTENCY_KEY_REUSED`。并发重复请求必须由数据库唯一约束和事务串行化为一次业务写入：幂等记录、业务变更及对应审计在同一事务提交或回滚，只有已提交结果可以重放；首次事务回滚时不得留下伪成功记录。过期记录清理后，该键可以按新请求重新使用。
 
 人工修改 `classification`、`extracted_field`、`risk_finding`、`clause_comparison` 时必须提交资源当前 `version`；版本不一致返回 `409 RESOURCE_VERSION_CONFLICT`。每次成功修改产生不可变修订记录。
 

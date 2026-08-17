@@ -1,3 +1,5 @@
+import type { SafeDisplayError } from '@/api/types'
+
 export interface ApiErrorPayload {
   error: {
     code: string
@@ -13,13 +15,25 @@ export class ApiError extends Error {
   readonly requestId: string
   readonly details?: Record<string, unknown>
 
-  constructor(status: number, payload: ApiErrorPayload) {
+  constructor(status: number, payload: ApiErrorPayload, responseRequestId?: string) {
     super(payload.error.message)
     this.name = 'ApiError'
     this.status = status
     this.code = payload.error.code
-    this.requestId = payload.error.request_id
+    this.requestId = responseRequestId || payload.error.request_id
     this.details = payload.error.details
+  }
+}
+
+export class ApiClientError extends Error {
+  readonly status: number
+  readonly requestId?: string
+
+  constructor(status: number, message: string, requestId?: string) {
+    super(message)
+    this.name = 'ApiClientError'
+    this.status = status
+    this.requestId = requestId
   }
 }
 
@@ -49,6 +63,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     credentials: 'include',
     headers,
   })
+  const responseRequestId = response.headers.get('X-Request-ID') || undefined
 
   if (response.status === 204) return undefined as T
 
@@ -56,11 +71,18 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   try {
     body = await response.json()
   } catch {
-    throw new Error('服务返回了无法识别的响应。')
+    throw new ApiClientError(response.status, '服务返回了无法识别的响应。', responseRequestId)
   }
   if (!response.ok) {
-    if (isApiErrorPayload(body)) throw new ApiError(response.status, body)
-    throw new Error('服务返回了无法识别的错误。')
+    if (isApiErrorPayload(body)) throw new ApiError(response.status, body, responseRequestId)
+    throw new ApiClientError(response.status, '服务返回了无法识别的错误。', responseRequestId)
   }
   return body as T
+}
+
+export function toSafeDisplayError(error: unknown): SafeDisplayError {
+  if (error instanceof ApiError || error instanceof ApiClientError) {
+    return { message: error.message, requestId: error.requestId }
+  }
+  return { message: '请求未能完成，请稍后重试。' }
 }

@@ -243,7 +243,7 @@ chore(bootstrap): initialize full-stack project baseline
 ### 前置依赖
 
 - Phase 0；API 全局约定第 2、4、6、7 节；架构数据库通用约定。
-- 编码前确认 P-02“平台/公共写接口的幂等作用域”。
+- P-02 已关闭：组织级使用服务端可信 Tenant Context 生成 `organization:<organization_id>`，无组织上下文的平台级写接口使用已认证平台操作主体生成 `platform:<authenticated_user_id>`；详见 API Contract 2.3。
 
 ### 预计涉及模块
 
@@ -272,6 +272,7 @@ backend/tests/{unit,integration}/shared/
 ### 数据库变更
 
 - 新增 `organizations`、`users`、`organization_memberships`、`idempotency_records`、`audit_logs`。
+- `idempotency_records` 使用服务端生成的 scope，并以 `(scope, idempotency_key)` 建立数据库唯一约束；不得采用客户端 scope 或仅支持 organization 的结构。
 - 增加规范化邮箱唯一约束、租户复合唯一约束、游标排序索引和追加写限制。
 - Migration 必须验证 upgrade/downgrade；测试数据只在测试 fixture 中创建。
 
@@ -290,7 +291,7 @@ npm --prefix frontend run typecheck
 ### 验收标准
 
 - 跨组织复合关联失败；规范化重复邮箱失败；审计写入与业务事务共同提交/回滚。
-- 同作用域相同幂等键同请求可重放，不同请求返回 409；游标排序稳定且未知筛选返回 422。
+- 同一组织或平台主体作用域内，相同幂等键同请求可重放，不同请求返回 409；不同组织和不同平台主体可独立复用相同键；游标排序稳定且未知筛选返回 422。
 - 错误响应符合契约且不包含 SQL、路径、堆栈或秘密。
 
 ### 完成条件
@@ -1946,7 +1947,7 @@ Stable Baseline
 | ID | 问题 | 影响 Phase | 建议的最小决策 |
 | --- | --- | --- | --- |
 | P-01 | 多组织用户如何选择当前组织？业务 API 无组织路径/Header，客户端又不能提交可信 `organization_id` | Phase 2，阻塞 | 在契约定义会话内 active organization 或专用 `X-Organization-ID`，后端仍校验成员关系；二选一后固定 |
-| P-02 | 平台创建组织等没有组织上下文的写接口，`Idempotency-Key` 如何确定作用域？ | Phase 1/3，阻塞 | 定义 `platform:user_id`、`organization:id` 等稳定服务端作用域，不信任客户端 scope |
+| P-02（已关闭） | 平台创建组织等没有组织上下文的写接口，`Idempotency-Key` 如何确定作用域？ | Phase 1/3，已决策 | 组织级使用 `organization:<organization_id>`；平台级使用 `platform:<authenticated_user_id>`；均由服务端可信上下文生成，唯一性为 `(scope, idempotency_key)` |
 | P-03 | `result_status` 缺少 `found`，但 10.5 示例和 10.7 请求使用 `found` | Phase 9C，阻塞 | 将 `found` 正式加入字段状态枚举，或统一改为已有 `detected`；先改契约和测试样例 |
 | P-04 | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，阻塞 | 契约增加唯一默认规则集语义及切换规则 |
 | P-05 | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，阻塞 | 契约增加每组织+合同类型+场景唯一默认模板语义 |
@@ -1957,6 +1958,15 @@ Stable Baseline
 | P-10 | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；同步架构说明 |
 | P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
+
+### Decision Record: P-02 Idempotency Scope（2026-08-17）
+
+- **Status**：Closed。该决策解除 Phase 1/3 的幂等作用域阻塞，规范来源为 API Contract 2.3。
+- **Organization scope**：服务端在完成会话、membership、角色、Tenant Context 和资源归属校验后生成 `organization:<organization_id>`；客户端路径或请求字段不能直接成为可信 scope。
+- **Platform scope**：没有 organization context 的平台写接口在有效会话和 Platform Admin 校验后生成 `platform:<authenticated_user_id>`；不同平台操作主体彼此隔离。
+- **Uniqueness and conflict**：逻辑及数据库唯一性为 `(scope, idempotency_key)`。相同 fingerprint 重放已提交成功结果，不同 fingerprint 返回 `409 IDEMPOTENCY_KEY_REUSED`；错误详情不得泄露原请求或其他 scope 信息。
+- **Fingerprint and transaction**：fingerprint 包含 canonical operation 和 Schema 规范化后的关键请求内容，只持久化摘要并排除 Cookie、Authorization、会话/CSRF、密码、令牌和 Secret。幂等记录、业务写入和对应审计同事务提交/回滚，并由数据库唯一约束处理并发。
+- **Boundary with P-01**：本决策不选择多组织用户的当前组织交互方案。Phase 1 可以实现 scope 表示、约束和基于可信上下文的接口；Phase 2 仍须关闭 P-01 后才能把具体会话/Header 选择机制接入组织业务请求。
 
 ### Just-in-Time Closing Order
 

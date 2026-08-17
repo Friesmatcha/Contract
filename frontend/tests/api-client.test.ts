@@ -1,4 +1,5 @@
-import { ApiError, apiFetch } from '@/api/client'
+import { ApiClientError, ApiError, apiFetch, toSafeDisplayError } from '@/api/client'
+import type { CursorPage } from '@/api/types'
 import { expect, test, vi } from 'vitest'
 
 test('always includes browser credentials', async () => {
@@ -27,7 +28,10 @@ test('parses the shared API error shape', async () => {
           request_id: 'req_test',
         },
       }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } },
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json', 'X-Request-ID': 'req_header' },
+      },
     ),
   )
 
@@ -36,7 +40,7 @@ test('parses the shared API error shape', async () => {
   await expect(request).rejects.toMatchObject({
     status: 503,
     code: 'SERVICE_NOT_READY',
-    requestId: 'req_test',
+    requestId: 'req_header',
   } satisfies Partial<ApiError>)
 })
 
@@ -44,11 +48,28 @@ test('replaces non-JSON gateway errors with a safe message', async () => {
   vi.spyOn(globalThis, 'fetch').mockResolvedValue(
     new Response('<html>upstream failed</html>', {
       status: 502,
-      headers: { 'Content-Type': 'text/html' },
+      headers: { 'Content-Type': 'text/html', 'X-Request-ID': 'req_gateway' },
     }),
   )
 
-  await expect(apiFetch('/api/v1/health/ready')).rejects.toThrow(
-    '服务返回了无法识别的响应。',
-  )
+  await expect(apiFetch('/api/v1/health/ready')).rejects.toMatchObject({
+    message: '服务返回了无法识别的响应。',
+    requestId: 'req_gateway',
+  } satisfies Partial<ApiClientError>)
+})
+
+test('exposes only safe display fields for unknown errors', () => {
+  expect(toSafeDisplayError(new Error('postgresql://user:secret@internal/db'))).toEqual({
+    message: '请求未能完成，请稍后重试。',
+  })
+})
+
+test('defines the contract cursor page shape', () => {
+  const page: CursorPage<{ id: string }> = {
+    items: [{ id: 'one' }],
+    next_cursor: null,
+    has_more: false,
+  }
+
+  expect(page.items).toHaveLength(1)
 })

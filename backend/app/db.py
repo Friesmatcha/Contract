@@ -5,6 +5,8 @@ from fastapi import Depends, Request
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from backend.app.shared.db import Base, UnitOfWork
+
 
 def create_database_engine(database_url: str) -> Engine:
     return create_engine(
@@ -30,3 +32,5 @@ def get_session(request: Request) -> Generator[Session, None, None]:
 
 
 DatabaseSession = Annotated[Session, Depends(get_session)]
+
+__all__ = ["Base", "DatabaseSession", "UnitOfWork"]
