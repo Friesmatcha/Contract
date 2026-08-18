@@ -6,12 +6,15 @@
 
 本计划不修改业务需求。`docs/api-contract.md` 是前后端接口的唯一契约来源；架构文档提供实现约束，需求文档提供业务目标和验收依据。若三者冲突，必须先按本文“待确认事项”处理，不允许代码自行选择另一种语义。
 
+本文件定义 Phase 顺序、范围、依赖和验收标准；仓库实际完成到哪里以 `docs/phase-status.md` 为唯一人工记录。每次会话开始先读取 Phase Status，每个 Phase 完成后先更新该记录，再进入下一 Phase。
+
 ## 2. Current Project State
 
-- 当前仓库处于正式编码前阶段，仅有需求、架构、API 契约和赛题资料；尚无 `backend/`、`frontend/`、Migration、测试或部署实现。
+- 当前仓库已进入正式编码阶段，包含 `backend/`、`frontend/`、Alembic Migration、自动化测试、Docker Compose 和 UI 原型资产。
+- Git 历史已有 Phase 0 工程骨架、Phase 1 共享持久化/API 基础和 Phase 2 认证实现快照；这些历史 Phase 的正式完成状态以 `docs/phase-status.md` 中归档的测试、Review 和回归证据为准，不只依据 commit 名称判断。
 - 技术基线已明确为 Vue 3 + TypeScript + Vite + Element Plus、Python 3.12 + FastAPI + Pydantic 2 + SQLAlchemy 2 + Alembic、PostgreSQL 16+、Celery + Redis、ClamAV、本地持久卷和单机 Docker Compose。
 - API 契约共 75 个接口，覆盖认证、组织、合同、审核、规则、模板、预警、通知、报告、反馈、审计、运营和健康检查。
-- 当前工作区已有与本计划无关的用户变更。后续 Phase 不得覆盖、删除或格式化无关文件。
+- 前端 PRD、设计系统和 Stitch HTML/PNG 原型位于 `docs/ui/`；原型已经存在不代表对应实现 Phase 已开始或完成。
 
 ### 2.1 一致性检查结论
 
@@ -1914,8 +1917,10 @@ Stable Baseline
 - ORM 与 Migration 同步，upgrade/downgrade/约束验证通过。
 - 独立 Review 完成；阻塞项修复并完成相关 Regression。
 - 文档、环境模板、运行/恢复说明按需同步。
+- 适用前端页面已按 `docs/ui/frontend-prd.md` 的 Page ID、API 映射和状态要求实现，并在 1440px/1280px 下完成原型对照；组件测试和适用 Playwright 已通过。
 - 无当前 Phase 引入的已知阻塞错误；Git diff 已检查且无无关修改。
 - 已准备独立 Git Snapshot；用户明确要求前不执行 Commit。
+- `docs/phase-status.md` 已记录本 Phase 的完成边界、实际测试结果、Review、回归、Migration、API/UI 状态、Known Issues、Git Snapshot 和下一步。
 
 ## Risks and Technical Debt
 

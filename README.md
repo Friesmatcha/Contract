@@ -1,6 +1,18 @@
 # 企业合同智能审核与风险预警系统
 
-Phase 0 工程基线。当前只包含 FastAPI/Vue/Celery/PostgreSQL/Redis/ClamAV 的启动骨架、健康检查和开发工具，不包含认证、业务表或正式业务页面。
+当前仓库已包含 Phase 0 工程骨架、Phase 1 共享持久化/API 基础、Phase 2 认证实现快照，以及前端 PRD、设计系统和 Stitch HTML/PNG 原型。正式 Phase 完成状态不根据 commit 名称推测，以 `docs/phase-status.md` 中记录的测试、Review 和回归证据为准。
+
+## 项目文档
+
+- 业务需求：`docs/requirements.md`
+- 技术架构：`docs/architecture.md`
+- API 唯一契约：`docs/api-contract.md`
+- Phase 计划与验收：`docs/development-plan.md`
+- 实际开发进度：`docs/phase-status.md`
+- 前端 UI 入口：`docs/ui/README.md`
+- 前端页面 PRD：`docs/ui/frontend-prd.md`
+- 前端视觉规范：`docs/ui/design-system.md`
+- HTML/PNG 原型：`docs/ui/stitch/`
 
 ## 环境要求
 
@@ -43,7 +55,7 @@ Vite 默认监听 `http://localhost:5173`，并将 `/api` 代理到本地 API。
 
 ## 数据库迁移
 
-Phase 0 没有业务表和 migration revision。配置 `DATABASE_URL` 后，空数据库仍可执行：
+仓库当前包含 Phase 1 和 Phase 2 Migration。配置 `DATABASE_URL` 后执行：
 
 ```powershell
 python -m alembic upgrade head
@@ -74,4 +86,4 @@ docker compose -f deploy/compose/compose.yml up --build
 
 反向代理只公开 `live`；Internal `ready` 仅供容器健康检查和受控运维网络使用，`http://localhost:8081/api/v1/health/ready` 会被拒绝。
 
-`.env` 只用于本地环境且已被 Git 忽略。千问、SMTP、OCR 和任何真实业务数据均不属于 Phase 0。
+`.env` 只用于本地环境且已被 Git 忽略。普通自动化测试不得依赖真实千问、真实 SMTP、真实业务合同或不稳定公网服务。

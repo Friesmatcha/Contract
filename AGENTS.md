@@ -19,6 +19,8 @@
 - `docs/architecture.md`: 技术架构、边界和实现约束，即“怎么设计”。
 - `docs/api-contract.md`: 前后端 API 的唯一人工语义契约来源，即“如何通信”。
 - `docs/development-plan.md`: Phase 顺序、依赖、测试和验收计划，即“何时开发”。
+- `docs/phase-status.md`: 项目实际 Phase 进度和完成证据记录，即“当前完成到哪里”。
+- `docs/ui/README.md`、`docs/ui/frontend-prd.md`、`docs/ui/design-system.md` 和 `docs/ui/stitch/`: 前端页面、视觉规范、原型资产和 UI 验收依据。
 - 发现冲突时不得由代码暗中选择语义。执行：发现冲突 -> 判断是否阻塞当前 Phase -> 阻塞则报告 -> 更新对应规范文档 -> Review -> 再实现。
 - 非阻塞冲突记录在完成报告、Known Issues、Future Work 或 issue；本 Phase 不擅自修复。
 
@@ -106,8 +108,18 @@
 
 - 使用 Vue 3 + TypeScript；无明确理由不用 `any`。
 - API 调用集中于 API Client/feature service；类型与 OpenAPI 投影一致，语义回查 `docs/api-contract.md`。
+- 前端任务开始前必须读取 `docs/phase-status.md`、`docs/ui/README.md`、`docs/ui/frontend-prd.md`、`docs/ui/design-system.md`、目标 Page ID 对应的 `docs/ui/stitch/` 原型和相关 `docs/api-contract.md` 条目。
+- API 的 Method、Path、参数、权限、错误和状态只能来自 `docs/api-contract.md`；Vue Page URL 必须在 `frontend-prd.md` 中记录为 API 资源/动作的明确映射，不得自行发明接口路径。
+- HTML/PNG 原型是视觉、布局和交互状态的参考/验收资产，不是生产代码；不得复制原型中的 CDN、Tailwind、外部字体、Material Symbols、静态假数据或模拟业务逻辑。
+- 页面实现必须覆盖适用的 loading、empty、error、forbidden、conflict、disabled、processing 和 retry 状态，并在 1440px 与 1280px 下验证。
 - 页面不堆复杂请求或状态机；公共逻辑按真实复用需要抽为 composable/service，避免过度抽象。
 - 权限 UI 只改善体验；主要页面覆盖 loading、empty、error、forbidden、conflict、disabled 和 retry 状态。
+
+## Phase Status Recording
+
+- 每个 Phase 完成后，必须先更新 `docs/phase-status.md`，记录完成边界、测试命令和结果、Review、Migration、API/UI 状态、Known Issues、下一步和 Git Snapshot，再进入下一 Phase。
+- 未完成当前 Phase 的验收、必要回归、独立 Review 或阻塞 Pending Decision 时，不得标记为 `Completed`。
+- 每次会话开始以 `docs/phase-status.md` 判断实际开发位置，不以 README、Git commit 名称或旧文档中的 Current Project State 推测 Phase。
 
 ## Testing Rules
 

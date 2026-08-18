@@ -11,7 +11,10 @@ docs/requirements.md       -> 整个系统做什么
 docs/architecture.md       -> 系统如何实现
 docs/api-contract.md       -> 前后端如何通信
 docs/development-plan.md   -> 系统按照什么顺序开发
+docs/phase-status.md       -> 系统实际完成到哪里
+docs/ui/README.md          -> 前端实现如何读取和使用 UI 资产
 docs/ui/frontend-prd.md    -> 前端有哪些页面、页面如何组织、用户如何操作
+docs/ui/design-system.md   -> 前端使用什么稳定视觉语言
 ```
 
 ### 1.1 Conflict Priority
@@ -32,7 +35,9 @@ Frontend PRD
 Visual Prototype
 ```
 
-视觉原型不得改变业务语义、API 字段、权限或状态机。发现冲突时必须先报告并判断是否阻塞当前 Phase；不得自行“以 UI 为准”。
+上述优先级用于业务语义、接口、权限和状态机。纯视觉、布局和交互呈现由 `docs/ui/design-system.md` 与 approved 原型约束；视觉原型不得改变更高层语义。发现冲突时必须先报告并判断是否阻塞当前 Phase，不得自行选择。
+
+API Route 与 Vue Page URL 是不同边界：Method、`/api/v1` Path、参数和动作只以 `docs/api-contract.md` 为准；浏览器页面 URL 在本 PRD 中维护其到 API 资源/动作的显式映射，不得反向修改或发明 API 路径。
 
 ### 1.2 Scope and Non-Goals
 
@@ -43,7 +48,7 @@ Visual Prototype
 ### 1.3 UI Requirement Language
 
 - `Confirmed`：已有需求、架构或 API Contract 明确支持。
-- `Proposed Route`：仅为前端信息架构建议，尚未被现有规范确认。
+- `Frontend Page URL`：Vue Router 的浏览器导航地址，必须在本 PRD 中与 API Route 建立映射。
 - `Recommended UI Decision`：不改变业务语义的推荐设计选择。
 - `Pending UI Decision`：需要后续人工确认的纯 UI 决策或上游契约待决项。
 - 所有写操作仍由后端执行认证、CSRF、角色、组织、资源范围、状态和版本校验；前端隐藏入口只改善体验，不是权限边界。
@@ -220,22 +225,22 @@ Recommended UI Decision：将“规则”和“条款模板”归入“知识配
 
 ## 6. Page Inventory
 
-所有 Route 均为 `Proposed Route`，因为当前 Source of Truth 只冻结 API Path，未冻结 Vue Router Path。Dialog/Drawer 型设计面不声明 Route。
+`Frontend Page URL` 是 Vue Router 的浏览器导航地址，不是 API Route。API Method/Path 由 6.1 节逐项映射到 `docs/api-contract.md`；`/api/v1` 前缀不得直接挂载为 Vue 页面。Dialog/Drawer 型设计面不声明独立 Page URL。
 
-| ID | 页面/设计面 | Proposed Route | 用户角色 | 所属模块 | 重要度 | 对应 Phase |
+| ID | 页面/设计面 | Frontend Page URL | 用户角色 | 所属模块 | 重要度 | 对应 Phase |
 | --- | --- | --- | --- | --- | --- | --- |
 | LAYOUT-001 | Authenticated Application Shell | N/A | All authenticated | Layout | P0 | Phase 2-3 |
 | AUTH-001 | Login / 登录 | `/login` | Public | Authentication | P0 | Phase 2 |
-| AUTH-002 | Forgot Password / 忘记密码 | `/forgot-password` | Public | Authentication | P1 | Phase 2 |
-| AUTH-003 | Reset Password / 重置密码 | `/reset-password` | Public | Authentication | P1 | Phase 2 |
+| AUTH-002 | Forgot Password / 忘记密码 | `/password-reset` | Public | Authentication | P1 | Phase 2 |
+| AUTH-003 | Reset Password / 重置密码 | `/password-reset/confirm` | Public | Authentication | P1 | Phase 2 |
 | AUTH-004 | Accept Invitation / 接受邀请 | `/invitations/accept` | Public | Authentication | P1 | Phase 2 |
 | PLATFORM-001 | Organization List / 平台组织列表 | `/platform/organizations` | Platform Admin | Platform | P1 | Phase 3 |
 | PLATFORM-002 | Organization Detail / 平台组织详情 | `/platform/organizations/:organizationId` | Platform Admin | Platform | P1 | Phase 3 |
 | PLATFORM-003 | Model Configuration / 模型配置 | `/platform/model-configuration` | Platform Admin | Platform | P1 | Phase 3 |
 | PLATFORM-004 | Platform Audit Log / 平台审计 | `/platform/audit-logs` | Platform Admin | Platform | P2 | Phase 14A |
-| ORG-001 | Organization Settings / 组织设置 | `/organization/settings` | Org Admin | Organization Admin | P1 | Phase 3 |
-| ORG-002 | Member Management / 成员管理 | `/organization/members` | Org Admin | Organization Admin | P1 | Phase 4 |
-| ORG-003 | Support Access Management / 支持授权 | `/organization/support-access` | Org Admin | Organization Admin | P2 | Phase 4 |
+| ORG-001 | Organization Settings / 组织设置 | `/organizations/:organizationId/settings` | Org Admin | Organization Admin | P1 | Phase 3 |
+| ORG-002 | Member Management / 成员管理 | `/organizations/:organizationId/members` | Org Admin | Organization Admin | P1 | Phase 4 |
+| ORG-003 | Support Access Management / 支持授权 | `/organizations/:organizationId/support-access-grants` | Org Admin | Organization Admin | P2 | Phase 4 |
 | CONTRACT-001 | Contract List / 合同列表 | `/contracts` | Org Admin, Reviewer, Viewer | Contracts | P0 | Phase 5 |
 | CONTRACT-002 | Create Contract / 创建合同 | `/contracts/new` | Org Admin, Reviewer | Contracts | P0 | Phase 5 |
 | CONTRACT-003 | Contract Detail / 合同详情 | `/contracts/:contractId` | Org Admin, Reviewer, authorized Viewer | Contracts | P0 | Phase 5-6, 9A |
@@ -248,17 +253,61 @@ Recommended UI Decision：将“规则”和“条款模板”归入“知识配
 | WARNING-002 | Warning Detail / 预警详情 | `/warnings/:warningId` | Contract-visible users; write for Org Admin/Reviewer | Warnings | P0 | Phase 11-12 |
 | NOTIFY-001 | Notification Center / 通知中心 | N/A, recommended Drawer | Authenticated User | Notifications | P1 | Phase 11 |
 | REPORT-001 | Report Status and Viewer / 报告状态与预览 | `/reports/:reportId` | Contract-visible users | Reports | P1 | Phase 13 |
-| RULE-001 | Risk Rule Bundle List / 风险规则集 | `/risk-rules` | Org Admin; Reviewer read-only | Risk Rules | P1 | Phase 8A |
-| RULE-002 | Risk Rule Bundle Detail / 规则集详情与版本 | `/risk-rules/:bundleId` | Org Admin; Reviewer published read-only | Risk Rules | P1 | Phase 8A |
-| RULE-003 | Risk Rule Draft Editor / 规则草稿编辑 | `/risk-rules/:bundleId/versions/:versionId` | Org Admin | Risk Rules | P1 | Phase 8A |
+| RULE-001 | Risk Rule Bundle List / 风险规则集 | `/risk-rule-bundles` | Org Admin; Reviewer read-only | Risk Rules | P1 | Phase 8A |
+| RULE-002 | Risk Rule Bundle Detail / 规则集详情与版本 | `/risk-rule-bundles/:bundleId` | Org Admin; Reviewer published read-only | Risk Rules | P1 | Phase 8A |
+| RULE-003 | Risk Rule Draft Editor / 规则草稿编辑 | `/risk-rule-bundle-versions/:versionId` | Org Admin | Risk Rules | P1 | Phase 8A |
 | CLAUSE-001 | Clause Template List / 条款模板列表 | `/clause-templates` | Org Admin; Reviewer read-only | Clause Templates | P1 | Phase 8B |
 | CLAUSE-002 | Clause Template Detail / 模板详情与版本 | `/clause-templates/:templateId` | Org Admin; Reviewer published read-only | Clause Templates | P1 | Phase 8B |
 | CLAUSE-003 | Clause Template Draft Editor / 模板草稿编辑 | `/clause-templates/:templateId/versions/:versionId` | Org Admin | Clause Templates | P1 | Phase 8B |
-| ADMIN-001 | Organization Audit Log / 组织审计 | `/organization/audit-logs` | Org Admin | Administration | P2 | Phase 14A |
-| ADMIN-002 | Operations Metrics / 运营指标 | `/organization/operations` | Org Admin | Administration | P2 | Phase 14A |
-| ADMIN-003 | Feedback Summary / 反馈统计 | `/organization/feedback` | Org Admin | Administration | P2 | Phase 12 |
+| ADMIN-001 | Organization Audit Log / 组织审计 | `/audit-logs` | Org Admin | Administration | P2 | Phase 14A |
+| ADMIN-002 | Operations Metrics / 运营指标 | `/organizations/:organizationId/metrics` | Org Admin | Administration | P2 | Phase 14A |
+| ADMIN-003 | Feedback Summary / 反馈统计 | `/feedback/summary` | Org Admin | Administration | P2 | Phase 12 |
 
 共识别 33 个设计面：1 个全局 Shell、4 个认证页面、4 个平台页面、3 个组织管理页面、5 个合同/文档页面、3 个审核页面、2 个预警页面、1 个通知设计面、1 个报告页面、3 个规则页面、3 个条款模板页面、3 个审计/运营页面。
+
+### 6.1 Page to API Route Mapping
+
+下表只列页面直接使用的 API Route。字段、Query、Body、错误、权限和状态码必须回查 `docs/api-contract.md`；本表不复制 Schema，也不得作为另一份接口契约。
+
+| Page ID | Related API Routes |
+| --- | --- |
+| LAYOUT-001 | `GET /api/v1/auth/session`; `GET /api/v1/organizations/{organization_id}`; `GET /api/v1/notifications/unread-count` |
+| AUTH-001 | `POST /api/v1/auth/login`; `GET /api/v1/auth/session`; `POST /api/v1/auth/logout` |
+| AUTH-002 | `POST /api/v1/auth/password-reset/request` |
+| AUTH-003 | `POST /api/v1/auth/password-reset/confirm` |
+| AUTH-004 | `POST /api/v1/auth/invitations/accept` |
+| PLATFORM-001 | `GET /api/v1/platform/organizations`; `POST /api/v1/platform/organizations` |
+| PLATFORM-002 | `GET /api/v1/platform/organizations/{organization_id}`; `PATCH /api/v1/platform/organizations/{organization_id}` |
+| PLATFORM-003 | `GET /api/v1/platform/model-configuration`; `PATCH /api/v1/platform/model-configuration` |
+| PLATFORM-004 | `GET /api/v1/platform/audit-logs` |
+| ORG-001 | `GET /api/v1/organizations/{organization_id}`; `GET /api/v1/organizations/{organization_id}/settings`; `PATCH /api/v1/organizations/{organization_id}/settings` |
+| ORG-002 | `GET /api/v1/organizations/{organization_id}/members`; `POST /api/v1/organizations/{organization_id}/members`; `POST /api/v1/members/{member_id}/resend-invitation`; `PATCH /api/v1/members/{member_id}` |
+| ORG-003 | `GET /api/v1/organizations/{organization_id}/support-access-grants`; `POST /api/v1/organizations/{organization_id}/support-access-grants`; `DELETE /api/v1/organizations/{organization_id}/support-access-grants/{grant_id}` |
+| CONTRACT-001 | `GET /api/v1/contracts` |
+| CONTRACT-002 | `POST /api/v1/contracts` |
+| CONTRACT-003 | `GET /api/v1/contracts/{contract_id}`; `PATCH /api/v1/contracts/{contract_id}`; `POST /api/v1/contracts/{contract_id}/archive`; `POST /api/v1/contracts/{contract_id}/restore`; `PUT /api/v1/contracts/{contract_id}/access-grants/{user_id}`; `DELETE /api/v1/contracts/{contract_id}/access-grants/{user_id}` |
+| CONTRACT-004 | `GET /api/v1/contracts/{contract_id}`; `POST /api/v1/contracts/{contract_id}/files`; `GET /api/v1/files/{file_id}/download` |
+| CONTRACT-005 | `GET /api/v1/documents/{document_version_id}/pages/{page_no}`; `GET /api/v1/files/{file_id}/download` |
+| REVIEW-001 | `GET /api/v1/contracts/{contract_id}`; `POST /api/v1/contracts/{contract_id}/reviews` |
+| REVIEW-002 | `GET /api/v1/review-tasks/{review_task_id}`; `POST /api/v1/review-tasks/{review_task_id}/retry` |
+| REVIEW-003 | `GET /api/v1/review-tasks/{review_task_id}/results`; `PATCH /api/v1/contract-classifications/{classification_id}`; `PATCH /api/v1/extracted-fields/{field_id}`; `PATCH /api/v1/risk-findings/{finding_id}`; `PATCH /api/v1/clause-comparisons/{comparison_id}`; `POST /api/v1/review-tasks/{review_task_id}/complete`; `POST /api/v1/feedback`; `POST /api/v1/review-tasks/{review_task_id}/reports` |
+| WARNING-001 | `GET /api/v1/warnings` |
+| WARNING-002 | `GET /api/v1/warnings/{warning_id}`; `POST /api/v1/warnings/{warning_id}/events` |
+| NOTIFY-001 | `GET /api/v1/notifications`; `POST /api/v1/notifications/{notification_id}/read`; `GET /api/v1/notifications/unread-count` |
+| REPORT-001 | `GET /api/v1/reports/{report_id}`; `GET /api/v1/reports/{report_id}/download`; `POST /api/v1/review-tasks/{review_task_id}/reports` |
+| RULE-001 | `GET /api/v1/risk-rule-bundles`; `POST /api/v1/risk-rule-bundles` |
+| RULE-002 | `GET /api/v1/risk-rule-bundles/{bundle_id}`; `PATCH /api/v1/risk-rule-bundles/{bundle_id}`; `POST /api/v1/risk-rule-bundles/{bundle_id}/versions`; `POST /api/v1/risk-rule-bundle-versions/{version_id}/publish` |
+| RULE-003 | `GET /api/v1/risk-rule-bundle-versions/{version_id}`; `PATCH /api/v1/risk-rule-bundle-versions/{version_id}`; `POST /api/v1/risk-rule-bundle-versions/{version_id}/publish` |
+| CLAUSE-001 | `GET /api/v1/clause-templates`; `POST /api/v1/clause-templates` |
+| CLAUSE-002 | `GET /api/v1/clause-templates/{template_id}`; `PATCH /api/v1/clause-templates/{template_id}`; `POST /api/v1/clause-templates/{template_id}/versions`; `POST /api/v1/clause-template-versions/{version_id}/publish` |
+| CLAUSE-003 | `GET /api/v1/clause-template-versions/{version_id}`; `PATCH /api/v1/clause-template-versions/{version_id}`; `POST /api/v1/clause-template-versions/{version_id}/publish` |
+| ADMIN-001 | `GET /api/v1/audit-logs` |
+| ADMIN-002 | `GET /api/v1/organizations/{organization_id}/metrics/reviews`; `GET /api/v1/organizations/{organization_id}/metrics/warnings` |
+| ADMIN-003 | `GET /api/v1/feedback/summary` |
+
+### 6.2 Prototype Association
+
+每个 Page ID 的原型使用 `docs/ui/stitch/<PAGE-ID>-*.html` 和对应 `.png`。状态 suffix 表示同一页面的不同状态，不创建新 Page ID；`.stitch/metadata.json` 标记为 `deprecated` 的文件不作为最终实现依据。当前 `REVIEW-003-review-result-and-human-review.*` 是历史基准，最终实现应使用 default、evidence-open、human-edit、version-conflict、blocking-pending 和 viewer-readonly 状态资产。
 
 ## 7. Core User Flows
 
@@ -497,7 +546,7 @@ Public；已有有效会话的用户应被引导到默认落点。
 
 #### Route
 
-Proposed Route：`/login`。
+Frontend Page URL：`/login`。
 
 #### Entry Points / Exit
 
@@ -578,7 +627,7 @@ Public。
 
 #### Route
 
-Proposed Route：`/forgot-password`。
+Frontend Page URL：`/password-reset`。
 
 #### Entry Points / Exit
 
@@ -645,7 +694,7 @@ Public，持有效重置令牌的用户。
 
 #### Route
 
-Proposed Route：`/reset-password?token=...`；令牌仅用于提交，不在页面正文回显。
+Frontend Page URL：`/password-reset/confirm?token=...`；令牌仅用于提交，不在页面正文回显。
 
 #### Entry Points / Exit
 
@@ -711,7 +760,7 @@ Public，持有效邀请令牌的受邀用户。
 
 #### Route
 
-Proposed Route：`/invitations/accept?token=...`。
+Frontend Page URL：`/invitations/accept?token=...`。
 
 #### Entry Points / Exit
 
@@ -777,7 +826,7 @@ Platform Admin，Read/Write。
 
 #### Route
 
-Proposed Route：`/platform/organizations`。
+Frontend Page URL：`/platform/organizations`。
 
 #### Entry Points / Exit
 
@@ -854,7 +903,7 @@ Platform Admin，Read/Write；不等于进入组织业务数据。
 
 #### Route
 
-Proposed Route：`/platform/organizations/:organizationId`。
+Frontend Page URL：`/platform/organizations/:organizationId`。
 
 #### Entry Points / Exit
 
@@ -928,7 +977,7 @@ Platform Admin，Read/Write non-secret fields。
 
 #### Route
 
-Proposed Route：`/platform/model-configuration`。
+Frontend Page URL：`/platform/model-configuration`。
 
 #### Entry Points / Exit
 
@@ -1007,7 +1056,7 @@ Platform Admin，Read only。
 
 #### Route
 
-Proposed Route：`/platform/audit-logs`。
+Frontend Page URL：`/platform/audit-logs`。
 
 #### Entry Points / Exit
 
@@ -1076,7 +1125,7 @@ Org Admin，Read/Write；Reviewer/Viewer 无入口。
 
 #### Route
 
-Proposed Route：`/organization/settings`。
+Frontend Page URL：`/organizations/:organizationId/settings`。
 
 #### Entry Points / Exit
 
@@ -1148,7 +1197,7 @@ Org Admin，Read/Write。
 
 #### Route
 
-Proposed Route：`/organization/members`。
+Frontend Page URL：`/organizations/:organizationId/members`。
 
 #### Entry Points / Exit
 
@@ -1225,7 +1274,7 @@ Org Admin，Read/Write。
 
 #### Route
 
-Proposed Route：`/organization/support-access`。
+Frontend Page URL：`/organizations/:organizationId/support-access-grants`。
 
 #### Entry Points / Exit
 
@@ -1298,7 +1347,7 @@ Org Admin、Reviewer：Read/Write entry；Viewer：仅显式授权合同 Read。
 
 #### Route
 
-Proposed Route：`/contracts`。
+Frontend Page URL：`/contracts`。
 
 #### Entry Points / Exit
 
@@ -1389,7 +1438,7 @@ Org Admin、Reviewer，Write。
 
 #### Route
 
-Proposed Route：`/contracts/new`。
+Frontend Page URL：`/contracts/new`。
 
 #### Entry Points / Exit
 
@@ -1454,7 +1503,7 @@ Org Admin、Reviewer：Read/Write；authorized Viewer：Read only。
 
 #### Route
 
-Proposed Route：`/contracts/:contractId`。
+Frontend Page URL：`/contracts/:contractId`。
 
 #### Entry Points / Exit
 
@@ -1553,7 +1602,7 @@ Org Admin、Reviewer：Upload/Download；authorized Viewer：Read version summar
 
 #### Route
 
-Proposed Route：`/contracts/:contractId/files`；也可作为 Contract Detail 的重点 section，但必须有独立 P0 prototype frame。
+Frontend Page URL：`/contracts/:contractId/files`；也可作为 Contract Detail 的重点 section，但必须有独立 P0 prototype frame。
 
 #### Entry Points / Exit
 
@@ -1650,7 +1699,7 @@ Upload、Alert、Checkbox、Switch/Checkbox、Progress、Button、Table、Tag、
 
 #### Route
 
-Proposed Route：`/documents/:documentVersionId`，Query/fragment 可携带 locator，但不能成为权限依据。
+Frontend Page URL：`/documents/:documentVersionId`，Query/fragment 可携带 locator，但不能成为权限依据。
 
 #### Entry Points / Exit
 
@@ -1734,7 +1783,7 @@ Org Admin、Reviewer，Write。
 
 #### Route
 
-Proposed Route：`/contracts/:contractId/reviews/new`。
+Frontend Page URL：`/contracts/:contractId/reviews/new`。
 
 #### Entry Points / Exit
 
@@ -1802,7 +1851,7 @@ Loading：option skeleton；Empty：无合法文件/无发布版本时显示阻�
 
 #### Route
 
-Proposed Route：`/reviews/:reviewTaskId`。
+Frontend Page URL：`/reviews/:reviewTaskId`。
 
 #### Entry Points / Exit
 
@@ -1884,7 +1933,7 @@ Org Admin、Reviewer：Read/Write；authorized Viewer：Read only；有效平台
 
 #### Route
 
-Proposed Route：`/reviews/:reviewTaskId/results`。
+Frontend Page URL：`/reviews/:reviewTaskId/results`。
 
 #### Entry Points / Exit
 
@@ -1983,7 +2032,7 @@ Org Admin、Reviewer：Read/Write entry；authorized Viewer：Read only authoriz
 
 #### Route
 
-Proposed Route：`/warnings`。
+Frontend Page URL：`/warnings`。
 
 #### Entry Points / Exit
 
@@ -2065,7 +2114,7 @@ Contract-visible users Read；Org Admin/Reviewer Write；Viewer Read only；Reop
 
 #### Route
 
-Proposed Route：`/warnings/:warningId`。
+Frontend Page URL：`/warnings/:warningId`。
 
 #### Entry Points / Exit
 
@@ -2165,7 +2214,7 @@ Authenticated User；只看自己的通知。
 
 #### Route
 
-Recommended UI Decision：Top Header Drawer，无独立 Route；如后续需要深链接，另行确认 Proposed Route。
+Recommended UI Decision：Top Header Drawer，无独立 Route；如后续需要深链接，必须先在本 PRD 中记录 Page URL 与 API Route 映射。
 
 #### Entry Points / Exit
 
@@ -2236,7 +2285,7 @@ Contract-visible users Read/Download；报告创建仅 Org Admin/Reviewer，并�
 
 #### Route
 
-Proposed Route：`/reports/:reportId`。
+Frontend Page URL：`/reports/:reportId`。
 
 #### Entry Points / Exit
 
@@ -2308,7 +2357,7 @@ Org Admin：Read/Write；Reviewer：published Read only。
 
 #### Route
 
-Proposed Route：`/risk-rules`。
+Frontend Page URL：`/risk-rule-bundles`。
 
 #### Entry Points / Exit
 
@@ -2371,7 +2420,7 @@ Org Admin：Read/Write；Reviewer：published Read only。
 
 #### Route
 
-Proposed Route：`/risk-rules/:bundleId`。
+Frontend Page URL：`/risk-rule-bundles/:bundleId`。
 
 #### Entry Points / Exit
 
@@ -2434,7 +2483,7 @@ Org Admin，Write；Reviewer 不可访问 draft。
 
 #### Route
 
-Proposed Route：`/risk-rules/:bundleId/versions/:versionId`。
+Frontend Page URL：`/risk-rule-bundle-versions/:versionId`。
 
 #### Entry Points / Exit
 
@@ -2502,7 +2551,7 @@ Org Admin：Read/Write；Reviewer：published Read only。
 
 #### Route
 
-Proposed Route：`/clause-templates`。
+Frontend Page URL：`/clause-templates`。
 
 #### Entry Points / Exit
 
@@ -2561,7 +2610,7 @@ Org Admin：Read/Write；Reviewer：published Read only。
 
 #### Route
 
-Proposed Route：`/clause-templates/:templateId`。
+Frontend Page URL：`/clause-templates/:templateId`。
 
 #### Entry Points / Exit
 
@@ -2623,7 +2672,7 @@ Org Admin，Write。
 
 #### Route
 
-Proposed Route：`/clause-templates/:templateId/versions/:versionId`。
+Frontend Page URL：`/clause-templates/:templateId/versions/:versionId`。
 
 #### Entry Points / Exit
 
@@ -2693,7 +2742,7 @@ Org Admin，Read only。
 
 #### Route
 
-Proposed Route：`/organization/audit-logs`。
+Frontend Page URL：`/audit-logs`。
 
 #### Entry Points / Exit
 
@@ -2753,7 +2802,7 @@ Org Admin，Read only；Phase 14A/第三阶段启用。
 
 #### Route
 
-Proposed Route：`/organization/operations`。
+Frontend Page URL：`/organizations/:organizationId/metrics`。
 
 #### Entry Points / Exit
 
@@ -2812,7 +2861,7 @@ Org Admin，Read only；反馈提交入口在 Review Result，Org Admin/Reviewer
 
 #### Route
 
-Proposed Route：`/organization/feedback`。
+Frontend Page URL：`/feedback/summary`。
 
 #### Entry Points / Exit
 
@@ -3321,7 +3370,7 @@ PLATFORM-004 Platform Audit Log
 原型资产目录：
 
 ```text
-docs/ui/prototypes/
+docs/ui/stitch/
 ```
 
 文件命名：
@@ -3342,7 +3391,9 @@ REVIEW-003-review-result-conflict.png
 WARNING-002-warning-detail-closed.png
 ```
 
-Figma Page/Frame 同样使用 Page ID 作为前缀：`REVIEW-003 / Review Result / Pending Review`。交互状态使用 suffix，不创建新的业务 Page ID。
+Figma Page/Frame 同样使用 Page ID 作为前缀：`REVIEW-003 / Review Result / Pending Review`。交互状态使用 suffix，不创建新的业务 Page ID。HTML 用于布局和交互参考，PNG 用于视觉对照；二者都不是可直接复制的生产代码。
+
+原型状态使用 `approved`、`draft`、`deprecated`。未显式标记时按当前 Phase Review 结果确认；`.stitch/metadata.json` 已标记 deprecated 的资产不得用于最终实现。
 
 ## 21. AI Prototype Handoff
 
@@ -3377,6 +3428,8 @@ AI 原型不负责：
 - 把 Recommended/Pending UI Decision 写成已确认产品事实。
 
 生成后 Review 必须逐项对照 Page ID、角色、Displayed Data、Actions、Forms、States 和 Traceability。发现规范冲突先报告，不直接在原型中“优化掉”业务步骤。
+
+页面实现完成还必须在 1440px 和 1280px 下对照 approved PNG，覆盖适用的 loading、empty、error、forbidden、conflict、disabled、processing 和 retry 状态，并通过组件测试和适用的 Playwright 测试。页面完成不等于 Phase 完成，Phase 状态仍按 `docs/phase-status.md` 记录。
 
 ## 22. Traceability
 
@@ -3414,6 +3467,7 @@ AI 原型不负责：
 
 ```text
 Prototype Frame (Page ID)
+-> docs/ui/design-system.md
 -> docs/ui/frontend-prd.md Page Specification
 -> docs/api-contract.md Method/Path/Schema/Permission/State
 -> docs/requirements.md FR/NFR
@@ -3452,7 +3506,7 @@ Prototype Frame (Page ID)
 | Review Result navigation | Anchor/Tabs + evidence split pane | Pending high-fidelity prototype test |
 | Notification form factor | Header Drawer | Pending UI Decision |
 | 1280px Evidence behaviour | Split pane when viable; otherwise Drawer | Pending responsive prototype test |
-| Frontend Routes | 使用 Inventory 的 Proposed Routes | Pending router review; not API facts |
+| Frontend Page URL | 使用 Inventory 的固定 Vue Page URL，并保持 6.1 API 映射 | Page URL 不是 API Route；接口只以 API Contract 为准 |
 | UI 文案 | 使用本 PRD 中文语义，最终错误文案优先 API `message` | Pending content review |
 
 这些纯 UI 决策不阻塞无关后端 Phase。任何会改变 API、权限、状态或数据字段的需求不再属于纯 UI 决策，必须回到 Source of Truth 流程。
@@ -3471,3 +3525,5 @@ Prototype Frame (Page ID)
 10. 33 个设计面使用稳定 Page ID，原型命名沿用相同 ID。
 11. 原型按 9 个共享视觉语言的 Batch 交付，不要求一次生成全部页面。
 12. 前端工程师可从页面追踪 API/Requirements/Phase；UI Designer 无需阅读后端代码即可设计主要页面。
+13. 33 个设计面均有显式 API Route 映射，且 Vue Page URL 不占用 `/api/v1`。
+14. 原型目录、design system、deprecated 规则和 Phase Status 入口均已固定。
