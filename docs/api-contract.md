@@ -205,6 +205,8 @@ Success `200 OK`：返回当前用户、可用组织角色和新的/轮换后的
 
 权限：`Public`。服务端无论邮箱是否存在都返回相同结果，防止账号枚举；账号存在时通过 SMTP 异步发送一次性重置链接。SMTP 投递结果不得用于推断账号是否存在。
 
+部署必须配置 `SMTP_HOST`、`SMTP_PORT`、`SMTP_FROM` 和 `FRONTEND_BASE_URL`；配置缺失时在查询账号前统一返回 `503 SMTP_NOT_CONFIGURED`，因此该错误不泄露账号是否存在。首期每个请求最多执行 1 次后台 SMTP 投递，不做自动重试（retry cap = 0）；投递失败不得改变已经返回的 `202`，但必须记录只包含 `request_id`、错误类别和投递阶段的安全结构化日志/指标，不记录收件邮箱、Token 或完整重置 URL。普通自动化测试使用 Fake Mailer，不调用真实 SMTP；后续如增加持久化投递和重试，必须先扩展契约和数据状态。
+
 Request：
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -219,7 +221,7 @@ Success `202 Accepted`：
 { "accepted": true, "message": "如果账号存在，系统将继续处理密码重置请求。" }
 ```
 
-主要错误：`422 VALIDATION_ERROR`、`429 RATE_LIMITED`。不得返回“邮箱不存在”。
+主要错误：`422 VALIDATION_ERROR`、`429 RATE_LIMITED`、`503 SMTP_NOT_CONFIGURED`。不得返回“邮箱不存在”；SMTP 运行时投递失败不通过响应区分账号状态。
 
 ### 3.6 确认密码重置
 

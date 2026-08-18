@@ -28,7 +28,7 @@
 | 模型配置 | 架构数据模型允许组织配置/覆盖，API 明确组织不得覆盖，模型名和密钥来自环境 | 采用 API；只保留平台非秘密运行参数配置 |
 | OpenAPI 定位 | 架构称 OpenAPI 为契约来源，API 文档称自身为唯一契约来源 | Markdown 契约先行；OpenAPI 是后端 Schema 生成的可执行投影，CI 校验二者一致 |
 | 抽取状态 | 公共 `result_status` 没有 `found`，但结果示例和字段修订接口使用 `found` | 在 Phase 9C 前确认并先修订 API 契约 |
-| 组织上下文 | 会话可属于多个组织，但无路径、Header、Cookie 或会话字段说明当前组织如何选择 | 在 Phase 2 前确认并先修订 API 契约 |
+| 组织上下文 | API Contract 2.2.1 已定义 `X-Organization-ID`、单组织自动选择、多组织 409 和 membership 校验；实现仍需在 Phase 3 组织接口中验证 | P-01 已关闭；按契约实现并测试 |
 | 默认版本选择 | 创建审核可省略规则/模板版本，但多规则集/多模板时默认选择规则未定义 | 在 Phase 8A/8B 前确认契约和唯一约束 |
 | 报告恢复 | 需求要求报告失败后可重新生成，API 未完整定义报告状态和失败后的再次 POST 语义 | 在 Phase 13 前确认并修订契约 |
 | 任务归档/取消 | 架构状态机提到取消且含 `archived`，API 没有审核任务取消/归档接口 | 本计划不实现未定义命令；在进入 Phase 9A 前确认归档来源 |
@@ -1951,15 +1951,15 @@ Stable Baseline
 
 | ID | 问题 | 影响 Phase | 建议的最小决策 |
 | --- | --- | --- | --- |
-| P-01 | 多组织用户如何选择当前组织？业务 API 无组织路径/Header，客户端又不能提交可信 `organization_id` | Phase 2，阻塞 | 在契约定义会话内 active organization 或专用 `X-Organization-ID`，后端仍校验成员关系；二选一后固定 |
+| P-01（已关闭） | 多组织用户如何选择当前组织？ | Phase 2，已决策 | 采用 API Contract 2.2.1：有组织路径时从资源建立 Tenant Context；无组织路径时使用 `X-Organization-ID`，服务端校验有效 membership；单组织可自动选择，多组织缺失 Header 返回 `409 ORGANIZATION_CONTEXT_REQUIRED`。 |
 | P-02（已关闭） | 平台创建组织等没有组织上下文的写接口，`Idempotency-Key` 如何确定作用域？ | Phase 1/3，已决策 | 组织级使用 `organization:<organization_id>`；平台级使用 `platform:<authenticated_user_id>`；均由服务端可信上下文生成，唯一性为 `(scope, idempotency_key)` |
 | P-03 | `result_status` 缺少 `found`，但 10.5 示例和 10.7 请求使用 `found` | Phase 9C，阻塞 | 将 `found` 正式加入字段状态枚举，或统一改为已有 `detected`；先改契约和测试样例 |
 | P-04 | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，阻塞 | 契约增加唯一默认规则集语义及切换规则 |
 | P-05 | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，阻塞 | 契约增加每组织+合同类型+场景唯一默认模板语义 |
 | P-06 | 报告完整状态枚举、失败后再次生成、`REPORT_EXPIRED` 的时间条件和“重新生成”是否创建新记录未定义 | Phase 13，阻塞 | 定义 generating/ready/failed/expired 及再次 POST 的新记录/幂等行为 |
 | P-07 | review `archived` 如何进入/恢复？合同归档是否级联；架构提到 cancel 但无 API | Phase 9A，部分阻塞 | 明确合同归档对完成任务的只读影响；未新增契约前不实现 cancel |
-| P-08 | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，阻塞安全测试 | 在 API 契约或安全配置文档冻结可测试策略 |
-| P-09 | SMTP 发件人、公开前端基址和投递重试上限未确认 | Phase 2/4 | 作为部署配置冻结，测试使用 Fake |
+| P-08（已关闭） | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，已决策 | 采用 API Contract 3.1：密码 12-128 字符、不强制字符类别；密码重置 Token 30 分钟、邀请 Token 7 天；Token 至少 256 位随机值且数据库只保存哈希。历史密码限制首期不做。 |
+| P-09（已关闭） | SMTP 发件人、公开前端基址、投递失败可观测性和重试上限未完整冻结 | Phase 2/4，已决策 | 采用 API Contract 3.5：配置由环境注入；缺配置时在账号查询前统一返回 `503 SMTP_NOT_CONFIGURED`；首期后台投递只尝试 1 次且自动重试上限为 0，失败写不含邮箱/Token/完整 URL 的安全结构化日志/指标。当前实现仍须补失败捕获和测试，P-09 关闭不等于 Phase 2 完成。 |
 | P-10 | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；同步架构说明 |
 | P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
@@ -1973,10 +1973,32 @@ Stable Baseline
 - **Fingerprint and transaction**：fingerprint 包含 canonical operation 和 Schema 规范化后的关键请求内容，只持久化摘要并排除 Cookie、Authorization、会话/CSRF、密码、令牌和 Secret。幂等记录、业务写入和对应审计同事务提交/回滚，并由数据库唯一约束处理并发。
 - **Boundary with P-01**：本决策不选择多组织用户的当前组织交互方案。Phase 1 可以实现 scope 表示、约束和基于可信上下文的接口；Phase 2 仍须关闭 P-01 后才能把具体会话/Header 选择机制接入组织业务请求。
 
+### Decision Record: P-01 Organization Context（2026-08-18）
+
+- **Status**：Closed。规范来源为 API Contract 2.2.1。
+- **Decision**：组织路径或已验证资源归属优先建立 Tenant Context；无组织路径的组织级接口使用 `X-Organization-ID`。服务端必须校验会话用户的有效 membership，客户端 Header 不构成授权依据。
+- **Fallback**：用户只有一个有效组织时允许服务端自动选择；多个有效组织且缺少 Header 返回 `409 ORGANIZATION_CONTEXT_REQUIRED`。
+- **Frontend boundary**：前端可以记住用户选择并发送 Header，但不能用 Header 改变资源归属或跳过后端校验。
+
+### Decision Record: P-08 Authentication Policy（2026-08-18）
+
+- **Status**：Closed。规范来源为 API Contract 3.1、认证 Schema 和密码策略常量。
+- **Decision**：密码长度为 12-128 字符，不强制字符类别；密码重置 Token 有效期 30 分钟；邀请 Token 有效期 7 天；一次性 Token 使用至少 256 位随机值，数据库只保存哈希。
+- **Not included**：首期不实现密码历史限制；密码策略和 TTL 必须有边界/过期测试，不能只依赖文档常量。
+
+### Decision Record: P-09 SMTP Boundary（2026-08-18）
+
+- **Status**：Closed。规范来源为 API Contract 3.5；决策采用独立 Review 建议的 Phase 2 最小可靠性边界。
+- **Configuration**：`SMTP_HOST`、`SMTP_PORT`、`SMTP_FROM`、`FRONTEND_BASE_URL` 通过环境配置；普通自动化测试使用 Fake Mailer，不调用真实 SMTP。
+- **Unavailable configuration**：缺少配置时必须在查询账号前统一返回 `503 SMTP_NOT_CONFIGURED`，避免通过错误响应推断账号存在性。
+- **Delivery and retry**：首期使用后台 SMTP 投递，每个请求最多尝试 1 次，自动重试上限为 0；已返回的 `202` 不因后台失败改变。
+- **Observability and safety**：投递失败必须捕获并写安全结构化日志/指标，只允许 `request_id`、错误类别和投递阶段；禁止记录邮箱、Token 或完整链接。当前代码尚未满足此项，属于 Phase 2 implementation blocker，不再属于 Pending Decision。
+- **Future extension**：Phase 4 如增加持久化 delivery 状态/重试，必须先扩展契约、数据模型、幂等和失败恢复测试。
+
 ### Just-in-Time Closing Order
 
 - Phase 1 前：关闭 P-02；P-11 只需确认当前 Phase 使用的最小数据字段，不要求一次性解决全部后续模型缺口。
-- Phase 2 前：关闭 P-01、P-08；P-09 至少冻结测试 Fake 所需的 SMTP 配置边界。
+- Phase 2 前：P-01、P-08、P-09 已关闭；Phase 2 仍须实现并测试这些决策，关闭 Pending Decision 不替代完成验收。
 - Phase 3 前：处理 P-10 的平台模型配置/架构同步边界，但不因此恢复组织级模型覆盖。
 - Phase 8A/8B 与 9A 前：关闭 P-04、P-05；9A 同时关闭 P-07。
 - Phase 9B 前：冻结 P-09、P-10 对模型 Secret、prompt 和供应商配置的影响；Phase 9C 前关闭 P-03。

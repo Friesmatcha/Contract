@@ -97,7 +97,7 @@ API Route 与 Vue Page URL 是不同边界：Method、`/api/v1` Path、参数和
 - 无权限入口通常隐藏；用户通过书签或状态变化进入不可访问页面时，展示 forbidden/not found 页面，不泄露资源是否存在。
 - 只读用户仍能看到状态、证据和允许的下载入口，但所有写控件不渲染或明确只读。
 - 平台临时支持访问必须显示“只读支持访问”上下文；所有写操作与文件/报告下载入口隐藏。后端仍必须拒绝越权请求。
-- 同一账号可能同时具有平台管理员标记和组织成员关系；具体工作区切换机制受 Pending Decision `P-01` 约束，前端不得自行定义可信组织上下文。
+- 同一账号可能同时具有平台管理员标记和组织成员关系；工作区选择遵循 API Contract 2.2.1，前端可记住选择并发送 `X-Organization-ID`，但不得将其视为可信授权依据。
 
 ## 4. Information Architecture
 
@@ -204,7 +204,7 @@ Recommended UI Decision：将“规则”和“条款模板”归入“知识配
 ### 5.3 Top Header
 
 - 显示当前页面位置和用户 `display_name`；用户菜单包含邮箱、当前角色语境和退出登录。
-- 组织工作区显示当前组织名称，但组织选择/切换控件是否存在取决于 `P-01`，在契约确定前不得让选择结果成为可信租户来源。
+- 组织工作区显示当前组织名称；组织选择/切换控件必须遵循 API Contract 2.2.1，服务端负责 membership 和 Tenant Context 校验。
 - 通知入口显示 `unread_count`，打开 `NOTIFY-001`；仅展示当前用户通知。
 - 使用面包屑表达“模块 / 资源 / 子视图”，详情页和编辑页必须有返回入口。
 - 不加入全局搜索、AI 助手、主题切换、语言切换或帮助中心等未定义功能。
@@ -317,7 +317,7 @@ Recommended UI Decision：将“规则”和“条款模板”归入“知识配
 Login
 -> POST /auth/login
 -> Session Established
--> Resolve platform/organization context (P-01 pending)
+-> Resolve platform/organization context (API Contract 2.2.1)
 -> Role-appropriate default landing page
 ```
 
@@ -496,7 +496,7 @@ Menu、Breadcrumb、Badge、Dropdown、Avatar、Skeleton、Alert、Result、Tool
 | `user.display_name` | 当前用户 | Session API | Text/Avatar fallback |
 | `user.email` | 邮箱 | Session API | User menu text |
 | `user.is_platform_admin` | 平台身份 | Session API | Workspace/navigation decision |
-| `memberships[].organization_name` | 组织 | Session API | Context label; selection pending P-01 |
+| `memberships[].organization_name` | 组织 | Session API | Context label; selection follows API Contract 2.2.1 |
 | `memberships[].role` | 组织角色 | Session API | Role label |
 | `unread_count` | 未读通知 | Notification API | Badge |
 
@@ -707,7 +707,7 @@ Frontend Page URL：`/password-reset/confirm?token=...`；令牌仅用于提交�
 
 #### Page Layout
 
-Password Form、confirmation input（仅前端确认，不进入 API）、password policy area（待 P-08）、Submit、success Result。
+Password Form、confirmation input（仅前端确认，不进入 API）、password policy area（12-128 个字符）、Submit、success Result。
 
 #### Components
 
@@ -729,7 +729,7 @@ Form、Password Input、Button、Alert、Result。
 | Field | Type | Required | Validation | API Field |
 | --- | --- | --- | --- | --- |
 | Token | Hidden route value | Yes | Non-empty | `token` |
-| 新密码 | Password Input | Yes | Server policy; P-08 pending | `new_password` |
+| 新密码 | Password Input | Yes | 12-128 个字符；不强制字符类别 | `new_password` |
 | 确认新密码 | Password Input | Yes | Must equal new password | Frontend-only |
 
 提交中禁用；`TOKEN_INVALID/EXPIRED/ALREADY_USED` 转为明确不可继续状态；`422` 映射字段错误。
@@ -746,7 +746,7 @@ Loading：提交 loading；Empty：缺 token 显示无效链接；Error：安全
 
 - Related Requirements：FR-A01。
 - Related APIs：`POST /api/v1/auth/password-reset/confirm`。
-- Related Phase：Phase 2；Pending P-08。
+- Related Phase：Phase 2；密码策略和 Token TTL 采用 API Contract 3.1，边界测试仍是 Phase 2 完成条件。
 
 ### AUTH-004 Accept Invitation / 接受邀请
 
@@ -812,7 +812,7 @@ N/A。
 
 - Related Requirements：FR-A02。
 - Related APIs：`POST /api/v1/auth/invitations/accept`。
-- Related Phase：Phase 2；Pending P-08/P-09。
+- Related Phase：Phase 2；P-08/P-09 已关闭；SMTP 后台失败可观测性的实现与测试仍阻塞 Phase 2 完成。
 
 ### PLATFORM-001 Organization List / 平台组织列表
 
@@ -3482,13 +3482,13 @@ Prototype Frame (Page ID)
 
 | ID | Decision | Current recommendation | Blocking boundary |
 | --- | --- | --- | --- |
-| UI-P01 | 多组织用户如何选择当前组织 | 等待 development-plan P-01；Shell 只显示当前上下文，不自行定义可信 Header/Cookie | Phase 2 organization context |
+| UI-P01 | 多组织用户如何选择当前组织 | 已采用 API Contract 2.2.1：`X-Organization-ID` 仅为选择提示，服务端校验 membership；单组织可自动选择，多组织缺失 Header 返回 409 | Closed 2026-08-18 |
 | UI-P02 | `found` 是否属于 `result_status` | 等待 P-03；原型标 TODO，不创建第三套状态 | Phase 9C |
 | UI-P03 | 规则集默认版本选择 | 等待 P-04；Review Create 显示明确选择，不承诺自动默认 | Phase 8A/9A |
 | UI-P04 | 模板默认版本/业务场景选择 | 等待 P-05；Review Create 显示明确选择 | Phase 8B/9A |
 | UI-P05 | 报告完整状态、失败重试、过期和再次生成 | 等待 P-06；只设计 generating/ready 的确认部分和通用失败容器 | Phase 13 |
 | UI-P06 | Review `archived` 来源与恢复 | 等待 P-07；只读展示，不创建 archive/restore/cancel 控件 | Phase 9A |
-| UI-P07 | 密码策略和 token TTL | 等待 P-08；密码页不显示猜测规则 | Phase 2 |
+| UI-P07 | 密码策略和 token TTL | 已采用 API Contract 3.1：密码 12-128 字符、重置 Token 30 分钟、邀请 Token 7 天 | Closed 2026-08-18; boundary tests required |
 | UI-P08 | 合同已有 viewer 授权如何读取 | 当前没有 grant list/contract grant summary；需要先补契约或明确嵌入字段 | Phase 5 UI completeness |
 | UI-P09 | DOCX 逻辑块如何通过浏览器 API 读取 | 当前 page path 需要 `page_no`；必须在 Phase 7 前明确 | Phase 7 |
 | UI-P10 | 完整修订历史如何读取 | API 保证修订事实但没有独立读取接口；先不设计完整 history feed | Phase 12 UI completeness |
