@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>组织审计 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#ffdcc6",
+                        "on-surface": "#121b2e",
+                        "placeholder-gray": "#8A95A3",
+                        "critical-red": "#C43D3D",
+                        "surface": "#f9f9ff",
+                        "on-primary-fixed-variant": "#014493",
+                        "tertiary-container": "#8d4500",
+                        "on-primary": "#ffffff",
+                        "quiet-panel": "#EEF2F6",
+                        "primary-fixed-dim": "#adc7ff",
+                        "primary-container": "#2457a6",
+                        "error": "#ba1a1a",
+                        "tertiary": "#6a3200",
+                        "on-tertiary": "#ffffff",
+                        "confirmed-green": "#16805B",
+                        "surface-variant": "#d9e2fc",
+                        "on-surface-variant": "#434751",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e1e8ff",
+                        "on-tertiary-container": "#ffc39d",
+                        "on-background": "#121b2e",
+                        "informational-cyan": "#1677A6",
+                        "review-amber": "#B86A00",
+                        "background": "#f9f9ff",
+                        "secondary-fixed": "#a0f2e5",
+                        "secondary-container": "#a0f2e5",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-secondary-container": "#117167",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#e9edff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#016a61",
+                        "on-tertiary-fixed": "#311400",
+                        "paper-white": "#FFFFFF",
+                        "surface-dim": "#d1daf4",
+                        "outline": "#737782",
+                        "inverse-primary": "#adc7ff",
+                        "inverse-surface": "#273044",
+                        "on-primary-fixed": "#001a41",
+                        "workspace-mist": "#F5F7FA",
+                        "surface-bright": "#f9f9ff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "outline-variant": "#c3c6d3",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f1f3ff",
+                        "primary": "#003f89",
+                        "on-secondary-fixed": "#00201c",
+                        "on-primary-container": "#bcd0ff",
+                        "surface-tint": "#2b5dac",
+                        "surface-container-highest": "#d9e2fc",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-secondary-fixed-variant": "#005049",
+                        "muted-text": "#5F6B7A",
+                        "primary-fixed": "#d8e2ff",
+                        "on-error": "#ffffff",
+                        "structural-border": "#D7DEE8"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "xl": "32px",
+                        "margin-compact": "20px",
+                        "base": "4px",
+                        "sm": "12px",
+                        "sidebar-width": "240px",
+                        "margin-desktop": "24px",
+                        "header-height": "56px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "xs": "8px"
+                    },
+                    fontFamily: {
+                        "technical-data": ["JetBrains Mono"],
+                        "page-title": ["Noto Sans"],
+                        "body": ["Noto Sans"],
+                        "metadata": ["Noto Sans"],
+                        "form-label": ["Noto Sans"],
+                        "section-title": ["Noto Sans"]
+                    },
+                    fontSize: {
+                        "technical-data": ["13px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "400" }],
+                        "page-title": ["24px", { lineHeight: "32px", letterSpacing: "0", fontWeight: "600" }],
+                        "body": ["14px", { lineHeight: "22px", letterSpacing: "0", fontWeight: "400" }],
+                        "metadata": ["12px", { lineHeight: "18px", letterSpacing: "0", fontWeight: "400" }],
+                        "form-label": ["13px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "500" }],
+                        "section-title": ["16px", { lineHeight: "24px", letterSpacing: "0", fontWeight: "600" }]
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        body { background-color: theme('colors.workspace-mist'); }
+        .drawer-overlay { display: none; }
+        .drawer-overlay.active { display: block; }
+        .drawer { transform: translateX(100%); transition: transform 0.3s ease-in-out; }
+        .drawer.active { transform: translateX(0); }
+    </style>
+</head>
+<body class="font-body text-body text-on-surface antialiased overflow-hidden h-screen w-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-surface dark:bg-inverse-surface w-sidebar-width h-screen fixed left-0 top-0 border-r border-structural-border dark:border-outline-variant flex flex-col h-full w-[240px] z-20">
+<div class="p-lg border-b border-structural-border dark:border-outline-variant">
+<div class="flex items-center gap-xs mb-1">
+<span class="material-symbols-outlined text-primary dark:text-inverse-primary" data-icon="corporate_fare" data-weight="fill" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<h1 class="font-page-title text-page-title font-semibold text-on-surface dark:text-inverse-on-surface">合同智审</h1>
+</div>
+<p class="font-metadata text-metadata text-muted-text truncate">华东科技有限公司 / 组织管理员</p>
+</div>
+<div class="flex-1 overflow-y-auto py-sm px-xs space-y-1">
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-form-label text-form-label">合同</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-form-label text-form-label">预警</span>
+</a>
+<div class="pt-sm pb-xs px-md mt-sm">
+<span class="font-metadata text-metadata text-muted-text uppercase tracking-wider">知识配置</span>
+</div>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span class="font-form-label text-form-label">风险规则</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-form-label text-form-label">条款模板</span>
+</a>
+<div class="pt-sm pb-xs px-md mt-sm">
+<span class="font-metadata text-metadata text-muted-text uppercase tracking-wider">组织管理</span>
+</div>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-form-label text-form-label">组织设置</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-form-label text-form-label">成员管理</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span class="font-form-label text-form-label">支持授权</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded bg-surface-container-high text-primary font-semibold border-l-4 border-primary hover:bg-quiet-panel transition-colors opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-form-label text-form-label">组织审计</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-form-label text-form-label">运营指标</span>
+</a>
+<a class="flex items-center gap-sm px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-form-label text-form-label">反馈统计</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="bg-paper-white dark:bg-surface h-header-height fixed top-0 right-0 left-[240px] border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg h-[56px] z-10">
+<div class="flex-1">
+<!-- Search bar hidden per spec -->
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-quiet-panel">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded-full hover:bg-quiet-panel">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="ml-sidebar-width mt-header-height flex-1 h-[calc(100vh-56px)] overflow-hidden flex flex-col w-full relative z-0">
+<!-- Page Header & Filters -->
+<div class="bg-paper-white border-b border-structural-border shrink-0">
+<div class="px-margin-desktop py-lg flex justify-between items-end">
+<div>
+<h2 class="font-page-title text-page-title text-on-surface">组织审计</h2>
+<p class="font-metadata text-metadata text-muted-text mt-1">只读审计日志记录</p>
+</div>
+</div>
+<div class="px-margin-desktop py-md bg-workspace-mist border-t border-structural-border flex items-end gap-md flex-wrap">
+<div class="flex flex-col gap-base min-w-[160px]">
+<label class="font-form-label text-form-label text-on-surface-variant">事件类型</label>
+<select class="bg-paper-white border border-structural-border rounded h-[36px] px-sm font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option>全部</option>
+<option>认证授权</option>
+<option>组织架构变更</option>
+<option>策略配置变更</option>
+</select>
+</div>
+<div class="flex flex-col gap-base min-w-[160px]">
+<label class="font-form-label text-form-label text-on-surface-variant">操作者</label>
+<input class="bg-paper-white border border-structural-border rounded h-[36px] px-sm font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder-placeholder-gray" placeholder="输入名称或ID" type="text"/>
+</div>
+<div class="flex flex-col gap-base min-w-[160px]">
+<label class="font-form-label text-form-label text-on-surface-variant">资源类型</label>
+<select class="bg-paper-white border border-structural-border rounded h-[36px] px-sm font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option>全部</option>
+<option>User</option>
+<option>Role</option>
+<option>Policy</option>
+</select>
+</div>
+<div class="flex flex-col gap-base min-w-[240px]">
+<label class="font-form-label text-form-label text-on-surface-variant">时间范围</label>
+<div class="flex items-center gap-xs">
+<input class="bg-paper-white border border-structural-border rounded h-[36px] px-sm font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary w-full" type="date"/>
+<span class="text-on-surface-variant">-</span>
+<input class="bg-paper-white border border-structural-border rounded h-[36px] px-sm font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary w-full" type="date"/>
+</div>
+</div>
+<button class="h-[36px] px-md rounded bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label hover:bg-quiet-panel transition-colors">
+                    重置
+                </button>
+</div>
+</div>
+<!-- Audit Table Canvas -->
+<div class="flex-1 overflow-auto p-margin-desktop bg-workspace-mist">
+<div class="bg-paper-white border border-structural-border rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="bg-surface-container-low sticky top-0 z-10 border-b border-structural-border">
+<tr>
+<th class="font-form-label text-form-label text-on-surface-variant py-sm px-md font-medium">时间</th>
+<th class="font-form-label text-form-label text-on-surface-variant py-sm px-md font-medium">事件</th>
+<th class="font-form-label text-form-label text-on-surface-variant py-sm px-md font-medium">操作者</th>
+<th class="font-form-label text-form-label text-on-surface-variant py-sm px-md font-medium">资源</th>
+<th class="font-form-label text-form-label text-on-surface-variant py-sm px-md font-medium">结果</th>
+<th class="font-form-label text-form-label text-on-surface-variant py-sm px-md font-medium text-right">request_id</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-structural-border font-body text-body text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-quiet-panel transition-colors cursor-pointer group" onclick="toggleDrawer(true)">
+<td class="py-sm px-md">2023-10-24 14:32:01</td>
+<td class="py-sm px-md">更新成员角色</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-muted-text text-[18px]" data-icon="person">person</span>
+<span>张明</span>
+</div>
+</td>
+<td class="py-sm px-md">User: UID-8891</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-xs bg-surface-container text-confirmed-green px-2 py-1 rounded text-metadata font-metadata border border-confirmed-green/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                                        成功
+                                    </span>
+</td>
+<td class="py-sm px-md text-right font-technical-data text-technical-data text-muted-text">req_93jf82ka</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-quiet-panel transition-colors cursor-pointer group" onclick="toggleDrawer(true)">
+<td class="py-sm px-md">2023-10-24 14:30:15</td>
+<td class="py-sm px-md">同步组织架构</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-muted-text text-[18px]" data-icon="settings">settings</span>
+<span class="font-technical-data">System</span>
+</div>
+</td>
+<td class="py-sm px-md">OrgUnit: DEPT-04</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-xs bg-error-container text-critical-red px-2 py-1 rounded text-metadata font-metadata border border-critical-red/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="error">error</span>
+                                        失败
+                                    </span>
+</td>
+<td class="py-sm px-md text-right font-technical-data text-technical-data text-muted-text">req_48fh39js</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-quiet-panel transition-colors cursor-pointer group" onclick="toggleDrawer(true)">
+<td class="py-sm px-md">2023-10-24 13:15:22</td>
+<td class="py-sm px-md">修改风险规则阈值</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-muted-text text-[18px]" data-icon="person">person</span>
+<span>李华</span>
+</div>
+</td>
+<td class="py-sm px-md">Policy: RULE-102</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-xs bg-surface-container text-confirmed-green px-2 py-1 rounded text-metadata font-metadata border border-confirmed-green/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                                        成功
+                                    </span>
+</td>
+<td class="py-sm px-md text-right font-technical-data text-technical-data text-muted-text">req_72ks91hf</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-quiet-panel transition-colors cursor-pointer group" onclick="toggleDrawer(true)">
+<td class="py-sm px-md">2023-10-24 11:05:00</td>
+<td class="py-sm px-md">后台数据备份</td>
+<td class="py-sm px-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-muted-text text-[18px]" data-icon="settings">settings</span>
+<span class="font-technical-data">System</span>
+</div>
+</td>
+<td class="py-sm px-md">System: Backup</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-xs bg-surface-container text-confirmed-green px-2 py-1 rounded text-metadata font-metadata border border-confirmed-green/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                                        成功
+                                    </span>
+</td>
+<td class="py-sm px-md text-right font-technical-data text-technical-data text-muted-text">req_sys_bkup_01</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="border-t border-structural-border bg-paper-white p-sm flex items-center justify-between shrink-0">
+<span class="font-metadata text-metadata text-muted-text">显示 1 - 20，共 1,240 条记录</span>
+<div class="flex items-center gap-sm">
+<button class="w-8 h-8 rounded border border-structural-border flex items-center justify-center text-on-surface-variant hover:bg-quiet-panel transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_left">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded border border-structural-border flex items-center justify-center text-on-surface-variant hover:bg-quiet-panel transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Detail Drawer Overlay -->
+<div class="drawer-overlay fixed inset-0 bg-on-surface/20 z-30 transition-opacity" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+<!-- Detail Drawer -->
+<div class="drawer fixed top-0 right-0 w-[480px] h-full bg-paper-white border-l border-structural-border shadow-2xl z-40 flex flex-col" id="detailDrawer">
+<div class="p-lg border-b border-structural-border flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-section-title text-section-title text-on-surface">审计事件详情</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors w-8 h-8 flex items-center justify-center rounded hover:bg-quiet-panel" onclick="toggleDrawer(false)">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg space-y-lg">
+<div class="space-y-sm">
+<h4 class="font-form-label text-form-label text-muted-text uppercase tracking-wider">基本信息</h4>
+<div class="grid grid-cols-3 gap-y-sm">
+<div class="text-muted-text font-metadata text-metadata col-span-1">事件名称</div>
+<div class="text-on-surface font-body text-body col-span-2">更新成员角色</div>
+<div class="text-muted-text font-metadata text-metadata col-span-1">发生时间</div>
+<div class="text-on-surface font-body text-body col-span-2">2023-10-24 14:32:01</div>
+<div class="text-muted-text font-metadata text-metadata col-span-1">Request ID</div>
+<div class="text-on-surface font-technical-data text-technical-data col-span-2">req_93jf82ka</div>
+<div class="text-muted-text font-metadata text-metadata col-span-1">执行结果</div>
+<div class="col-span-2">
+<span class="inline-flex items-center gap-xs bg-surface-container text-confirmed-green px-2 py-0.5 rounded text-metadata font-metadata border border-confirmed-green/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                            成功
+                        </span>
+</div>
+</div>
+</div>
+<div class="h-px bg-structural-border"></div>
+<div class="space-y-sm">
+<h4 class="font-form-label text-form-label text-muted-text uppercase tracking-wider">操作者信息</h4>
+<div class="grid grid-cols-3 gap-y-sm">
+<div class="text-muted-text font-metadata text-metadata col-span-1">类型</div>
+<div class="text-on-surface font-body text-body col-span-2">User</div>
+<div class="text-muted-text font-metadata text-metadata col-span-1">标识 (ID)</div>
+<div class="text-on-surface font-technical-data text-technical-data col-span-2">USR-9921</div>
+<div class="text-muted-text font-metadata text-metadata col-span-1">名称</div>
+<div class="text-on-surface font-body text-body col-span-2">张明</div>
+<div class="text-muted-text font-metadata text-metadata col-span-1">来源 IP</div>
+<div class="text-on-surface font-technical-data text-technical-data col-span-2">192.168.1.104</div>
+</div>
+</div>
+<div class="h-px bg-structural-border"></div>
+<div class="space-y-sm">
+<h4 class="font-form-label text-form-label text-muted-text uppercase tracking-wider">资源及负载 (脱敏)</h4>
+<div class="bg-workspace-mist p-md rounded border border-structural-border font-technical-data text-technical-data text-on-surface-variant overflow-x-auto whitespace-pre">
+{
+  "resource_type": "UserRole",
+  "resource_id": "UID-8891",
+  "action": "UPDATE",
+  "changes": {
+    "role_added": ["ROLE_AUDITOR"],
+    "role_removed": []
+  },
+  "context": {
+    "department": "DEPT-04"
+  }
+}</div>
+</div>
+</div>
+</div>
+<script>
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('detailDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            if (open) {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+    </script>
+</body></html>

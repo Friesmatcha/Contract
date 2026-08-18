@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>平台组织 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d1daf4",
+                        "error-container": "#ffdad6",
+                        "quiet-panel": "#EEF2F6",
+                        "placeholder-gray": "#8A95A3",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#434751",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#6a3200",
+                        "primary-fixed": "#d8e2ff",
+                        "secondary-fixed": "#a0f2e5",
+                        "muted-text": "#5F6B7A",
+                        "confirmed-green": "#16805B",
+                        "workspace-mist": "#F5F7FA",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface-container-high": "#e1e8ff",
+                        "review-amber": "#B86A00",
+                        "inverse-primary": "#adc7ff",
+                        "outline-variant": "#c3c6d3",
+                        "primary-container": "#2457a6",
+                        "paper-white": "#FFFFFF",
+                        "on-primary-container": "#bcd0ff",
+                        "critical-red": "#C43D3D",
+                        "surface-variant": "#d9e2fc",
+                        "on-background": "#121b2e",
+                        "outline": "#737782",
+                        "surface-tint": "#2b5dac",
+                        "surface-container-highest": "#d9e2fc",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface-bright": "#f9f9ff",
+                        "inverse-on-surface": "#edf0ff",
+                        "surface-container-low": "#f1f3ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#8d4500",
+                        "on-tertiary-fixed": "#311400",
+                        "background": "#f9f9ff",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "on-secondary-container": "#117167",
+                        "secondary-container": "#a0f2e5",
+                        "on-surface": "#121b2e",
+                        "structural-border": "#D7DEE8",
+                        "inverse-surface": "#273044",
+                        "secondary": "#016a61",
+                        "on-secondary-fixed": "#00201c",
+                        "tertiary-fixed": "#ffdcc6",
+                        "primary": "#003f89",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-tertiary-container": "#ffc39d",
+                        "surface-container": "#e9edff",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-primary-fixed-variant": "#014493",
+                        "informational-cyan": "#1677A6",
+                        "on-primary-fixed": "#001a41",
+                        "surface": "#f9f9ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "lg": "24px",
+                        "sm": "12px",
+                        "header-height": "56px",
+                        "md": "16px",
+                        "margin-compact": "20px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "margin-desktop": "24px",
+                        "sidebar-width": "240px"
+                    },
+                    "fontFamily": {
+                        "form-label": ["Noto Sans"],
+                        "page-title": ["Noto Sans"],
+                        "technical-data": ["JetBrains Mono"],
+                        "body": ["Noto Sans"],
+                        "section-title": ["Noto Sans"],
+                        "metadata": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D7DEE8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A95A3;
+        }
+        
+        /* Hide dialog by default */
+        dialog {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        dialog[open] {
+            display: flex;
+            opacity: 1;
+        }
+        dialog::backdrop {
+            background-color: rgba(18, 27, 46, 0.4);
+            backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body font-body min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-workspace-mist border-r border-structural-border w-sidebar-width h-screen fixed left-0 top-0 flex flex-col z-50">
+<!-- Brand/Header -->
+<div class="p-md border-b border-structural-border">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-DEFAULT bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-weight="fill">gavel</span>
+</div>
+<div>
+<h1 class="font-page-title text-page-title text-primary">合同智审</h1>
+</div>
+</div>
+<div class="mt-sm">
+<div class="font-section-title text-section-title text-on-surface">平台工作区</div>
+<div class="font-metadata text-metadata text-muted-text">平台管理员</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto py-sm flex flex-col">
+<!-- Active Tab: 组织 -->
+<a class="flex items-center gap-sm px-md py-sm text-primary bg-surface-container-high border-l-4 border-primary transition-opacity duration-150 opacity-90" href="#">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+<span class="font-body text-body">组织</span>
+</a>
+<!-- Inactive Tab: 模型配置 -->
+<a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-body text-body">模型配置</span>
+</a>
+<!-- Inactive Tab: 平台审计 -->
+<a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-body text-body">平台审计</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="bg-paper-white border-b border-structural-border h-header-height fixed top-0 right-0 z-40 flex justify-end items-center px-lg w-[calc(100%-240px)]">
+<div class="flex items-center gap-md">
+<button aria-label="Notifications" class="text-on-surface-variant hover:text-primary transition-colors hover:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-dim overflow-hidden border border-structural-border flex items-center justify-center cursor-pointer">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A small, professional portrait of a platform administrator in a light gray corporate setting. The lighting is soft and neutral, conveying competence and reliability. Modern professional attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7tA8Lz_hcgE3l1qH6qbJlQVZkRz5lcELOyBzyZ_zxeq1ka6pcDtEQ2sXzMeIO19T3JvCOr9OnjEzUzk0ROGAV8XPXIIvkYJM6KNaKHDYKLGffFLH6-dTSQgTEDqZd84yBHIfW1bfzf09WnjnZlOGziQl9adsP_PHPaLywG3K73tcXWwePiqApnAewniHypNG7sJT0tBRlxp6M2HRaribfeaq4zGGnJpnrm0Zs6qyKJlpVy7YzHYn8tfnecKE5r2Sou41dC0ZkuGM"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-sidebar-width mt-header-height flex-1 p-margin-desktop max-w-[1200px] w-full">
+<!-- Page Header -->
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-page-title text-page-title text-on-surface">平台组织</h2>
+<button class="bg-primary text-on-primary font-form-label text-form-label px-md py-xs rounded-DEFAULT hover:bg-surface-tint transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" id="openDialogBtn">
+                新建组织
+            </button>
+</div>
+<!-- Filter Bar -->
+<div class="bg-paper-white border border-structural-border rounded-DEFAULT p-sm mb-md flex flex-wrap gap-sm items-center">
+<!-- Search -->
+<div class="relative flex-1 min-w-[240px]">
+<div class="absolute inset-y-0 left-0 pl-sm flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-placeholder-gray text-[18px]">search</span>
+</div>
+<input class="w-full pl-xl pr-sm py-xs bg-paper-white border border-structural-border rounded-DEFAULT font-body text-body focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder-placeholder-gray" placeholder="搜索组织名称..." type="text"/>
+</div>
+<!-- Status Dropdown -->
+<div class="relative w-48">
+<select class="w-full appearance-none pl-sm pr-xl py-xs bg-paper-white border border-structural-border rounded-DEFAULT font-body text-body focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-on-surface">
+<option value="all">状态: 全部</option>
+<option value="active">状态: 活跃 (Active)</option>
+<option value="disabled">状态: 禁用 (Disabled)</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">arrow_drop_down</span>
+</div>
+</div>
+<!-- Sort Dropdown -->
+<div class="relative w-48">
+<select class="w-full appearance-none pl-sm pr-xl py-xs bg-paper-white border border-structural-border rounded-DEFAULT font-body text-body focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-on-surface">
+<option value="created_desc">创建时间 (降序)</option>
+<option value="created_asc">创建时间 (升序)</option>
+<option value="name_asc">组织名称 (A-Z)</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">arrow_drop_down</span>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-paper-white border border-structural-border rounded-DEFAULT overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-workspace-mist border-b border-structural-border">
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium w-1/4">组织名称</th>
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium w-32">状态</th>
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium text-right w-24">成员数</th>
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium text-right w-32">保留策略</th>
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium w-32">创建时间</th>
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium w-32">更新时间</th>
+<th class="px-md py-sm font-form-label text-form-label text-muted-text font-medium text-right w-24">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-structural-border">
+<!-- Row 1 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="px-md py-sm">
+<div class="font-body text-body text-on-surface font-medium">华东科技有限公司</div>
+</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-secondary-fixed text-on-secondary-fixed-variant font-metadata text-metadata border border-secondary-fixed-dim">
+<span class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></span>
+                                    Active
+                                </span>
+</td>
+<td class="px-md py-sm text-right font-technical-data text-technical-data text-on-surface">124</td>
+<td class="px-md py-sm text-right font-technical-data text-technical-data text-on-surface">365 <span class="text-muted-text font-body text-metadata">天</span></td>
+<td class="px-md py-sm font-technical-data text-technical-data text-muted-text">2023-10-01</td>
+<td class="px-md py-sm font-technical-data text-technical-data text-muted-text">2023-10-24</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors" title="Manage">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="px-md py-sm">
+<div class="font-body text-body text-on-surface font-medium">西北建筑集团</div>
+</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-secondary-fixed text-on-secondary-fixed-variant font-metadata text-metadata border border-secondary-fixed-dim">
+<span class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></span>
+                                    Active
+                                </span>
+</td>
+<td class="px-md py-sm text-right font-technical-data text-technical-data text-on-surface">85</td>
+<td class="px-md py-sm text-right font-technical-data text-technical-data text-on-surface">180 <span class="text-muted-text font-body text-metadata">天</span></td>
+<td class="px-md py-sm font-technical-data text-technical-data text-muted-text">2023-09-15</td>
+<td class="px-md py-sm font-technical-data text-technical-data text-muted-text">2023-10-20</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors" title="Manage">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="px-md py-sm">
+<div class="font-body text-body text-muted-text font-medium">南部零售商贸</div>
+</td>
+<td class="px-md py-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-DEFAULT bg-surface-dim text-on-surface-variant font-metadata text-metadata border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                    Disabled
+                                </span>
+</td>
+<td class="px-md py-sm text-right font-technical-data text-technical-data text-muted-text">0</td>
+<td class="px-md py-sm text-right font-technical-data text-technical-data text-muted-text">30 <span class="text-placeholder-gray font-body text-metadata">天</span></td>
+<td class="px-md py-sm font-technical-data text-technical-data text-placeholder-gray">2023-08-05</td>
+<td class="px-md py-sm font-technical-data text-technical-data text-placeholder-gray">2023-09-01</td>
+<td class="px-md py-sm text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors" title="Manage">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="border-t border-structural-border px-md py-sm flex justify-between items-center bg-paper-white">
+<span class="font-metadata text-metadata text-muted-text">显示 1 - 3 共 3 条</span>
+<div class="flex items-center gap-xs">
+<button class="w-8 h-8 flex items-center justify-center rounded-DEFAULT border border-structural-border text-placeholder-gray bg-workspace-mist cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-DEFAULT border border-structural-border text-on-surface-variant hover:bg-quiet-panel hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Dialog: 新建组织 -->
+<dialog class="w-full max-w-md p-0 rounded-lg bg-paper-white border border-structural-border flex-col shadow-sm fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 z-50" id="newOrgDialog">
+<form class="flex flex-col h-full w-full" method="dialog">
+<div class="px-lg py-md border-b border-structural-border flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">新建组织</h3>
+<button class="text-on-surface-variant hover:text-error transition-colors" id="closeDialogBtn" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface" for="orgName">组织名称 <span class="text-critical-red">*</span></label>
+<input class="w-full px-sm py-xs bg-paper-white border border-structural-border rounded-DEFAULT font-body text-body focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" id="orgName" placeholder="输入组织全称" type="text"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface" for="orgDesc">描述</label>
+<textarea class="w-full px-sm py-xs bg-paper-white border border-structural-border rounded-DEFAULT font-body text-body focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none" id="orgDesc" placeholder="组织职责或备注说明" rows="3"></textarea>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface" for="retention">保留策略 (天) <span class="text-critical-red">*</span></label>
+<input class="w-full px-sm py-xs bg-paper-white border border-structural-border rounded-DEFAULT font-technical-data text-technical-data focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" id="retention" type="number" value="365"/>
+</div>
+</div>
+<div class="px-lg py-md border-t border-structural-border bg-workspace-mist flex justify-end gap-sm rounded-b-lg">
+<button class="px-md py-xs bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label rounded-DEFAULT hover:bg-quiet-panel transition-colors" id="cancelDialogBtn" type="button">取消</button>
+<button class="px-md py-xs bg-primary text-on-primary font-form-label text-form-label rounded-DEFAULT hover:bg-surface-tint transition-colors" type="submit">确认创建</button>
+</div>
+</form>
+</dialog>
+<script>
+        // Dialog Interaction Logic
+        const dialog = document.getElementById('newOrgDialog');
+        const openBtn = document.getElementById('openDialogBtn');
+        const closeBtn = document.getElementById('closeDialogBtn');
+        const cancelBtn = document.getElementById('cancelDialogBtn');
+
+        openBtn.addEventListener('click', () => {
+            dialog.showModal();
+        });
+
+        const closeDialog = () => {
+            dialog.close();
+        };
+
+        closeBtn.addEventListener('click', closeDialog);
+        cancelBtn.addEventListener('click', closeDialog);
+
+        // Close on backdrop click
+        dialog.addEventListener('click', (e) => {
+            const dialogDimensions = dialog.getBoundingClientRect()
+            if (
+                e.clientX < dialogDimensions.left ||
+                e.clientX > dialogDimensions.right ||
+                e.clientY < dialogDimensions.top ||
+                e.clientY > dialogDimensions.bottom
+            ) {
+                dialog.close();
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,82 @@
+{
+  "projectId": "7860852984903933438",
+  "title": "项目名称",
+  "screens": [
+    {
+      "screenId": "03390c9dc45348c89e23272e5bb47ef8",
+      "title": "REVIEW-003 / 审核结果与人工复核 / 默认结果",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-default.html",
+        "docs/ui/stitch/REVIEW-003-review-result-default.png"
+      ]
+    },
+    {
+      "screenId": "20b05f93382b4789a9e15a48484bb4b3",
+      "title": "REVIEW-003 / 审核结果与人工复核 / 证据打开",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-evidence-open.html",
+        "docs/ui/stitch/REVIEW-003-review-result-evidence-open.png"
+      ]
+    },
+    {
+      "screenId": "f193d98902344ad591e0ef92c40f7949",
+      "title": "REVIEW-003 / 审核结果与人工复核 / 人工编辑",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-human-edit.html",
+        "docs/ui/stitch/REVIEW-003-review-result-human-edit.png"
+      ]
+    },
+    {
+      "screenId": "d2fb65384fde4c4da5e4569cbfdc3eb8",
+      "title": "REVIEW-003 / 审核结果与人工复核 / 版本冲突",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-version-conflict.html",
+        "docs/ui/stitch/REVIEW-003-review-result-version-conflict.png"
+      ]
+    },
+    {
+      "screenId": "666ed74092f64aa38dd938f404a52120",
+      "title": "REVIEW-003 / 审核结果与人工复核 / 待处理阻塞",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-blocking-pending.html",
+        "docs/ui/stitch/REVIEW-003-review-result-blocking-pending.png"
+      ]
+    },
+    {
+      "screenId": "c3ce94ca0dcd46df9c5a97930b5505e8",
+      "title": "REVIEW-003 / 审核结果与人工复核 / Viewer 只读",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-viewer-readonly.html",
+        "docs/ui/stitch/REVIEW-003-review-result-viewer-readonly.png"
+      ]
+    },
+    {
+      "screenId": "51bdce95769a4511b19239635316bdec",
+      "title": "REVIEW-003 / Review Result and Human Review / Stitch 基准",
+      "deviceType": "DESKTOP",
+      "localFiles": [
+        "docs/ui/stitch/REVIEW-003-review-result-and-human-review.html",
+        "docs/ui/stitch/REVIEW-003-review-result-and-human-review.png"
+      ],
+      "deprecated": true,
+      "reason": "历史基准，含英文和旧外壳，不作为最终交付"
+    }
+  ],
+  "designSystem": {
+    "status": "active",
+    "displayName": "Contract Evidence Workspace",
+    "assetId": "e6a43a768f164d89af3cc18119cf2b3c",
+    "primaryColor": "#2457A6",
+    "secondaryColor": "#217A70",
+    "backgroundColor": "#F5F7FA",
+    "fontFamily": "NOTO_SANS",
+    "technicalFontFamily": "JETBRAINS_MONO",
+    "roundness": "4px controls, 6px framed surfaces"
+  }
+}

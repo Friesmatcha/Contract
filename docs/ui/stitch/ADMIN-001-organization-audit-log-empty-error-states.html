@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ADMIN-001 / Organization Audit Log / Empty &amp; Error States</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#ffdcc6",
+                    "on-surface": "#121b2e",
+                    "placeholder-gray": "#8A95A3",
+                    "critical-red": "#C43D3D",
+                    "surface": "#f9f9ff",
+                    "on-primary-fixed-variant": "#014493",
+                    "tertiary-container": "#8d4500",
+                    "on-primary": "#ffffff",
+                    "quiet-panel": "#EEF2F6",
+                    "primary-fixed-dim": "#adc7ff",
+                    "primary-container": "#2457a6",
+                    "error": "#ba1a1a",
+                    "tertiary": "#6a3200",
+                    "on-tertiary": "#ffffff",
+                    "confirmed-green": "#16805B",
+                    "surface-variant": "#d9e2fc",
+                    "on-surface-variant": "#434751",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e1e8ff",
+                    "on-tertiary-container": "#ffc39d",
+                    "on-background": "#121b2e",
+                    "informational-cyan": "#1677A6",
+                    "review-amber": "#B86A00",
+                    "background": "#f9f9ff",
+                    "secondary-fixed": "#a0f2e5",
+                    "secondary-container": "#a0f2e5",
+                    "inverse-on-surface": "#edf0ff",
+                    "on-secondary-container": "#117167",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#e9edff",
+                    "error-container": "#ffdad6",
+                    "secondary": "#016a61",
+                    "on-tertiary-fixed": "#311400",
+                    "paper-white": "#FFFFFF",
+                    "surface-dim": "#d1daf4",
+                    "outline": "#737782",
+                    "inverse-primary": "#adc7ff",
+                    "inverse-surface": "#273044",
+                    "on-primary-fixed": "#001a41",
+                    "workspace-mist": "#F5F7FA",
+                    "surface-bright": "#f9f9ff",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "secondary-fixed-dim": "#84d5c9",
+                    "outline-variant": "#c3c6d3",
+                    "on-secondary": "#ffffff",
+                    "surface-container-low": "#f1f3ff",
+                    "primary": "#003f89",
+                    "on-secondary-fixed": "#00201c",
+                    "on-primary-container": "#bcd0ff",
+                    "surface-tint": "#2b5dac",
+                    "surface-container-highest": "#d9e2fc",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-secondary-fixed-variant": "#005049",
+                    "muted-text": "#5F6B7A",
+                    "primary-fixed": "#d8e2ff",
+                    "on-error": "#ffffff",
+                    "structural-border": "#D7DEE8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xl": "32px",
+                    "margin-compact": "20px",
+                    "base": "4px",
+                    "sm": "12px",
+                    "sidebar-width": "240px",
+                    "margin-desktop": "24px",
+                    "header-height": "56px",
+                    "md": "16px",
+                    "lg": "24px",
+                    "xs": "8px"
+            },
+            "fontFamily": {
+                    "technical-data": [
+                            "JetBrains Mono"
+                    ],
+                    "page-title": [
+                            "Noto Sans"
+                    ],
+                    "body": [
+                            "Noto Sans"
+                    ],
+                    "metadata": [
+                            "Noto Sans"
+                    ],
+                    "form-label": [
+                            "Noto Sans"
+                    ],
+                    "section-title": [
+                            "Noto Sans"
+                    ]
+            },
+            "fontSize": {
+                    "technical-data": [
+                            "13px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "page-title": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body": [
+                            "14px",
+                            {
+                                    "lineHeight": "22px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "metadata": [
+                            "12px",
+                            {
+                                    "lineHeight": "18px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "form-label": [
+                            "13px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "section-title": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #F5F7FA; /* workspace-mist */
+        }
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="font-body text-body text-on-surface bg-workspace-mist flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="w-sidebar-width h-screen fixed left-0 top-0 bg-surface dark:bg-inverse-surface border-r border-structural-border dark:border-outline-variant flex flex-col h-full w-[240px] z-20">
+<!-- Brand/Logo Area -->
+<div class="h-header-height flex flex-col justify-center px-lg border-b border-structural-border dark:border-outline-variant">
+<h1 class="font-page-title text-page-title font-semibold text-on-surface dark:text-inverse-on-surface">合同智审</h1>
+<p class="font-metadata text-metadata text-muted-text mt-1 truncate">华东科技有限公司 / 组织管理员</p>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto py-sm">
+<ul class="space-y-base px-sm">
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">description</span>
+<span class="font-form-label text-form-label">合同</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">warning</span>
+<span class="font-form-label text-form-label">预警</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">gavel</span>
+<span class="font-form-label text-form-label">风险规则</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">description</span>
+<span class="font-form-label text-form-label">条款模板</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">settings</span>
+<span class="font-form-label text-form-label">组织设置</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">group</span>
+<span class="font-form-label text-form-label">成员管理</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">verified_user</span>
+<span class="font-form-label text-form-label">支持授权</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded bg-surface-container-high text-primary font-semibold border-l-4 border-primary transition-colors opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined mr-sm">history_edu</span>
+<span class="font-form-label text-form-label">组织审计</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">analytics</span>
+<span class="font-form-label text-form-label">运营指标</span>
+</a>
+</li>
+<li>
+<a class="flex items-center px-md py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-sm">analytics</span>
+<span class="font-form-label text-form-label">反馈统计</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-[240px] flex flex-col relative h-screen">
+<!-- TopNavBar -->
+<header class="h-header-height fixed top-0 right-0 left-[240px] bg-paper-white dark:bg-surface border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg z-10">
+<!-- Breadcrumbs / Page Title Context -->
+<div class="flex items-center text-on-surface-variant font-metadata text-metadata">
+<span class="material-symbols-outlined text-[18px] mr-xs">home</span>
+<span class="mx-xs">/</span>
+<span>组织审计</span>
+<span class="mx-xs">/</span>
+<span class="font-semibold text-on-surface">异常状态预览</span>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center space-x-md text-on-surface-variant">
+<button class="hover:text-primary transition-colors p-xs rounded hover:bg-quiet-panel" title="Notifications">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-primary transition-colors p-xs rounded hover:bg-quiet-panel" title="Account">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Canvas / Workspace -->
+<main class="flex-1 mt-[56px] p-margin-desktop overflow-y-auto space-y-xl">
+<div class="mb-lg">
+<h2 class="font-page-title text-page-title text-on-surface mb-xs">异常状态库 (State Gallery)</h2>
+<p class="font-body text-body text-muted-text">演示组件在空数据、请求失败和权限拦截时的标准视觉表现。</p>
+</div>
+<!-- State A (Empty Filters) -->
+<section>
+<h3 class="font-section-title text-section-title text-on-surface mb-sm flex items-center">
+<span class="w-2 h-2 bg-informational-cyan rounded-full mr-xs"></span>
+                    State A: 空数据 (Empty Filters)
+                </h3>
+<div class="bg-paper-white border border-structural-border rounded flex flex-col items-center justify-center py-[80px] px-lg">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-[32px] text-placeholder-gray">filter_list_off</span>
+</div>
+<p class="font-form-label text-form-label text-on-surface mb-xs">未找到匹配的审计记录</p>
+<p class="font-body text-body text-muted-text text-center max-w-sm mb-lg">当前筛选条件下没有产生任何操作日志，请尝试清除过滤器或放宽时间范围。</p>
+<button class="bg-paper-white border border-structural-border text-on-surface px-md py-sm rounded hover:bg-quiet-panel transition-colors font-form-label text-form-label">
+                        清除所有筛选
+                    </button>
+</div>
+</section>
+<!-- State B (Error) -->
+<section>
+<h3 class="font-section-title text-section-title text-on-surface mb-sm flex items-center">
+<span class="w-2 h-2 bg-review-amber rounded-full mr-xs"></span>
+                    State B: 请求异常 (Fetch Error)
+                </h3>
+<div class="bg-paper-white border border-structural-border rounded flex flex-col items-center justify-center py-[80px] px-lg">
+<div class="w-16 h-16 bg-error-container rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-[32px] text-error">cloud_off</span>
+</div>
+<p class="font-form-label text-form-label text-on-surface mb-xs">无法加载审计日志</p>
+<p class="font-body text-body text-muted-text text-center max-w-sm mb-sm">网络请求超时或服务器暂时不可用。如果问题持续存在，请提供下方请求编号联系支持团队。</p>
+<div class="bg-surface-container-low px-sm py-xs rounded border border-structural-border mb-lg flex items-center">
+<span class="font-metadata text-metadata text-muted-text mr-xs">Request ID:</span>
+<code class="font-technical-data text-technical-data text-on-surface-variant">req_abc123_x9z</code>
+<button class="ml-xs text-primary hover:text-primary-container" title="Copy ID">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+<button class="bg-primary text-on-primary px-md py-sm rounded hover:bg-primary-container transition-colors font-form-label text-form-label flex items-center">
+<span class="material-symbols-outlined mr-xs text-[18px]">refresh</span>
+                        重试
+                    </button>
+</div>
+</section>
+<!-- State C (Access) -->
+<section>
+<h3 class="font-section-title text-section-title text-on-surface mb-sm flex items-center">
+<span class="w-2 h-2 bg-critical-red rounded-full mr-xs"></span>
+                    State C: 权限拦截 (Forbidden)
+                </h3>
+<div class="bg-paper-white border border-structural-border rounded flex flex-col items-center justify-center py-[100px] px-lg">
+<div class="w-20 h-20 bg-surface-variant rounded-full flex items-center justify-center mb-md relative">
+<span class="material-symbols-outlined text-[40px] text-on-surface-variant">lock</span>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 bg-paper-white rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px] text-critical-red fill">block</span>
+</div>
+</div>
+<h4 class="font-page-title text-page-title text-on-surface mb-sm">访问被拒绝</h4>
+<p class="font-body text-body text-muted-text text-center max-w-md mb-lg">
+                        您当前的账户角色（组织成员）没有权限查看完整的组织审计日志。查看敏感操作记录需要<strong>组织管理员</strong>或<strong>审计员</strong>权限。
+                    </p>
+<button class="bg-paper-white border border-structural-border text-on-surface px-md py-sm rounded hover:bg-quiet-panel transition-colors font-form-label text-form-label flex items-center">
+<span class="material-symbols-outlined mr-xs text-[18px]">arrow_back</span>
+                        返回主页
+                    </button>
+</div>
+</section>
+</main>
+</div>
+</body></html>

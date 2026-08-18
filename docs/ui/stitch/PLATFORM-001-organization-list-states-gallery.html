@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Platform Organization - Status Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-dim": "#d1daf4",
+                        "error-container": "#ffdad6",
+                        "quiet-panel": "#EEF2F6",
+                        "placeholder-gray": "#8A95A3",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#434751",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#6a3200",
+                        "primary-fixed": "#d8e2ff",
+                        "secondary-fixed": "#a0f2e5",
+                        "muted-text": "#5F6B7A",
+                        "confirmed-green": "#16805B",
+                        "workspace-mist": "#F5F7FA",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface-container-high": "#e1e8ff",
+                        "review-amber": "#B86A00",
+                        "inverse-primary": "#adc7ff",
+                        "outline-variant": "#c3c6d3",
+                        "primary-container": "#2457a6",
+                        "paper-white": "#FFFFFF",
+                        "on-primary-container": "#bcd0ff",
+                        "critical-red": "#C43D3D",
+                        "surface-variant": "#d9e2fc",
+                        "on-background": "#121b2e",
+                        "outline": "#737782",
+                        "surface-tint": "#2b5dac",
+                        "surface-container-highest": "#d9e2fc",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface-bright": "#f9f9ff",
+                        "inverse-on-surface": "#edf0ff",
+                        "surface-container-low": "#f1f3ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#8d4500",
+                        "on-tertiary-fixed": "#311400",
+                        "background": "#f9f9ff",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "on-secondary-container": "#117167",
+                        "secondary-container": "#a0f2e5",
+                        "on-surface": "#121b2e",
+                        "structural-border": "#D7DEE8",
+                        "inverse-surface": "#273044",
+                        "secondary": "#016a61",
+                        "on-secondary-fixed": "#00201c",
+                        "tertiary-fixed": "#ffdcc6",
+                        "primary": "#003f89",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-tertiary-container": "#ffc39d",
+                        "surface-container": "#e9edff",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-primary-fixed-variant": "#014493",
+                        "informational-cyan": "#1677A6",
+                        "on-primary-fixed": "#001a41",
+                        "surface": "#f9f9ff"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.125rem",
+                        lg: "0.25rem",
+                        xl: "0.5rem",
+                        full: "0.75rem"
+                    },
+                    spacing: {
+                        xl: "32px",
+                        lg: "24px",
+                        sm: "12px",
+                        "header-height": "56px",
+                        md: "16px",
+                        "margin-compact": "20px",
+                        xs: "8px",
+                        base: "4px",
+                        "margin-desktop": "24px",
+                        "sidebar-width": "240px"
+                    },
+                    fontFamily: {
+                        "form-label": ["Noto Sans", "sans-serif"],
+                        "page-title": ["Noto Sans", "sans-serif"],
+                        "technical-data": ["JetBrains Mono", "monospace"],
+                        "body": ["Noto Sans", "sans-serif"],
+                        "section-title": ["Noto Sans", "sans-serif"],
+                        "metadata": ["Noto Sans", "sans-serif"]
+                    },
+                    fontSize: {
+                        "form-label": ["13px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "500" }],
+                        "page-title": ["24px", { lineHeight: "32px", letterSpacing: "0", fontWeight: "600" }],
+                        "technical-data": ["13px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "400" }],
+                        "body": ["14px", { lineHeight: "22px", letterSpacing: "0", fontWeight: "400" }],
+                        "section-title": ["16px", { lineHeight: "24px", letterSpacing: "0", fontWeight: "600" }],
+                        "metadata": ["12px", { lineHeight: "18px", letterSpacing: "0", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body text-body antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="w-sidebar-width h-screen fixed left-0 top-0 bg-workspace-mist border-r border-structural-border flex flex-col z-50">
+<!-- Brand Header -->
+<div class="h-header-height flex flex-col justify-center px-lg border-b border-structural-border bg-paper-white">
+<h1 class="font-page-title text-page-title text-primary tracking-tight">合同智审</h1>
+</div>
+<!-- Context Header -->
+<div class="px-md py-lg">
+<h2 class="font-section-title text-section-title text-on-surface">平台工作区</h2>
+<p class="font-metadata text-metadata text-muted-text mt-base">平台管理员</p>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col gap-base px-sm flex-1 overflow-y-auto">
+<!-- Active Tab: 组织 -->
+<a class="flex items-center gap-sm px-md py-sm text-primary bg-surface-container-high border-l-4 border-primary rounded-r transition-opacity duration-150 opacity-90" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-form-label text-form-label">组织</span>
+</a>
+<!-- Inactive Tab -->
+<a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent rounded-r" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+<span class="font-form-label text-form-label">模型配置</span>
+</a>
+<!-- Inactive Tab -->
+<a class="flex items-center gap-sm px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent rounded-r" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-form-label text-form-label">平台审计</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col ml-sidebar-width min-w-0">
+<!-- TopNavBar -->
+<header class="h-header-height fixed top-0 right-0 z-40 bg-paper-white border-b border-structural-border flex justify-end items-center px-lg w-[calc(100%-240px)]">
+<div class="flex items-center gap-lg">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:scale-95 duration-150 flex items-center justify-center h-8 w-8 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-dim border border-structural-border flex items-center justify-center text-primary font-section-title text-section-title cursor-pointer select-none">
+                    A
+                </div>
+</div>
+</header>
+<!-- Gallery Workspace -->
+<main class="flex-1 overflow-y-auto pt-[calc(56px+32px)] px-xl pb-xl">
+<div class="mb-lg">
+<h1 class="font-page-title text-page-title text-on-surface">Status States Gallery</h1>
+<p class="font-body text-body text-muted-text mt-base">UI Pattern references for Organization management flows.</p>
+</div>
+<!-- Bento Grid Layout for States -->
+<div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-lg">
+<!-- 1. Empty State -->
+<section class="bg-paper-white border border-structural-border rounded-xl p-xl flex flex-col items-center justify-center min-h-[360px] text-center">
+<div class="h-16 w-16 rounded-full bg-quiet-panel flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined text-[32px] text-placeholder-gray" style="font-variation-settings: 'wght' 300;">corporate_fare</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-xs">暂无组织数据</h3>
+<p class="font-body text-body text-muted-text max-w-xs mb-lg">当前系统内没有注册任何组织实体。请创建以继续。</p>
+<button class="bg-primary hover:bg-surface-tint text-on-primary font-form-label text-form-label px-lg py-sm rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                        新建组织
+                    </button>
+</section>
+<!-- 2. Filter No Match State -->
+<section class="bg-paper-white border border-structural-border rounded-xl p-xl flex flex-col items-center justify-center min-h-[360px] text-center">
+<div class="h-16 w-16 rounded-full bg-quiet-panel flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined text-[32px] text-placeholder-gray" style="font-variation-settings: 'wght' 300;">search_off</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-xs">未找到匹配的组织</h3>
+<p class="font-body text-body text-muted-text max-w-xs mb-lg">调整您的筛选条件或搜索关键词以查看结果。</p>
+<button class="bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label px-lg py-sm rounded hover:bg-quiet-panel transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary">
+                        重置筛选
+                    </button>
+</section>
+<!-- 3. Forbidden State -->
+<section class="bg-paper-white border border-structural-border rounded-xl p-xl flex flex-col items-center justify-center min-h-[360px] text-center">
+<div class="h-16 w-16 rounded-full bg-error-container flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined text-[32px] text-error" style="font-variation-settings: 'wght' 300;">lock</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-xs">权限不足</h3>
+<p class="font-body text-body text-muted-text max-w-xs">您当前的角色无法访问此模块。如需访问，请联系平台超级管理员获取授权。</p>
+</section>
+<!-- 4. Error State -->
+<section class="bg-paper-white border border-structural-border rounded-xl p-xl flex flex-col items-center justify-center min-h-[360px] text-center">
+<div class="h-16 w-16 rounded-full bg-error-container/50 flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined text-[32px] text-critical-red" style="font-variation-settings: 'wght' 300;">warning</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-xs">加载失败</h3>
+<p class="font-metadata text-metadata text-muted-text font-technical-data mb-lg">Request ID: req_plat_991</p>
+<button class="bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label px-lg py-sm rounded hover:bg-quiet-panel transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary">
+                        重试
+                    </button>
+</section>
+<!-- 5. Conflict State (Dialog rendering) -->
+<section class="bg-surface-container rounded-xl p-xl flex flex-col items-center justify-center min-h-[360px] col-span-1 lg:col-span-2 xl:col-span-1 border border-structural-border border-dashed">
+<!-- Simulated Dialog Surface -->
+<div class="bg-paper-white border border-structural-border rounded-xl shadow-sm w-full max-w-sm flex flex-col overflow-hidden">
+<div class="px-lg py-md border-b border-structural-border">
+<h3 class="font-section-title text-section-title text-on-surface">新建组织</h3>
+</div>
+<div class="p-lg flex flex-col gap-lg">
+<!-- Form Field with Error State -->
+<div class="flex flex-col gap-base">
+<label class="font-form-label text-form-label text-on-surface">组织名称 <span class="text-error">*</span></label>
+<input class="w-full h-10 px-sm border border-critical-red rounded bg-paper-white font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-error/20" type="text" value="Acme Corp"/>
+<div class="flex items-center gap-xs text-critical-red mt-1">
+<span class="material-symbols-outlined text-[16px]">error</span>
+<span class="font-metadata text-metadata">该组织名称已存在</span>
+</div>
+</div>
+<div class="flex flex-col gap-base opacity-50 pointer-events-none">
+<label class="font-form-label text-form-label text-on-surface">组织编码</label>
+<input class="w-full h-10 px-sm border border-structural-border rounded bg-paper-white font-body text-body text-on-surface" placeholder="输入统一社会信用代码" type="text"/>
+</div>
+</div>
+<div class="px-lg py-md border-t border-structural-border bg-quiet-panel/50 flex justify-end gap-sm">
+<button class="bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label px-md py-2 rounded hover:bg-quiet-panel transition-colors duration-200">
+                                取消
+                            </button>
+<button class="bg-primary/50 text-on-primary font-form-label text-form-label px-md py-2 rounded cursor-not-allowed">
+                                确定
+                            </button>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</body></html>

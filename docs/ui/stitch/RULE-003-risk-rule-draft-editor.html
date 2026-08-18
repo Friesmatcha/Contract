@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Risk Rule Draft Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-primary-fixed-variant": "#014493",
+                    "secondary-container": "#a0f2e5",
+                    "quiet-panel": "#EEF2F6",
+                    "on-primary-fixed": "#001a41",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#f9f9ff",
+                    "outline-variant": "#c3c6d3",
+                    "surface-container-low": "#f1f3ff",
+                    "on-primary-container": "#bcd0ff",
+                    "surface-container-high": "#e1e8ff",
+                    "on-surface-variant": "#434751",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-container": "#ffc39d",
+                    "on-secondary-container": "#117167",
+                    "primary": "#003f89",
+                    "placeholder-gray": "#8A95A3",
+                    "background": "#f9f9ff",
+                    "on-tertiary-fixed": "#311400",
+                    "error": "#ba1a1a",
+                    "structural-border": "#D7DEE8",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#d9e2fc",
+                    "on-surface": "#121b2e",
+                    "tertiary": "#6a3200",
+                    "secondary": "#016a61",
+                    "workspace-mist": "#F5F7FA",
+                    "surface-tint": "#2b5dac",
+                    "surface": "#f9f9ff",
+                    "surface-container-lowest": "#ffffff",
+                    "muted-text": "#5F6B7A",
+                    "surface-dim": "#d1daf4",
+                    "secondary-fixed": "#a0f2e5",
+                    "paper-white": "#FFFFFF",
+                    "inverse-on-surface": "#edf0ff",
+                    "critical-red": "#C43D3D",
+                    "primary-container": "#2457a6",
+                    "secondary-fixed-dim": "#84d5c9",
+                    "primary-fixed-dim": "#adc7ff",
+                    "on-secondary-fixed": "#00201c",
+                    "surface-container-highest": "#d9e2fc",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#8d4500",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#d8e2ff",
+                    "inverse-primary": "#adc7ff",
+                    "on-background": "#121b2e",
+                    "inverse-surface": "#273044",
+                    "confirmed-green": "#16805B",
+                    "on-error": "#ffffff",
+                    "surface-container": "#e9edff",
+                    "tertiary-fixed": "#ffdcc6",
+                    "informational-cyan": "#1677A6",
+                    "outline": "#737782",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "on-secondary-fixed-variant": "#005049",
+                    "review-amber": "#B86A00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "margin-compact": "20px",
+                    "lg": "24px",
+                    "xl": "32px",
+                    "base": "4px",
+                    "margin-desktop": "24px",
+                    "sm": "12px",
+                    "sidebar-width": "240px",
+                    "md": "16px",
+                    "header-height": "56px"
+            },
+            "fontFamily": {
+                    "technical-data": ["JetBrains Mono"],
+                    "section-title": ["Noto Sans"],
+                    "page-title": ["Noto Sans"],
+                    "metadata": ["Noto Sans"],
+                    "form-label": ["Noto Sans"],
+                    "body": ["Noto Sans"]
+            },
+            "fontSize": {
+                    "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                    "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}],
+                    "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
+                    "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #003f89;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #003f89;
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar-width bg-paper-white dark:bg-inverse-surface border-r border-structural-border dark:border-outline flex flex-col z-50">
+<!-- Brand Header -->
+<div class="h-header-height flex items-center px-4 border-b border-structural-border dark:border-outline gap-3">
+<div class="w-8 h-8 rounded-DEFAULT bg-primary flex items-center justify-center text-paper-white">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">gavel</span>
+</div>
+<div>
+<h1 class="font-page-title text-page-title font-bold text-primary dark:text-primary-fixed leading-tight">合同智审</h1>
+<p class="font-metadata text-metadata text-muted-text">Legal Compliance Workspace</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex flex-col h-[calc(100vh-56px)] overflow-y-auto py-2">
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">description</span>
+<span class="font-form-label text-form-label">合同</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">warning</span>
+<span class="font-form-label text-form-label">预警</span>
+</a>
+<!-- Active Tab -->
+<a class="flex items-center text-primary dark:text-primary-fixed-dim border-l-4 border-primary bg-surface-container-low dark:bg-primary-container px-4 py-3 opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined mr-3 text-primary" style="font-variation-settings: 'FILL' 1;">gavel</span>
+<span class="font-form-label text-form-label font-semibold">风险规则</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">list_alt</span>
+<span class="font-form-label text-form-label">条款模板</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">settings_applications</span>
+<span class="font-form-label text-form-label">组织设置</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">group</span>
+<span class="font-form-label text-form-label">成员管理</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">key</span>
+<span class="font-form-label text-form-label">支持授权</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">security</span>
+<span class="font-form-label text-form-label">组织审计</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">analytics</span>
+<span class="font-form-label text-form-label">运营指标</span>
+</a>
+<a class="flex items-center text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed px-4 py-3 hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined mr-3 text-muted-text group-hover:text-primary">rate_review</span>
+<span class="font-form-label text-form-label">反馈统计</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-sidebar-width flex flex-col h-screen relative">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 h-header-height z-40 bg-paper-white dark:bg-inverse-surface border-b border-structural-border dark:border-outline flex justify-between items-center px-lg w-[calc(100%-240px)]">
+<!-- Left side (Breadcrumbs placed here contextually) -->
+<div class="flex items-center gap-2 text-muted-text font-metadata text-metadata">
+<span class="hover:text-primary cursor-pointer transition-colors">风险规则</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="hover:text-primary cursor-pointer transition-colors">合同付款风险</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">v1.3 草稿</span>
+</div>
+<!-- Right side actions -->
+<div class="flex items-center gap-4">
+<button class="w-8 h-8 flex items-center justify-center text-muted-text hover:text-primary transition-colors hover:bg-quiet-panel rounded-DEFAULT">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-px h-5 bg-structural-border mx-1"></div>
+<button class="flex items-center gap-2 hover:bg-quiet-panel py-1 px-2 rounded-DEFAULT transition-colors">
+<img alt="User Avatar" class="w-8 h-8 rounded-full border border-structural-border object-cover" data-alt="A professional headshot of a corporate compliance officer, male, short neat hair, wearing a dark navy blazer over a crisp white shirt, neutral gray background, soft studio lighting, sharp focus, high-end corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxtJ1iv0jGl7VkvZRuKKseU4YftwdaIrUcuq1CC0TWheTKMKahH3kLM7phq_yAQYW-hjBuaS9f09bJPI8C8lcJd6qk0_CeLavuzNcKpMztx32gdJu1SLw3iezqDB-ITnFseXd30cO8XKgzjdUNNvn4Zlm5RaLH-lt2wOdcCEMB_piBssvsoKTkM94us0RIZIM09X7A9aWjFxs3uKpp7Vvl1VxghSAPRTkrfFqD6lypEWytTIyusziDYw1GxqDeoaWuu104HtAT4MQ"/>
+<span class="material-symbols-outlined text-muted-text text-[20px]">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Workspace Container (Split Layout) -->
+<div class="mt-header-height flex-1 flex overflow-hidden">
+<!-- Left Main Area -->
+<main class="flex-1 flex flex-col overflow-y-auto p-lg pb-0">
+<!-- Page Header -->
+<div class="mb-lg">
+<div class="flex items-center gap-4 mb-4">
+<h2 class="font-page-title text-page-title text-on-surface">编辑规则草稿 (v1.3)</h2>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-DEFAULT bg-review-amber/10 text-review-amber font-metadata text-metadata border border-review-amber/20">
+<span class="material-symbols-outlined text-[14px] mr-1">edit_document</span>
+                            草稿
+                        </span>
+</div>
+<div class="bg-paper-white border border-structural-border rounded-DEFAULT p-4">
+<label class="block font-form-label text-form-label text-on-surface mb-2">变更说明</label>
+<textarea class="w-full bg-workspace-mist border border-structural-border rounded-DEFAULT px-3 py-2 text-body font-body text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none placeholder-placeholder-gray transition-colors" placeholder="简要描述本次规则更新的目的和内容..." rows="2"></textarea>
+</div>
+</div>
+<!-- Main Table Area -->
+<div class="flex-1 flex flex-col bg-paper-white border border-structural-border border-b-0 rounded-t-DEFAULT overflow-hidden">
+<div class="px-4 py-3 border-b border-structural-border flex justify-between items-center bg-quiet-panel/50">
+<h3 class="font-section-title text-section-title text-on-surface">规则列表 (7)</h3>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 text-body font-body text-on-surface bg-paper-white border border-structural-border rounded-DEFAULT hover:bg-quiet-panel transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                新增规则
+                            </button>
+</div>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="sticky top-0 bg-quiet-panel text-muted-text font-metadata text-metadata border-b border-structural-border z-10">
+<tr>
+<th class="py-3 px-4 font-medium">规则编号</th>
+<th class="py-3 px-4 font-medium">规则名称</th>
+<th class="py-3 px-4 font-medium">触发条件摘要</th>
+<th class="py-3 px-4 font-medium">风险等级</th>
+<th class="py-3 px-4 font-medium">状态</th>
+<th class="py-3 px-4 font-medium text-right">操作</th>
+</tr>
+</thead>
+<tbody class="text-body font-body text-on-surface">
+<!-- Row 1 (Active/Editing) -->
+<tr class="border-b border-structural-border bg-primary/5 hover:bg-primary/10 transition-colors relative group">
+<td class="py-3 px-4 font-technical-data text-technical-data text-primary">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+                                        R-PAY-001
+                                    </td>
+<td class="py-3 px-4 font-medium">预付款比例超限</td>
+<td class="py-3 px-4 text-muted-text truncate max-w-[200px]" title="预付款比例 &gt; 30% AND 合作评级 &lt; A">预付款比例 &gt; 30% AND 合作评...</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-DEFAULT bg-error/10 text-error text-metadata font-metadata border border-error/20">
+<span class="material-symbols-outlined text-[14px] mr-1">priority_high</span>高
+                                        </span>
+</td>
+<td class="py-3 px-4">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-primary z-10 right-0" id="toggle1" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-primary cursor-pointer" for="toggle1"></label>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-primary-container transition-colors flex items-center justify-end w-full gap-1">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                                            编辑中
+                                        </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors group">
+<td class="py-3 px-4 font-technical-data text-technical-data">R-PAY-002</td>
+<td class="py-3 px-4">尾款支付周期异常</td>
+<td class="py-3 px-4 text-muted-text">尾款支付天数 &gt; 60天</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-DEFAULT bg-review-amber/10 text-review-amber text-metadata font-metadata border border-review-amber/20">
+<span class="material-symbols-outlined text-[14px] mr-1">warning</span>中
+                                        </span>
+</td>
+<td class="py-3 px-4">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-primary z-10 right-0" id="toggle2" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-primary cursor-pointer" for="toggle2"></label>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-muted-text hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors group">
+<td class="py-3 px-4 font-technical-data text-technical-data">R-PAY-003</td>
+<td class="py-3 px-4 text-muted-text">收款账户变更频繁</td>
+<td class="py-3 px-4 text-muted-text">1年内账户变更次数 &gt;= 3</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-DEFAULT bg-informational-cyan/10 text-informational-cyan text-metadata font-metadata border border-informational-cyan/20">
+<span class="material-symbols-outlined text-[14px] mr-1">info</span>低
+                                        </span>
+</td>
+<td class="py-3 px-4">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-outline-variant z-10" id="toggle3" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer" for="toggle3"></label>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-muted-text hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors group">
+<td class="py-3 px-4 font-technical-data text-technical-data">R-PAY-004</td>
+<td class="py-3 px-4">无票付款风险</td>
+<td class="py-3 px-4 text-muted-text">付款条件 NOT INCLUDES 发票</td>
+<td class="py-3 px-4">
+<span class="inline-flex items-center px-2 py-0.5 rounded-DEFAULT bg-error/10 text-error text-metadata font-metadata border border-error/20">
+<span class="material-symbols-outlined text-[14px] mr-1">priority_high</span>高
+                                        </span>
+</td>
+<td class="py-3 px-4">
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-primary z-10 right-0" id="toggle4" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-primary cursor-pointer" for="toggle4"></label>
+</div>
+</td>
+<td class="py-3 px-4 text-right">
+<button class="text-muted-text hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Validation Alert Banner -->
+<div class="mt-4 mb-lg flex items-center justify-between bg-error/5 border border-error/20 rounded-DEFAULT px-4 py-3">
+<div class="flex items-center gap-2 text-error">
+<span class="material-symbols-outlined">error</span>
+<span class="font-body text-body text-on-surface">发现 <strong class="text-error">2</strong> 处逻辑冲突，可能会影响解析准确率</span>
+</div>
+<button class="text-error hover:text-on-error-container font-form-label text-form-label transition-colors flex items-center gap-1">
+                        查看详情
+                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</main>
+<!-- Right Drawer -->
+<aside class="w-[420px] flex-shrink-0 bg-paper-white border-l border-structural-border flex flex-col relative z-30 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
+<!-- Drawer Header -->
+<div class="px-6 py-4 border-b border-structural-border flex justify-between items-center bg-workspace-mist/50">
+<div>
+<h3 class="font-section-title text-section-title text-on-surface flex items-center gap-2">
+                            编辑规则
+                            <span class="font-technical-data text-technical-data text-muted-text font-normal px-2 py-0.5 bg-quiet-panel rounded-DEFAULT border border-structural-border">R-PAY-001</span>
+</h3>
+</div>
+<button class="text-muted-text hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Content (Form) -->
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+<!-- Field: 规则名称 -->
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-2">规则名称</label>
+<input class="w-full bg-paper-white border border-structural-border rounded-DEFAULT px-3 py-2 text-body font-body text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" type="text" value="预付款比例超限"/>
+</div>
+<!-- Layout: 风险等级 & 启用状态 -->
+<div class="flex gap-4">
+<div class="flex-1">
+<label class="block font-form-label text-form-label text-on-surface mb-2">风险等级</label>
+<div class="relative">
+<select class="w-full bg-paper-white border border-structural-border rounded-DEFAULT px-3 py-2 text-body font-body text-on-surface appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+<option selected="" value="high">高风险 (High)</option>
+<option value="medium">中风险 (Medium)</option>
+<option value="low">低风险 (Low)</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-muted-text pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="">
+<label class="block font-form-label text-form-label text-on-surface mb-2">启用状态</label>
+<div class="h-9 flex items-center">
+<div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-primary z-10 right-0" id="drawer_toggle" name="drawer_toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-primary cursor-pointer" for="drawer_toggle"></label>
+</div>
+<span class="ml-2 font-body text-body text-muted-text">已启用</span>
+</div>
+</div>
+</div>
+<div class="w-full h-px bg-structural-border"></div>
+<!-- Field: 触发逻辑摘要 -->
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="block font-form-label text-form-label text-on-surface">触发逻辑摘要 <span class="text-error">*</span></label>
+<button class="text-primary hover:text-primary-container font-metadata text-metadata flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[14px]">code</span>
+                                打开高级编辑器
+                            </button>
+</div>
+<textarea class="w-full bg-[#1E1E1E] border border-error rounded-DEFAULT px-4 py-3 font-technical-data text-technical-data text-[#D4D4D4] focus:outline-none focus:ring-1 focus:ring-error focus:border-error resize-y min-h-[120px] shadow-inner" spellcheck="false">IF EXTRACT("预付款比例") &gt; 0.3
+AND EXTRACT("合作方评级") NOT IN ("A", "S")
+THEN TRIGGER_RISK(
+  CODE="PAY_ADV_01",
+  MSG="预付款比例异常偏高"
+)
+ELSE IF MATCH("全款预付")
+  // Syntax Error Expected Below
+  THEN TRIGGER RISK(!!)</textarea>
+<div class="mt-2 flex items-center gap-1 text-error text-metadata font-metadata bg-error/5 py-1 px-2 rounded-DEFAULT inline-flex">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                            检测到逻辑冲突，请检查语法 (Line 7)
+                        </div>
+</div>
+<!-- Field: 建议措施 -->
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-2">建议措施</label>
+<textarea class="w-full bg-paper-white border border-structural-border rounded-DEFAULT px-3 py-2 text-body font-body text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none transition-colors placeholder-placeholder-gray" placeholder="填写当该风险触发时，提示法务或业务人员的应对方案..." rows="3">建议与供应商重新协商付款节奏，增加分期支付节点；或要求业务部门提供额外担保及背景调查报告。</textarea>
+</div>
+</div>
+<!-- Drawer Sticky Footer -->
+<div class="p-4 border-t border-structural-border bg-workspace-mist flex justify-end gap-3 mt-auto">
+<button class="px-5 py-2 rounded-DEFAULT bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label hover:bg-quiet-panel transition-colors">
+                        保存草稿
+                    </button>
+<button class="px-5 py-2 rounded-DEFAULT bg-primary text-on-primary font-form-label text-form-label hover:bg-primary/90 shadow-sm transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">publish</span>
+                        发布版本
+                    </button>
+</div>
+</aside>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>预警中心 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#273044",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary-container": "#bcd0ff",
+                        "muted-text": "#5F6B7A",
+                        "informational-cyan": "#1677A6",
+                        "on-surface": "#121b2e",
+                        "paper-white": "#FFFFFF",
+                        "tertiary-container": "#8d4500",
+                        "surface-dim": "#d1daf4",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c3c6d3",
+                        "surface-tint": "#2b5dac",
+                        "background": "#f9f9ff",
+                        "placeholder-gray": "#8A95A3",
+                        "structural-border": "#D7DEE8",
+                        "secondary": "#016a61",
+                        "primary-container": "#2457a6",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#e9edff",
+                        "tertiary": "#6a3200",
+                        "outline": "#737782",
+                        "on-primary-fixed": "#001a41",
+                        "inverse-primary": "#adc7ff",
+                        "on-secondary": "#ffffff",
+                        "workspace-mist": "#F5F7FA",
+                        "on-secondary-container": "#117167",
+                        "on-error-container": "#93000a",
+                        "primary": "#003f89",
+                        "quiet-panel": "#EEF2F6",
+                        "on-tertiary-container": "#ffc39d",
+                        "surface-container-high": "#e1e8ff",
+                        "on-background": "#121b2e",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "primary-fixed-dim": "#adc7ff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#a0f2e5",
+                        "on-tertiary-fixed": "#311400",
+                        "surface-variant": "#d9e2fc",
+                        "secondary-fixed": "#a0f2e5",
+                        "surface-container-low": "#f1f3ff",
+                        "on-surface-variant": "#434751",
+                        "error": "#ba1a1a",
+                        "confirmed-green": "#16805B",
+                        "surface": "#f9f9ff",
+                        "critical-red": "#C43D3D",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "on-secondary-fixed": "#00201c",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-container-highest": "#d9e2fc",
+                        "review-amber": "#B86A00",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#014493",
+                        "tertiary-fixed": "#ffdcc6",
+                        "on-secondary-fixed-variant": "#005049"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "margin-compact": "20px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "sm": "12px",
+                        "header-height": "56px",
+                        "xs": "8px",
+                        "md": "16px",
+                        "sidebar-width": "240px",
+                        "margin-desktop": "24px"
+                    },
+                    "fontFamily": {
+                        "form-label": ["Noto Sans"],
+                        "body": ["Noto Sans"],
+                        "technical-data": ["JetBrains Mono"],
+                        "metadata": ["Noto Sans"],
+                        "section-title": ["Noto Sans"],
+                        "page-title": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
+                        "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.workspace-mist');
+            color: theme('colors.on-surface');
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface');
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant');
+            border-radius: theme('borderRadius.DEFAULT');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline');
+        }
+        .table-row-hover:hover {
+            background-color: theme('colors.quiet-panel');
+        }
+    </style>
+</head>
+<body class="font-body text-body antialiased flex">
+<!-- SideNavBar (Shared Component) -->
+<aside class="w-[240px] h-screen fixed left-0 top-0 bg-surface border-r border-structural-border flex flex-col py-md z-20">
+<!-- Header -->
+<div class="px-md mb-xl flex items-center gap-sm">
+<div class="w-10 h-10 rounded bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                合
+            </div>
+<div>
+<h1 class="text-page-title font-page-title text-primary truncate leading-tight">合同智审</h1>
+<p class="text-metadata font-metadata text-muted-text truncate mt-1">华东科技有限公司<br/>组织管理员</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto px-xs space-y-1">
+<!-- Top Level -->
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-form-label text-form-label">合同</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded transition-colors text-primary-container border-l-4 border-primary-container bg-surface-container-low font-bold" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-form-label text-form-label">预警</span>
+</a>
+<!-- Group: 知识配置 -->
+<div class="mt-md mb-xs px-sm text-metadata font-metadata text-placeholder-gray uppercase tracking-wider">知识配置</div>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">gavel</span>
+<span class="font-form-label text-form-label">风险规则</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">extension</span>
+<span class="font-form-label text-form-label">条款模板</span>
+</a>
+<!-- Group: 组织管理 -->
+<div class="mt-md mb-xs px-sm text-metadata font-metadata text-placeholder-gray uppercase tracking-wider">组织管理</div>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-form-label text-form-label">组织设置</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-form-label text-form-label">成员管理</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">verified_user</span>
+<span class="font-form-label text-form-label">支持授权</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">policy</span>
+<span class="font-form-label text-form-label">组织审计</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">leaderboard</span>
+<span class="font-form-label text-form-label">运营指标</span>
+</a>
+<a class="flex items-center gap-md px-sm py-xs rounded hover:bg-quiet-panel transition-colors text-muted-text hover:text-on-surface" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-form-label text-form-label">反馈统计</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[240px] w-[calc(100%-240px)] min-h-screen flex flex-col relative">
+<!-- TopAppBar (Shared Component) -->
+<header class="h-header-height fixed top-0 right-0 left-[240px] bg-paper-white border-b border-structural-border flex justify-between items-center px-lg z-10">
+<!-- Breadcrumbs -->
+<div class="flex items-center text-metadata font-metadata text-muted-text">
+<a class="hover:text-primary transition-colors" href="#">合同</a>
+<span class="material-symbols-outlined text-[16px] mx-1">chevron_right</span>
+<span class="text-on-surface font-medium">预警中心</span>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-lg">
+<button class="relative text-on-surface-variant hover:text-primary transition-colors focus:outline-none">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-critical-red rounded-full"></span>
+</button>
+<div class="flex items-center gap-sm cursor-pointer opacity-90 hover:opacity-100 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-surface-dim overflow-hidden border border-structural-border">
+<img alt="张明" class="w-full h-full object-cover" data-alt="A small circular avatar portrait of a professional Asian male in a business casual environment, soft neutral lighting, high-quality corporate headshot style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcLeP_f1ak_akQsKcSU4VVBpr0fRPG3RpiNENS6tozhEDNXm9z3x23vpThKm-d4gz-RBf3dFzPFYzPdcwi892klGZmlsZTSfc0Kwzaw5mOtsWFEg38eIxRXa-mBrmWe-I_IlWEsmxHeByMDUz2V0oBo3PUSlEHppZkdy3t4QXE_Y5FWGCD5zDTFyI5SGndYB3n2kCmCibxjP8V6gE4CTAhimv6P63ozCPiwUFzS614pTp9NlReiyrJ618qTPDEnaSD8YN8242pgPY"/>
+</div>
+<span class="font-form-label text-form-label text-on-surface hidden sm:block">张明</span>
+<span class="material-symbols-outlined text-[20px] text-muted-text hidden sm:block">arrow_drop_down</span>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="mt-header-height flex-1 p-margin-desktop 2xl:p-[32px] flex flex-col gap-lg max-w-[1600px] mx-auto w-full">
+<!-- Page Header & Metrics -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-md">
+<div>
+<h2 class="text-page-title font-page-title text-on-surface mb-1">预警中心</h2>
+<p class="text-body font-body text-muted-text">跟踪风险预警的确认、分派与处置</p>
+</div>
+<div class="flex items-center gap-lg bg-paper-white border border-structural-border px-md py-sm rounded">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-review-amber"></div>
+<span class="text-metadata font-metadata text-muted-text">未处理</span>
+<span class="font-technical-data text-[16px] font-medium text-on-surface">8</span>
+</div>
+<div class="w-px h-4 bg-structural-border"></div>
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-critical-red"></div>
+<span class="text-metadata font-metadata text-muted-text">高风险</span>
+<span class="font-technical-data text-[16px] font-medium text-critical-red">2</span>
+</div>
+</div>
+</div>
+<!-- Filter Bar -->
+<div class="bg-paper-white border border-structural-border rounded p-md flex flex-wrap gap-md items-end">
+<div class="flex-1 min-w-[160px]">
+<label class="block text-form-label font-form-label text-muted-text mb-xs">状态</label>
+<div class="relative">
+<select class="w-full appearance-none bg-paper-white border border-structural-border text-body font-body text-on-surface rounded px-sm py-xs pr-8 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option value="">全部状态</option>
+<option value="pending">待确认</option>
+<option value="progress">处理中</option>
+<option value="resolved">已解决</option>
+<option value="closed">已关闭</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-[20px] text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex-1 min-w-[160px]">
+<label class="block text-form-label font-form-label text-muted-text mb-xs">严重度</label>
+<div class="relative">
+<select class="w-full appearance-none bg-paper-white border border-structural-border text-body font-body text-on-surface rounded px-sm py-xs pr-8 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option value="">全部</option>
+<option value="high">高</option>
+<option value="medium">中</option>
+<option value="low">低</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-[20px] text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex-1 min-w-[160px]">
+<label class="block text-form-label font-form-label text-muted-text mb-xs">合同类型</label>
+<div class="relative">
+<select class="w-full appearance-none bg-paper-white border border-structural-border text-body font-body text-on-surface rounded px-sm py-xs pr-8 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option value="">全部类型</option>
+<option value="procurement">采购协议</option>
+<option value="service">服务合同</option>
+<option value="sales">销售合同</option>
+<option value="nda">保密协议</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-[20px] text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex-1 min-w-[160px]">
+<label class="block text-form-label font-form-label text-muted-text mb-xs">负责人</label>
+<div class="relative">
+<select class="w-full appearance-none bg-paper-white border border-structural-border text-body font-body text-on-surface rounded px-sm py-xs pr-8 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option value="">全部人员</option>
+<option value="me">只看我的</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-[20px] text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex-1 min-w-[160px]">
+<label class="block text-form-label font-form-label text-muted-text mb-xs">风险类型</label>
+<div class="relative">
+<select class="w-full appearance-none bg-paper-white border border-structural-border text-body font-body text-on-surface rounded px-sm py-xs pr-8 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary">
+<option value="">全部类型</option>
+<option value="compliance">合规风险</option>
+<option value="financial">财务风险</option>
+<option value="operational">执行风险</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-[20px] text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex-1 min-w-[160px]">
+<label class="block text-form-label font-form-label text-muted-text mb-xs">触发时间</label>
+<div class="relative">
+<input class="w-full appearance-none bg-paper-white border border-structural-border text-body font-body text-on-surface rounded px-sm py-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" type="date"/>
+</div>
+</div>
+<div class="flex items-center gap-sm pb-[2px]">
+<button class="bg-surface border border-structural-border text-on-surface px-md py-xs rounded hover:bg-quiet-panel transition-colors flex items-center gap-xs focus:outline-none focus:ring-1 focus:ring-primary">
+<span class="material-symbols-outlined text-[18px]">sort</span>
+<span class="text-form-label font-form-label">排序</span>
+</button>
+<button class="bg-surface border border-structural-border text-on-surface px-md py-xs rounded hover:bg-quiet-panel transition-colors flex items-center gap-xs focus:outline-none focus:ring-1 focus:ring-primary">
+<span class="material-symbols-outlined text-[18px]">filter_list_off</span>
+<span class="text-form-label font-form-label">重置</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-paper-white border border-structural-border rounded flex-1 flex flex-col overflow-hidden">
+<div class="overflow-x-auto flex-1">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead>
+<tr class="bg-surface border-b border-structural-border text-metadata font-metadata text-muted-text uppercase tracking-wider">
+<th class="px-md py-sm font-medium w-8">
+<input class="rounded border-structural-border text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-md py-sm font-medium min-w-[200px]">预警标题</th>
+<th class="px-md py-sm font-medium">严重度</th>
+<th class="px-md py-sm font-medium">状态</th>
+<th class="px-md py-sm font-medium min-w-[160px]">合同</th>
+<th class="px-md py-sm font-medium">负责人</th>
+<th class="px-md py-sm font-medium">触发时间</th>
+<th class="px-md py-sm font-medium">截止时间</th>
+<th class="px-md py-sm font-medium text-right">操作</th>
+</tr>
+</thead>
+<tbody class="text-body font-body text-on-surface divide-y divide-structural-border">
+<!-- Row 1: High Risk, Pending -->
+<tr class="table-row-hover transition-colors">
+<td class="px-md py-sm align-middle">
+<input class="rounded border-structural-border text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-md py-sm align-middle font-medium">超期未签署</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-error-container/30 border border-critical-red/20 text-critical-red text-metadata font-metadata">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                        高
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-surface border border-structural-border text-muted-text text-metadata font-metadata">
+<div class="w-1.5 h-1.5 rounded-full bg-outline"></div>
+                                        待确认
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<a class="text-primary hover:underline truncate max-w-[200px] block" href="#" title="阿里云2023年度云服务采购协议">阿里云2023年度云服务采购协议</a>
+<span class="text-metadata font-metadata text-muted-text">采购协议</span>
+</td>
+<td class="px-md py-sm align-middle text-muted-text">-</td>
+<td class="px-md py-sm align-middle font-technical-data text-muted-text">2023-10-25 09:30</td>
+<td class="px-md py-sm align-middle font-technical-data text-critical-red">2023-10-26 09:30</td>
+<td class="px-md py-sm align-middle text-right">
+<div class="flex items-center justify-end gap-sm">
+<button class="text-primary hover:text-primary-fixed-dim text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">查看</button>
+<button class="text-primary hover:text-primary-fixed-dim text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">分派</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Medium Risk, In Progress -->
+<tr class="table-row-hover transition-colors">
+<td class="px-md py-sm align-middle">
+<input class="rounded border-structural-border text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-md py-sm align-middle font-medium">违约金比例异常</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-surface-container/50 border border-review-amber/20 text-review-amber text-metadata font-metadata">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                        中
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-surface-container-low border border-primary/20 text-primary text-metadata font-metadata">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                        处理中
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<a class="text-primary hover:underline truncate max-w-[200px] block" href="#" title="顺丰速运物流服务合同">顺丰速运物流服务合同</a>
+<span class="text-metadata font-metadata text-muted-text">服务合同</span>
+</td>
+<td class="px-md py-sm align-middle flex items-center gap-xs">
+<div class="w-5 h-5 rounded-full bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A tiny circular avatar portrait of a professional female in a business setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdKueq1CxDyoVGTNSCaGUbo0PShMgodMYeXlbsHMydfL1nIN-D4bWBcOVzQA1Mt1VGUdBm9B-qxAtbeaSDOIoXqizYuGmO2Fc7K9xCbJ4Ao3HRGPflJvRDX_i7EgMikM2eToBa5932rvbvYi-yfq7uBmrzV67hYXOn9IrRpg_819zSmtLg5gBF98FuPtIayL3GN2MHsmsBE9zvz-SDMve4Cs3I19YZgdK_h1bNA25YKJq7WwPGX85fZiHkkDaKpz5vxbviIXpqOZM"/>
+</div>
+<span class="text-sm">李华</span>
+</td>
+<td class="px-md py-sm align-middle font-technical-data text-muted-text">2023-10-24 14:15</td>
+<td class="px-md py-sm align-middle font-technical-data text-muted-text">2023-10-27 18:00</td>
+<td class="px-md py-sm align-middle text-right">
+<div class="flex items-center justify-end gap-sm">
+<button class="text-primary hover:text-primary-fixed-dim text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">查看</button>
+<button class="text-primary hover:text-primary-fixed-dim text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">处置</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Medium Risk, Pending -->
+<tr class="table-row-hover transition-colors">
+<td class="px-md py-sm align-middle">
+<input class="rounded border-structural-border text-primary focus:ring-primary w-4 h-4 cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-md py-sm align-middle font-medium">核心条款被修改</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-surface-container/50 border border-review-amber/20 text-review-amber text-metadata font-metadata">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                        中
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-surface border border-structural-border text-muted-text text-metadata font-metadata">
+<div class="w-1.5 h-1.5 rounded-full bg-outline"></div>
+                                        待确认
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<a class="text-primary hover:underline truncate max-w-[200px] block" href="#" title="核心技术保密协议(2023版)">核心技术保密协议(2023版)</a>
+<span class="text-metadata font-metadata text-muted-text">保密协议</span>
+</td>
+<td class="px-md py-sm align-middle text-muted-text">-</td>
+<td class="px-md py-sm align-middle font-technical-data text-muted-text">2023-10-23 11:05</td>
+<td class="px-md py-sm align-middle font-technical-data text-muted-text">2023-10-28 11:00</td>
+<td class="px-md py-sm align-middle text-right">
+<div class="flex items-center justify-end gap-sm">
+<button class="text-primary hover:text-primary-fixed-dim text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">查看</button>
+<button class="text-primary hover:text-primary-fixed-dim text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">分派</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Low Risk, Resolved -->
+<tr class="table-row-hover transition-colors opacity-75">
+<td class="px-md py-sm align-middle">
+<input class="rounded border-structural-border text-primary focus:ring-primary w-4 h-4 cursor-pointer" disabled="" type="checkbox"/>
+</td>
+<td class="px-md py-sm align-middle font-medium text-muted-text">缺少法定代表人盖章</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-surface border border-structural-border text-muted-text text-metadata font-metadata">
+<span class="material-symbols-outlined text-[14px]">info</span>
+                                        低
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<div class="inline-flex items-center gap-xs px-2 py-0.5 rounded bg-[#E6F4EA]/50 border border-confirmed-green/20 text-confirmed-green text-metadata font-metadata">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                        已解决
+                                    </div>
+</td>
+<td class="px-md py-sm align-middle">
+<a class="text-muted-text hover:text-primary hover:underline truncate max-w-[200px] block" href="#" title="办公文具采购合同">办公文具采购合同</a>
+<span class="text-metadata font-metadata text-outline">采购协议</span>
+</td>
+<td class="px-md py-sm align-middle flex items-center gap-xs">
+<div class="w-5 h-5 rounded-full bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-80" data-alt="A tiny circular avatar portrait of a professional male in a business setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEGLy_GUcwhWQfYmHRWGdUj8R0w0vUJEAzqLspNjwkbo03mmjrPk3kREumtY2S-ieaJJiXTDx5PM-_Wjb6lBsAvlglBUYXSnUkNAb0oACxSDlkxuePmR-9ZJmMTjv2qoeaK0Suu5RdPeEAH2VpD0kbAjk4SaUXEyKhZ6m2xgVbfmn4kHy2NHVsMFNH-TjG7mUDndxnjd1Z0gWL_csl7G7PbXarmy77_Ln0HrSa5G-6lwII2YnRdcMgm03C3ULeUXYpY3lSM1lc1_Y"/>
+</div>
+<span class="text-sm text-muted-text">王强</span>
+</td>
+<td class="px-md py-sm align-middle font-technical-data text-outline">2023-10-20 09:00</td>
+<td class="px-md py-sm align-middle font-technical-data text-outline">-</td>
+<td class="px-md py-sm align-middle text-right">
+<div class="flex items-center justify-end gap-sm">
+<button class="text-muted-text hover:text-on-surface text-form-label font-form-label px-2 py-1 rounded hover:bg-surface transition-colors">查看</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="bg-surface border-t border-structural-border px-md py-sm flex items-center justify-between">
+<span class="text-metadata font-metadata text-muted-text">显示 1 - 4 条，共 8 条未处理预警</span>
+<div class="flex items-center gap-xs">
+<button class="p-1 rounded text-muted-text hover:text-on-surface hover:bg-quiet-panel transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="p-1 rounded text-muted-text hover:text-on-surface hover:bg-quiet-panel transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

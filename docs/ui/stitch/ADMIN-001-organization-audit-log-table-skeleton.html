@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ADMIN-001 / Organization Audit Log / Table Skeleton</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed": "#ffdcc6",
+                      "on-surface": "#121b2e",
+                      "placeholder-gray": "#8A95A3",
+                      "critical-red": "#C43D3D",
+                      "surface": "#f9f9ff",
+                      "on-primary-fixed-variant": "#014493",
+                      "tertiary-container": "#8d4500",
+                      "on-primary": "#ffffff",
+                      "quiet-panel": "#EEF2F6",
+                      "primary-fixed-dim": "#adc7ff",
+                      "primary-container": "#2457a6",
+                      "error": "#ba1a1a",
+                      "tertiary": "#6a3200",
+                      "on-tertiary": "#ffffff",
+                      "confirmed-green": "#16805B",
+                      "surface-variant": "#d9e2fc",
+                      "on-surface-variant": "#434751",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e1e8ff",
+                      "on-tertiary-container": "#ffc39d",
+                      "on-background": "#121b2e",
+                      "informational-cyan": "#1677A6",
+                      "review-amber": "#B86A00",
+                      "background": "#f9f9ff",
+                      "secondary-fixed": "#a0f2e5",
+                      "secondary-container": "#a0f2e5",
+                      "inverse-on-surface": "#edf0ff",
+                      "on-secondary-container": "#117167",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#e9edff",
+                      "error-container": "#ffdad6",
+                      "secondary": "#016a61",
+                      "on-tertiary-fixed": "#311400",
+                      "paper-white": "#FFFFFF",
+                      "surface-dim": "#d1daf4",
+                      "outline": "#737782",
+                      "inverse-primary": "#adc7ff",
+                      "inverse-surface": "#273044",
+                      "on-primary-fixed": "#001a41",
+                      "workspace-mist": "#F5F7FA",
+                      "surface-bright": "#f9f9ff",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "secondary-fixed-dim": "#84d5c9",
+                      "outline-variant": "#c3c6d3",
+                      "on-secondary": "#ffffff",
+                      "surface-container-low": "#f1f3ff",
+                      "primary": "#003f89",
+                      "on-secondary-fixed": "#00201c",
+                      "on-primary-container": "#bcd0ff",
+                      "surface-tint": "#2b5dac",
+                      "surface-container-highest": "#d9e2fc",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "on-secondary-fixed-variant": "#005049",
+                      "muted-text": "#5F6B7A",
+                      "primary-fixed": "#d8e2ff",
+                      "on-error": "#ffffff",
+                      "structural-border": "#D7DEE8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "margin-compact": "20px",
+                      "base": "4px",
+                      "sm": "12px",
+                      "sidebar-width": "240px",
+                      "margin-desktop": "24px",
+                      "header-height": "56px",
+                      "md": "16px",
+                      "lg": "24px",
+                      "xs": "8px"
+              },
+              "fontFamily": {
+                      "technical-data": [
+                              "JetBrains Mono"
+                      ],
+                      "page-title": [
+                              "Noto Sans"
+                      ],
+                      "body": [
+                              "Noto Sans"
+                      ],
+                      "metadata": [
+                              "Noto Sans"
+                      ],
+                      "form-label": [
+                              "Noto Sans"
+                      ],
+                      "section-title": [
+                              "Noto Sans"
+                      ]
+              },
+              "fontSize": {
+                      "technical-data": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "page-title": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "metadata": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "form-label": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "section-title": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, 
+                theme('colors.quiet-panel') 25%, 
+                theme('colors.surface-variant') 50%, 
+                theme('colors.quiet-panel') 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="w-sidebar-width h-screen fixed left-0 top-0 bg-surface dark:bg-inverse-surface border-r border-structural-border dark:border-outline-variant flex flex-col z-20">
+<!-- Header -->
+<div class="h-header-height flex items-center px-lg border-b border-structural-border dark:border-outline-variant">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center mr-3 overflow-hidden shrink-0">
+<img alt="Organization Logo" class="w-full h-full object-cover" data-alt="A clean, minimalist corporate logo for a legal tech software company. Light mode aesthetic, professional blues and whites. Abstract geometric design implying security and documents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzcVWyZB9dhxTw3KcoRlVJDeAgRNdvtXdpkKdNmZ61xUre7AdPedW72RJ7BWQrWLvPjuudLIOmGPJaKARRKNQ5hWbglD7z3_0cp6IyA_OfUiQdGedr_ebZG3u-weqVAsmC1jHBEWytiD049rgazh14yrD4-T8Sz3r0C1CHwPmDNjRRQAssQJEttOnvrcw5NvBDgcROH_2SfumFIQ_EjPr-pQO3t32E5KL8ncW9UNDTXtdqcMss_WrWoGLYtA4D4noZHCbT0qfUjDM"/>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-page-title text-page-title font-semibold text-on-surface dark:text-inverse-on-surface truncate leading-tight">合同智审</span>
+<span class="font-metadata text-metadata text-muted-text truncate">华东科技有限公司 / 组织管理员</span>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-md px-sm space-y-1">
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">description</span>
+<span class="font-body text-body">合同</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">warning</span>
+<span class="font-body text-body">预警</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">gavel</span>
+<span class="font-body text-body">风险规则</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">description</span>
+<span class="font-body text-body">条款模板</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-body text-body">组织设置</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-body text-body">成员管理</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">verified_user</span>
+<span class="font-body text-body">支持授权</span>
+</a>
+<a class="flex items-center px-sm py-xs bg-surface-container-high text-primary font-semibold border-l-4 border-primary rounded-r-DEFAULT opacity-90 transition-all" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+<span class="font-body text-body">组织审计</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+<span class="font-body text-body">运营指标</span>
+</a>
+<a class="flex items-center px-sm py-xs rounded-DEFAULT text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">analytics</span>
+<span class="font-body text-body">反馈统计</span>
+</a>
+</nav>
+</aside>
+<!-- Main Workspace Area -->
+<div class="flex-1 ml-sidebar-width flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="h-header-height fixed top-0 right-0 left-[240px] bg-paper-white dark:bg-surface border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg z-10">
+<!-- Breadcrumbs / Left side -->
+<div class="flex items-center text-on-surface-variant font-metadata text-metadata">
+<span>管理中心</span>
+<span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">组织审计</span>
+</div>
+<!-- Actions / Right side -->
+<div class="flex items-center space-x-4 text-primary dark:text-inverse-primary">
+<button class="w-8 h-8 rounded-full hover:bg-quiet-panel flex items-center justify-center transition-colors text-on-surface-variant hover:text-primary active:scale-95 duration-150">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-8 h-8 rounded-full hover:bg-quiet-panel flex items-center justify-center transition-colors text-on-surface-variant hover:text-primary active:scale-95 duration-150">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 mt-header-height p-margin-desktop max-w-[1440px] mx-auto w-full flex flex-col">
+<!-- Page Header -->
+<div class="mb-lg">
+<h1 class="font-page-title text-page-title text-on-surface">组织审计</h1>
+<p class="font-body text-body text-muted-text mt-1">查看和筛选组织内的所有操作记录</p>
+</div>
+<!-- Content Card -->
+<div class="bg-paper-white border border-structural-border rounded-lg flex-1 flex flex-col overflow-hidden">
+<!-- Filter Bar Skeleton -->
+<div class="p-md border-b border-structural-border flex items-center justify-between bg-surface-container-lowest">
+<div class="flex space-x-md">
+<!-- Dropdown Skeletons -->
+<div class="w-32 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-40 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-48 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+</div>
+<!-- Search/Action Skeleton -->
+<div class="flex space-x-sm">
+<div class="w-64 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-20 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-workspace-mist sticky top-0 z-10 border-b border-structural-border">
+<tr>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-48">时间</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-32">操作人</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-32">模块</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-32">动作</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium">详情</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-24 text-right">IP</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-structural-border">
+<!-- 10 Skeleton Rows -->
+<script>
+                                for(let i=0; i<10; i++) {
+                                    document.write(`
+                                    <tr class="hover:bg-quiet-panel transition-colors">
+                                        <td class="py-md px-md align-middle">
+                                            <div class="h-4 w-3/4 rounded bg-quiet-panel skeleton-shimmer"></div>
+                                        </td>
+                                        <td class="py-md px-md align-middle">
+                                            <div class="h-4 w-20 rounded bg-quiet-panel skeleton-shimmer"></div>
+                                        </td>
+                                        <td class="py-md px-md align-middle">
+                                            <div class="h-4 w-16 rounded bg-quiet-panel skeleton-shimmer"></div>
+                                        </td>
+                                        <td class="py-md px-md align-middle">
+                                            <div class="h-4 w-16 rounded bg-quiet-panel skeleton-shimmer"></div>
+                                        </td>
+                                        <td class="py-md px-md align-middle">
+                                            <div class="h-4 w-full max-w-[400px] rounded bg-quiet-panel skeleton-shimmer"></div>
+                                        </td>
+                                        <td class="py-md px-md align-middle flex justify-end">
+                                            <div class="h-4 w-24 rounded bg-quiet-panel skeleton-shimmer"></div>
+                                        </td>
+                                    </tr>
+                                    `);
+                                }
+                            </script>
+</tbody>
+</table>
+</div>
+<!-- Footer / Pagination Skeleton -->
+<div class="p-md border-t border-structural-border bg-surface-container-lowest flex items-center justify-between">
+<div class="w-32 h-4 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="flex space-x-2">
+<div class="w-8 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-8 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-8 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-8 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+<div class="w-8 h-8 rounded bg-quiet-panel skeleton-shimmer"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

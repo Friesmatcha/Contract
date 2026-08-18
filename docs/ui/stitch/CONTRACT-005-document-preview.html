@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>合同智审 - 文件预览</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#d9e2fc",
+                        "on-tertiary-fixed": "#311400",
+                        "informational-cyan": "#1677A6",
+                        "on-tertiary-container": "#ffc39d",
+                        "confirmed-green": "#16805B",
+                        "secondary-container": "#a0f2e5",
+                        "on-secondary-fixed-variant": "#005049",
+                        "structural-border": "#D7DEE8",
+                        "surface-bright": "#f9f9ff",
+                        "placeholder-gray": "#8A95A3",
+                        "on-secondary-container": "#117167",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary": "#6a3200",
+                        "inverse-surface": "#273044",
+                        "background": "#f9f9ff",
+                        "surface-dim": "#d1daf4",
+                        "review-amber": "#B86A00",
+                        "primary-container": "#2457a6",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-container-highest": "#d9e2fc",
+                        "primary": "#003f89",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "tertiary-fixed": "#ffdcc6",
+                        "secondary": "#016a61",
+                        "surface-container-low": "#f1f3ff",
+                        "surface-tint": "#2b5dac",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#a0f2e5",
+                        "on-surface-variant": "#434751",
+                        "paper-white": "#FFFFFF",
+                        "inverse-primary": "#adc7ff",
+                        "quiet-panel": "#EEF2F6",
+                        "tertiary-container": "#8d4500",
+                        "workspace-mist": "#F5F7FA",
+                        "on-primary-fixed": "#001a41",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#014493",
+                        "on-surface": "#121b2e",
+                        "inverse-on-surface": "#edf0ff",
+                        "primary-fixed": "#d8e2ff",
+                        "outline": "#737782",
+                        "on-primary-container": "#bcd0ff",
+                        "muted-text": "#5F6B7A",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c3c6d3",
+                        "on-primary": "#ffffff",
+                        "on-background": "#121b2e",
+                        "surface": "#f9f9ff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "surface-container-high": "#e1e8ff",
+                        "surface-container": "#e9edff",
+                        "primary-fixed-dim": "#adc7ff",
+                        "critical-red": "#C43D3D"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "margin-desktop": "24px",
+                        "md": "16px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "header-height": "56px",
+                        "sidebar-width": "240px",
+                        "margin-compact": "20px"
+                    },
+                    "fontFamily": {
+                        "technical-data": ["JetBrains Mono", "monospace"],
+                        "section-title": ["Noto Sans", "sans-serif"],
+                        "page-title": ["Noto Sans", "sans-serif"],
+                        "form-label": ["Noto Sans", "sans-serif"],
+                        "metadata": ["Noto Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { @apply bg-workspace-mist text-on-surface font-body text-body antialiased; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar-width bg-paper-white border-r border-structural-border flex flex-col overflow-y-auto z-20">
+<!-- Header -->
+<div class="px-md py-lg border-b border-structural-border">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined icon-fill text-primary text-2xl">gavel</span>
+<span class="font-page-title text-section-title font-bold text-primary">合同智审</span>
+</div>
+<div class="flex items-center gap-sm mt-md">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-muted-text text-sm">domain</span>
+</div>
+<div class="flex flex-col overflow-hidden">
+<span class="font-form-label text-form-label text-on-surface truncate">华东科技有限公司</span>
+<span class="font-metadata text-metadata text-muted-text truncate">组织管理员</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 py-sm">
+<a class="flex items-center gap-xs px-md py-sm text-primary bg-surface-container-low border-l-4 border-primary font-bold" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="flex-1">合同</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span class="flex-1">预警</span>
+</a>
+<div class="mt-md mb-xs px-md">
+<span class="font-metadata text-metadata text-placeholder-gray uppercase tracking-wider">知识配置</span>
+</div>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">gavel</span>
+<span class="flex-1">风险规则</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">extension</span>
+<span class="flex-1">条款模板</span>
+</a>
+<div class="mt-md mb-xs px-md">
+<span class="font-metadata text-metadata text-placeholder-gray uppercase tracking-wider">组织管理</span>
+</div>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="flex-1">组织设置</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="flex-1">成员管理</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="flex-1">支持授权</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="flex-1">组织审计</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="flex-1">运营指标</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200 border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">insert_comment</span>
+<span class="flex-1">反馈统计</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-sidebar-width flex-1 flex flex-col h-full bg-workspace-mist">
+<!-- TopNavBar -->
+<header class="h-header-height bg-paper-white border-b border-structural-border flex justify-between items-center px-lg shrink-0 w-full z-10">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-xs font-body text-body text-muted-text">
+<a class="hover:text-primary transition-colors" href="#">合同</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">HT-2025-001</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface font-medium">文件预览</span>
+</div>
+<!-- Actions & Profile -->
+<div class="flex items-center gap-md">
+<button aria-label="Notifications" class="p-xs text-muted-text hover:bg-quiet-panel rounded-full transition-all duration-200 flex items-center justify-center relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-critical-red rounded-full border border-paper-white"></span>
+</button>
+<div class="flex items-center gap-sm pl-md border-l border-structural-border cursor-pointer hover:opacity-80 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-form-label font-bold text-sm">
+                        张
+                    </div>
+<span class="font-form-label text-form-label text-on-surface">张明</span>
+<span class="material-symbols-outlined text-muted-text text-sm">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Document Toolbar -->
+<div class="h-14 bg-quiet-panel border-b border-structural-border flex items-center justify-between px-lg shrink-0">
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-xs text-on-surface hover:text-primary transition-colors font-form-label text-form-label">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+                    返回审核结果
+                </button>
+<div class="h-4 w-px bg-structural-border mx-sm"></div>
+<h1 class="font-section-title text-section-title text-on-surface m-0">华东区域采购框架协议 / v1.0.4</h1>
+</div>
+<div class="flex items-center gap-sm">
+<span class="font-technical-data text-technical-data text-muted-text mr-md">第 6 / 18 页</span>
+<div class="flex items-center bg-paper-white border border-structural-border rounded h-8">
+<button aria-label="Zoom out" class="w-8 h-full flex items-center justify-center text-muted-text hover:text-primary hover:bg-surface-container-low transition-colors rounded-l">
+<span class="material-symbols-outlined text-sm">remove</span>
+</button>
+<div class="w-px h-4 bg-structural-border"></div>
+<span class="font-technical-data text-technical-data text-on-surface px-sm min-w-[3rem] text-center">100%</span>
+<div class="w-px h-4 bg-structural-border"></div>
+<button aria-label="Zoom in" class="w-8 h-full flex items-center justify-center text-muted-text hover:text-primary hover:bg-surface-container-low transition-colors rounded-r">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+<button aria-label="Fit to page" class="w-8 h-8 flex items-center justify-center bg-paper-white border border-structural-border rounded text-muted-text hover:text-primary hover:bg-surface-container-low transition-colors ml-xs">
+<span class="material-symbols-outlined text-lg">fit_screen</span>
+</button>
+</div>
+</div>
+<!-- Evidence Workspace (Dual Pane) -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Pane: Document Preview -->
+<div class="flex-1 overflow-auto bg-workspace-mist p-lg flex justify-center relative">
+<!-- PDF Surface -->
+<div class="bg-paper-white border border-structural-border shadow-sm w-[794px] min-h-[1123px] shrink-0 p-[80px] relative">
+<!-- Dummy Content imitating contract -->
+<h2 class="text-center font-bold text-xl mb-8">华东区域采购框架协议</h2>
+<p class="text-justify mb-4 text-sm leading-relaxed">
+                        鉴于甲方在华东区域开展业务的需要，乙方同意按照本协议约定的条款和条件向甲方提供相关产品及服务。双方本着平等自愿、互惠互利的原则，经友好协商，达成如下协议，以兹共同遵守。
+                    </p>
+<h3 class="font-bold text-md mb-2 mt-6">第一条 合作范围与期限</h3>
+<p class="text-justify mb-4 text-sm leading-relaxed">
+                        1.1 本协议涵盖的产品和服务清单详见附件一。未经双方书面同意，任何一方不得擅自变更合作范围。
+                    </p>
+<h3 class="font-bold text-md mb-2 mt-6">第二条 付款方式与周期</h3>
+<p class="text-justify mb-4 text-sm leading-relaxed">
+                        2.1 甲方应于收到乙方开具的合格发票后，按照双方确认的结算周期进行付款。
+                    </p>
+<!-- Highlighted Clause -->
+<div class="relative group cursor-pointer -mx-2 px-2 py-1 bg-surface-container-low border border-primary-container rounded">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container rounded-l"></div>
+<p class="text-justify text-sm leading-relaxed text-on-surface font-medium pl-2">
+                            2.2 <span class="bg-primary-fixed text-on-primary-fixed-variant px-1 rounded">付款周期为：自甲方收到合规发票之日起，六十（60）个工作日内通过银行转账方式支付至乙方指定账户。</span>如遇法定节假日，付款时间顺延。
+                        </p>
+</div>
+<p class="text-justify mb-4 text-sm leading-relaxed mt-4">
+                        2.3 若甲方逾期付款，每逾期一日，应按应付未付金额的万分之五向乙方支付违约金。但因乙方未按规定提供发票或提供的发票不合规导致的迟延除外。
+                    </p>
+<h3 class="font-bold text-md mb-2 mt-6">第三条 质量保证与验收</h3>
+<p class="text-justify mb-4 text-sm leading-relaxed">
+                        3.1 乙方保证其提供的产品和服务符合国家相关标准及本协议约定的质量要求。
+                    </p>
+<!-- Watermark / Footer placeholder -->
+<div class="absolute bottom-[40px] left-0 w-full text-center text-placeholder-gray font-technical-data text-xs">
+                        - 6 -
+                    </div>
+</div>
+</div>
+<!-- Right Pane: Locator Panel -->
+<div class="w-[360px] bg-paper-white border-l border-structural-border flex flex-col shrink-0">
+<div class="p-md border-b border-structural-border flex items-center justify-between">
+<h2 class="font-section-title text-section-title text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-primary">location_searching</span>
+                        证据定位
+                    </h2>
+<div class="flex items-center gap-xs">
+<button aria-label="Previous Evidence" class="w-8 h-8 flex items-center justify-center text-muted-text hover:bg-quiet-panel rounded transition-colors">
+<span class="material-symbols-outlined">expand_less</span>
+</button>
+<button aria-label="Next Evidence" class="w-8 h-8 flex items-center justify-center text-muted-text hover:bg-quiet-panel rounded transition-colors">
+<span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+<div class="p-md flex-1 overflow-auto">
+<!-- Status & Metadata -->
+<div class="flex items-center justify-between mb-md">
+<div class="flex items-center gap-xs px-sm py-1 bg-surface-bright border border-confirmed-green rounded-full">
+<span class="material-symbols-outlined text-confirmed-green text-sm icon-fill">check_circle</span>
+<span class="font-form-label text-xs text-on-secondary-fixed-variant">已完成</span>
+</div>
+<div class="flex items-center gap-xs font-technical-data text-xs text-muted-text">
+<span class="material-symbols-outlined text-sm">policy</span>
+                            置信度: <span class="text-on-surface font-medium">98%</span>
+</div>
+</div>
+<!-- Locator Info -->
+<div class="mb-md">
+<div class="font-form-label text-form-label text-muted-text mb-xs">定位信息</div>
+<div class="flex items-center gap-sm bg-workspace-mist p-sm rounded border border-structural-border font-technical-data text-sm text-on-surface">
+<span class="material-symbols-outlined text-muted-text text-lg">picture_as_pdf</span>
+<span class="text-muted-text">来源:</span> PDF Page 
+                            <div class="w-px h-4 bg-structural-border mx-xs"></div>
+<span class="text-muted-text">页码:</span> <span class="font-medium">6</span>
+</div>
+</div>
+<!-- Quote Block -->
+<div>
+<div class="font-form-label text-form-label text-muted-text mb-xs">原文比对</div>
+<div class="bg-surface-container-low border border-primary-container/30 rounded p-sm relative">
+<span class="material-symbols-outlined absolute top-sm right-sm text-primary/20 text-4xl leading-none">format_quote</span>
+<p class="font-body text-sm text-on-surface relative z-10 leading-relaxed">
+                                付款周期为：自甲方收到合规发票之日起，<strong class="text-primary font-semibold bg-primary-fixed-dim/30 px-1 rounded">六十（60）个工作日</strong>内通过银行转账方式支付至乙方指定账户。
+                            </p>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-lg flex flex-col gap-sm">
+<button class="w-full py-2 bg-primary text-on-primary rounded font-form-label text-form-label hover:bg-on-primary-fixed-variant transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-sm">edit_document</span>
+                            采纳提取结果
+                        </button>
+<button class="w-full py-2 bg-paper-white text-on-surface border border-structural-border rounded font-form-label text-form-label hover:bg-quiet-panel transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-sm">report_problem</span>
+                            标记异常
+                        </button>
+</div>
+</div>
+<!-- Footer Note -->
+<div class="p-md border-t border-structural-border bg-workspace-mist">
+<div class="flex gap-xs items-start">
+<span class="material-symbols-outlined text-informational-cyan text-sm mt-0.5 shrink-0">info</span>
+<p class="font-metadata text-metadata text-muted-text leading-snug">
+                            注：当前展示为 PDF 分页模式。若切换至 DOCX 块级视图，因文档结构差异，将无法显示绝对页码，定位将基于段落节点。
+                        </p>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

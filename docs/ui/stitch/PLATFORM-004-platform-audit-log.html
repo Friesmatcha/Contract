@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html lang="zh"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLATFORM-004 / Platform Audit Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "workspace-mist": "#F5F7FA",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "secondary": "#016a61",
+                      "on-tertiary-fixed": "#311400",
+                      "primary-container": "#2457a6",
+                      "surface-bright": "#f9f9ff",
+                      "secondary-fixed-dim": "#84d5c9",
+                      "primary-fixed": "#d8e2ff",
+                      "inverse-on-surface": "#edf0ff",
+                      "paper-white": "#FFFFFF",
+                      "informational-cyan": "#1677A6",
+                      "confirmed-green": "#16805B",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "on-primary-fixed-variant": "#014493",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#d9e2fc",
+                      "surface-variant": "#d9e2fc",
+                      "quiet-panel": "#EEF2F6",
+                      "on-primary-container": "#bcd0ff",
+                      "surface-container-low": "#f1f3ff",
+                      "primary": "#003f89",
+                      "on-secondary": "#ffffff",
+                      "surface-tint": "#2b5dac",
+                      "on-secondary-fixed-variant": "#005049",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#273044",
+                      "on-primary-fixed": "#001a41",
+                      "on-background": "#121b2e",
+                      "tertiary": "#6a3200",
+                      "surface-container": "#e9edff",
+                      "surface": "#f9f9ff",
+                      "critical-red": "#C43D3D",
+                      "background": "#f9f9ff",
+                      "on-secondary-fixed": "#00201c",
+                      "on-tertiary-container": "#ffc39d",
+                      "surface-container-high": "#e1e8ff",
+                      "on-surface-variant": "#434751",
+                      "on-surface": "#121b2e",
+                      "placeholder-gray": "#8A95A3",
+                      "surface-dim": "#d1daf4",
+                      "outline-variant": "#c3c6d3",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#a0f2e5",
+                      "primary-fixed-dim": "#adc7ff",
+                      "muted-text": "#5F6B7A",
+                      "tertiary-container": "#8d4500",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed": "#ffdcc6",
+                      "inverse-primary": "#adc7ff",
+                      "review-amber": "#B86A00",
+                      "outline": "#737782",
+                      "on-secondary-container": "#117167",
+                      "secondary-fixed": "#a0f2e5",
+                      "structural-border": "#D7DEE8",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "margin-compact": "20px",
+                      "sm": "12px",
+                      "base": "4px",
+                      "xl": "32px",
+                      "header-height": "56px",
+                      "xs": "8px",
+                      "md": "16px",
+                      "margin-desktop": "24px",
+                      "sidebar-width": "240px"
+              },
+              "fontFamily": {
+                      "page-title": ["Noto Sans"],
+                      "metadata": ["Noto Sans"],
+                      "form-label": ["Noto Sans"],
+                      "section-title": ["Noto Sans"],
+                      "body": ["Noto Sans"],
+                      "technical-data": ["JetBrains Mono"]
+              },
+              "fontSize": {
+                      "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}],
+                      "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
+                      "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                      "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}],
+                      "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        /* Drawer Transition */
+        #detail-drawer {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        #detail-drawer.open {
+            transform: translateX(0);
+        }
+        /* Custom Scrollbar for Drawer */
+        .drawer-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .drawer-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .drawer-scroll::-webkit-scrollbar-thumb {
+            background-color: #D7DEE8;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body min-h-screen flex overflow-hidden selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- Side Navigation Shell (from JSON mapping to 平台审计) -->
+<nav class="fixed left-0 top-0 h-full w-[240px] flex flex-col bg-paper-white border-r border-structural-border z-20 hidden md:flex">
+<!-- Brand Header -->
+<div class="h-header-height flex items-center px-4 border-b border-structural-border">
+<span class="font-page-title text-page-title text-primary">合同智审</span>
+</div>
+<div class="px-4 py-3 border-b border-structural-border">
+<div class="flex items-center gap-3">
+<img alt="合同智审 Logo" class="w-8 h-8 rounded-full bg-surface-container object-cover" data-alt="A small, professional corporate logo placeholder with a minimalist blue and white design, suitable for an enterprise software application sidebar avatar. High quality, crisp lines, modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpRSFaJNsYMD0nx9YsludAJR57AqarECdqGP15hJsUpE9PPvtKpQMS4g4o6YU7uVRO45VAG_0VuriMpSumOKWTSJg-kIwD_pdIMb_c2hI5uJkKsDjcgULoTuJngTR__0n-feGhf-m1Gd3Bc8LAA814fnTYI6uZm_F92qaKmzkAF_Iq5jTtrgDB2Xgzc_-S6HRSjBTumH4UGJgk_7btctZlLdxGZ_wpvRWtzi1--zH__zAeyyl8tA-FF-VKfYeR7vQuKUI4ontVxug"/>
+<div class="flex flex-col">
+<span class="font-form-label text-form-label text-on-surface">平台工作区</span>
+<span class="font-metadata text-metadata text-muted-text">平台管理员</span>
+</div>
+</div>
+</div>
+<!-- Nav Links -->
+<div class="flex-1 overflow-y-auto py-2">
+<a class="flex items-center gap-3 px-4 py-3 text-muted-text hover:bg-quiet-panel transition-colors transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">corporate_fare</span>
+<span class="font-body text-body">组织</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-muted-text hover:bg-quiet-panel transition-colors transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings_input_component</span>
+<span class="font-body text-body">模型配置</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-surface-container-high text-primary font-bold border-l-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+<span class="font-body text-body">平台审计</span>
+</a>
+</div>
+</nav>
+<!-- Top Navigation Bar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-header-height flex justify-end items-center px-margin-desktop gap-md bg-paper-white border-b border-structural-border z-10 hidden md:flex">
+<!-- Breadcrumbs injected into header structure for persistent context -->
+<div class="mr-auto flex items-center text-muted-text">
+<span class="font-form-label text-form-label">平台管理</span>
+<span class="material-symbols-outlined mx-2 text-[16px]">chevron_right</span>
+<span class="font-form-label text-form-label text-on-surface">平台审计</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80 p-2 rounded-full hover:bg-quiet-panel flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-structural-border overflow-hidden">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an enterprise software administrator in a modern office environment. Natural lighting, crisp focus, blue and white corporate color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQ0g0wxFNrJXgnVo-8VX_z5rcpeX_XqXw-9u71m5eXwsRGgA0e9rCHeGBXW5hLqce5IVwSllLOAHfb9FKHLfGMXlaBZwS5FpSoIlQe6MJWcch2G7vfZrWAXYMkGKteZ0K9Uzhbc0k62AYkM_KaSJtUlauX-OqbhBm_m5occiuI3f-Hd3c_T1pM-n9lJEA9Ct4wxVWk6I7-twyxPrBbRc0eTIU5OqLBI2-mtTwEJPVYbSpBVf6qDixW6W_6DYo_I9Kf4MD2dK5JXBk"/>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="ml-0 md:ml-[240px] pt-[56px] w-full min-h-screen flex flex-col relative transition-all duration-300">
+<!-- Filter Bar -->
+<div class="bg-paper-white border-b border-structural-border px-margin-desktop py-4 shrink-0">
+<div class="flex flex-wrap items-center gap-4">
+<!-- Event Type Filter -->
+<div class="flex flex-col gap-1 w-48">
+<label class="font-form-label text-form-label text-on-surface-variant">事件类型</label>
+<div class="relative">
+<select class="w-full bg-paper-white border border-structural-border rounded h-9 px-3 font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
+<option value="">全部事件</option>
+<option value="auth">身份认证</option>
+<option value="config">配置修改</option>
+<option value="data">数据访问</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-text">arrow_drop_down</span>
+</div>
+</div>
+<!-- Organization Filter -->
+<div class="flex flex-col gap-1 w-48">
+<label class="font-form-label text-form-label text-on-surface-variant">关联组织</label>
+<div class="relative">
+<input class="w-full bg-paper-white border border-structural-border rounded h-9 pl-8 pr-3 font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-placeholder-gray" placeholder="搜索组织名称/ID" type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-muted-text text-[18px]">search</span>
+</div>
+</div>
+<!-- Actor Filter -->
+<div class="flex flex-col gap-1 w-48">
+<label class="font-form-label text-form-label text-on-surface-variant">操作者</label>
+<div class="relative">
+<input class="w-full bg-paper-white border border-structural-border rounded h-9 pl-3 pr-3 font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-placeholder-gray" placeholder="姓名或账号" type="text"/>
+</div>
+</div>
+<!-- Result Filter -->
+<div class="flex flex-col gap-1 w-40">
+<label class="font-form-label text-form-label text-on-surface-variant">执行结果</label>
+<div class="relative">
+<select class="w-full bg-paper-white border border-structural-border rounded h-9 px-3 font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
+<option value="">全部</option>
+<option value="success">成功</option>
+<option value="failed">失败</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-muted-text">arrow_drop_down</span>
+</div>
+</div>
+<!-- Date-Time Range -->
+<div class="flex flex-col gap-1 w-72">
+<label class="font-form-label text-form-label text-on-surface-variant">时间范围</label>
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<input class="w-full bg-paper-white border border-structural-border rounded h-9 pl-8 pr-3 font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-placeholder-gray text-[13px]" placeholder="开始时间" type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-muted-text text-[16px]">calendar_today</span>
+</div>
+<span class="text-structural-border">-</span>
+<div class="relative flex-1">
+<input class="w-full bg-paper-white border border-structural-border rounded h-9 pl-8 pr-3 font-body text-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary placeholder:text-placeholder-gray text-[13px]" placeholder="结束时间" type="text"/>
+<span class="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-muted-text text-[16px]">calendar_today</span>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-1 justify-end ml-auto pt-[24px]">
+<button class="h-9 px-4 bg-primary text-on-primary rounded font-form-label text-form-label hover:bg-surface-tint transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                         搜索
+                     </button>
+</div>
+</div>
+</div>
+<!-- Table Container -->
+<div class="flex-1 p-margin-desktop overflow-hidden flex flex-col relative">
+<div class="bg-paper-white border border-structural-border rounded flex-1 flex flex-col shadow-sm">
+<!-- Table Header -->
+<div class="grid grid-cols-12 gap-4 px-4 py-3 border-b border-structural-border bg-surface-bright shrink-0">
+<div class="col-span-2 font-form-label text-form-label text-on-surface-variant">时间</div>
+<div class="col-span-2 font-form-label text-form-label text-on-surface-variant">组织</div>
+<div class="col-span-2 font-form-label text-form-label text-on-surface-variant">事件</div>
+<div class="col-span-2 font-form-label text-form-label text-on-surface-variant">操作者</div>
+<div class="col-span-2 font-form-label text-form-label text-on-surface-variant">结果</div>
+<div class="col-span-2 font-form-label text-form-label text-on-surface-variant">request_id</div>
+</div>
+<!-- Table Body -->
+<div class="flex-1 overflow-y-auto">
+<!-- Row 1 -->
+<div class="grid grid-cols-12 gap-4 px-4 py-3 border-b border-structural-border hover:bg-quiet-panel transition-colors items-center cursor-pointer group" onclick="toggleDrawer(true)">
+<div class="col-span-2 font-body text-body text-on-surface">2023-10-27 14:32:01</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">华东区销售本部</div>
+<div class="col-span-2 font-body text-body text-on-surface">模型配置更新</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">李建国 (admin_ljg)</div>
+<div class="col-span-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-inverse-on-surface border border-primary-fixed-dim text-primary font-metadata text-metadata">
+<span class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></span>
+                                 成功
+                             </span>
+</div>
+<div class="col-span-2 font-technical-data text-technical-data text-muted-text truncate">req-8f92a1b4-c3</div>
+</div>
+<!-- Row 2 -->
+<div class="grid grid-cols-12 gap-4 px-4 py-3 border-b border-structural-border hover:bg-quiet-panel transition-colors items-center cursor-pointer group" onclick="toggleDrawer(true)">
+<div class="col-span-2 font-body text-body text-on-surface">2023-10-27 11:15:45</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">系统全局</div>
+<div class="col-span-2 font-body text-body text-on-surface">管理员登录</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">系统自动 (sys_auto)</div>
+<div class="col-span-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container border border-error text-on-error-container font-metadata text-metadata">
+<span class="w-1.5 h-1.5 rounded-full bg-critical-red"></span>
+                                 失败 (认证错误)
+                             </span>
+</div>
+<div class="col-span-2 font-technical-data text-technical-data text-muted-text truncate">req-2d3e4f5a-b6</div>
+</div>
+<!-- Row 3 -->
+<div class="grid grid-cols-12 gap-4 px-4 py-3 border-b border-structural-border hover:bg-quiet-panel transition-colors items-center cursor-pointer group" onclick="toggleDrawer(true)">
+<div class="col-span-2 font-body text-body text-on-surface">2023-10-26 16:50:22</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">西南区分公司</div>
+<div class="col-span-2 font-body text-body text-on-surface">组织架构调整</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">王晓丽 (admin_wxl)</div>
+<div class="col-span-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface font-metadata text-metadata">
+<span class="w-1.5 h-1.5 rounded-full bg-review-amber"></span>
+                                 处理中
+                             </span>
+</div>
+<div class="col-span-2 font-technical-data text-technical-data text-muted-text truncate">req-1a2b3c4d-e5</div>
+</div>
+<!-- Row 4 -->
+<div class="grid grid-cols-12 gap-4 px-4 py-3 border-b border-structural-border hover:bg-quiet-panel transition-colors items-center cursor-pointer group" onclick="toggleDrawer(true)">
+<div class="col-span-2 font-body text-body text-on-surface">2023-10-26 09:05:11</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">华北制造中心</div>
+<div class="col-span-2 font-body text-body text-on-surface">访问权限分配</div>
+<div class="col-span-2 font-body text-body text-on-surface truncate">李建国 (admin_ljg)</div>
+<div class="col-span-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-inverse-on-surface border border-primary-fixed-dim text-primary font-metadata text-metadata">
+<span class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></span>
+                                 成功
+                             </span>
+</div>
+<div class="col-span-2 font-technical-data text-technical-data text-muted-text truncate">req-7c8d9e0f-a1</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="px-4 py-3 border-t border-structural-border bg-paper-white shrink-0 flex items-center justify-between">
+<span class="font-metadata text-metadata text-muted-text">显示 1 - 4 条，共 1,245 条结果</span>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-structural-border text-muted-text hover:bg-quiet-panel disabled:opacity-50 disabled:cursor-not-allowed">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-structural-border text-muted-text hover:bg-quiet-panel">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Detail Drawer -->
+<div class="absolute top-0 right-0 w-[400px] h-full bg-paper-white border-l border-structural-border shadow-[-4px_0_12px_rgba(0,0,0,0.05)] z-30 flex flex-col" id="detail-drawer">
+<!-- Drawer Header -->
+<div class="flex items-center justify-between px-6 py-4 border-b border-structural-border bg-surface-bright shrink-0">
+<h2 class="font-section-title text-section-title text-on-surface">审计事件详情</h2>
+<button class="p-1 rounded-full text-muted-text hover:bg-quiet-panel hover:text-on-surface transition-colors focus:outline-none" onclick="toggleDrawer(false)">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Content -->
+<div class="flex-1 overflow-y-auto drawer-scroll p-6 flex flex-col gap-6">
+<!-- Metadata Section -->
+<div class="flex flex-col gap-4">
+<h3 class="font-form-label text-form-label text-on-surface-variant uppercase tracking-wide">基本信息</h3>
+<div class="grid grid-cols-3 gap-y-3 gap-x-4">
+<div class="col-span-1 font-metadata text-metadata text-muted-text">事件名称</div>
+<div class="col-span-2 font-body text-body text-on-surface">模型配置更新</div>
+<div class="col-span-1 font-metadata text-metadata text-muted-text">发生时间</div>
+<div class="col-span-2 font-body text-body text-on-surface">2023-10-27 14:32:01</div>
+<div class="col-span-1 font-metadata text-metadata text-muted-text">操作者</div>
+<div class="col-span-2 font-body text-body text-on-surface">李建国 (ID: admin_ljg)</div>
+<div class="col-span-1 font-metadata text-metadata text-muted-text">目标组织</div>
+<div class="col-span-2 font-body text-body text-on-surface">华东区销售本部 (ID: org_east_01)</div>
+<div class="col-span-1 font-metadata text-metadata text-muted-text">执行结果</div>
+<div class="col-span-2">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-inverse-on-surface border border-primary-fixed-dim text-primary font-metadata text-metadata">
+<span class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></span>
+                                 成功
+                             </span>
+</div>
+<div class="col-span-1 font-metadata text-metadata text-muted-text">Request ID</div>
+<div class="col-span-2 font-technical-data text-technical-data text-on-surface">req-8f92a1b4-c3</div>
+</div>
+</div>
+<div class="w-full h-px bg-structural-border"></div>
+<!-- Technical Details Section -->
+<div class="flex flex-col gap-4">
+<h3 class="font-form-label text-form-label text-on-surface-variant uppercase tracking-wide">技术载荷 (脱敏)</h3>
+<div class="bg-surface-container rounded border border-structural-border p-4 font-technical-data text-technical-data text-on-surface overflow-x-auto">
+<pre class="m-0 leading-relaxed text-[12px]">{
+  "action": "UPDATE_MODEL_CONFIG",
+  "resource_type": "extraction_model",
+  "resource_id": "model_v2_financial",
+  "changes": [
+    {
+      "property": "confidence_threshold",
+      "old_value": "0.85",
+      "new_value": "0.88"
+    },
+    {
+      "property": "enabled_features",
+      "added": ["clause_risk_detection"],
+      "removed": []
+    }
+  ],
+  "source_ip": "10.0.45.***"
+}
+</pre>
+</div>
+<p class="font-metadata text-metadata text-muted-text italic mt-1">注: 敏感业务数据已在审计存储层脱敏。</p>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function toggleDrawer(open) {
+            const drawer = document.getElementById('detail-drawer');
+            if (open) {
+                drawer.classList.add('open');
+            } else {
+                drawer.classList.remove('open');
+            }
+        }
+    </script>
+</body></html>

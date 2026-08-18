@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLATFORM-003 / Model Configuration / States Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f9f9ff",
+                        "surface": "#f9f9ff",
+                        "muted-text": "#5F6B7A",
+                        "on-primary-container": "#bcd0ff",
+                        "surface-container": "#e9edff",
+                        "quiet-panel": "#EEF2F6",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-background": "#121b2e",
+                        "tertiary": "#6a3200",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "critical-red": "#C43D3D",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface-tint": "#2b5dac",
+                        "surface-container-low": "#f1f3ff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#a0f2e5",
+                        "paper-white": "#FFFFFF",
+                        "tertiary-container": "#8d4500",
+                        "outline": "#737782",
+                        "on-error": "#ffffff",
+                        "background": "#f9f9ff",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#edf0ff",
+                        "inverse-primary": "#adc7ff",
+                        "surface-container-high": "#e1e8ff",
+                        "workspace-mist": "#F5F7FA",
+                        "secondary": "#016a61",
+                        "on-tertiary-fixed": "#311400",
+                        "on-surface-variant": "#434751",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "surface-dim": "#d1daf4",
+                        "review-amber": "#B86A00",
+                        "confirmed-green": "#16805B",
+                        "tertiary-fixed": "#ffdcc6",
+                        "primary-container": "#2457a6",
+                        "placeholder-gray": "#8A95A3",
+                        "secondary-fixed": "#a0f2e5",
+                        "on-secondary-container": "#117167",
+                        "surface-container-highest": "#d9e2fc",
+                        "structural-border": "#D7DEE8",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005049",
+                        "inverse-surface": "#273044",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-container": "#ffc39d",
+                        "surface-variant": "#d9e2fc",
+                        "on-secondary-fixed": "#00201c",
+                        "outline-variant": "#c3c6d3",
+                        "on-primary-fixed": "#001a41",
+                        "primary": "#003f89",
+                        "on-primary-fixed-variant": "#014493",
+                        "on-surface": "#121b2e",
+                        "informational-cyan": "#1677A6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-compact": "20px",
+                        "sidebar-width": "240px",
+                        "margin-desktop": "24px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "header-height": "56px",
+                        "xs": "8px",
+                        "sm": "12px",
+                        "base": "4px",
+                        "xl": "32px"
+                    },
+                    "fontFamily": {
+                        "page-title": ["Noto Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                        "technical-data": ["JetBrains Mono", "monospace"],
+                        "form-label": ["Noto Sans", "sans-serif"],
+                        "section-title": ["Noto Sans", "sans-serif"],
+                        "metadata": ["Noto Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .shimmer {
+            background: linear-gradient(90deg, #EEF2F6 25%, #F5F7FA 50%, #EEF2F6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body antialiased flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="w-[240px] h-screen fixed left-0 top-0 bg-surface dark:bg-inverse-surface border-r border-structural-border dark:border-outline-variant flex flex-col py-lg z-50">
+<div class="px-lg mb-8">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">contract</span>
+<h1 class="font-page-title text-page-title text-primary dark:text-primary-fixed-dim tracking-tight">合同智审</h1>
+</div>
+<p class="font-metadata text-metadata text-muted-text">平台工作区 / 平台管理员</p>
+</div>
+<div class="flex-1 px-sm">
+<a class="flex items-center gap-sm px-sm py-sm mb-base rounded-DEFAULT text-on-surface-variant dark:text-outline-variant hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+<span class="font-form-label text-form-label">组织</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm mb-base rounded-DEFAULT text-primary dark:text-primary-fixed-dim bg-surface-container dark:bg-surface-variant font-bold border-l-4 border-primary dark:border-primary-fixed-dim transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component" style="font-variation-settings: 'FILL' 1;">settings_input_component</span>
+<span class="font-form-label text-form-label">模型配置</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm mb-base rounded-DEFAULT text-on-surface-variant dark:text-outline-variant hover:bg-quiet-panel dark:hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+<span class="font-form-label text-form-label">平台审计</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="h-header-height fixed top-0 right-0 left-[240px] bg-paper-white dark:bg-surface-container-lowest border-b border-structural-border dark:border-outline-variant flex items-center justify-between px-lg z-40">
+<div class="flex items-center gap-sm">
+<h2 class="font-section-title text-section-title text-on-surface">模型配置</h2>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-muted-text hover:text-primary transition-colors cursor-pointer w-8 h-8 flex items-center justify-center rounded-DEFAULT hover:bg-quiet-panel">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-structural-border flex items-center justify-center text-primary font-bold overflow-hidden">
+<img alt="Administrator Profile" class="w-full h-full object-cover" data-alt="A small, professional headshot avatar of an administrator in a corporate setting, soft lighting, neutral background, minimalist corporate style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw83HSCrYqXU8XLBtJb_ALNnHocmJg-JGbX6xxMC6CH1_Xm2Afdv8cyF3wTjqpB0sBvy_RVcx8cE4kKBzTIQDkrG-hcMWNib23MTo1t88b4l0SYooAqpYq92zgzbDZ2RqU9_6AsQz1QCTTXI0phWYv5pljvf1lnX528emcb6C4Y3ftVlKQjkVf476-xC85GPEcW1tHMWNAH5sK5yD5pHBi2PpTwRtU0jzCg52dE8xs0yHTCAB_pMHV0-u59fz_Fehf8a_NU-z_2Rc"/>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="ml-[240px] mt-[56px] flex-1 p-margin-desktop">
+<div class="mb-lg">
+<h2 class="font-page-title text-page-title text-on-surface mb-xs">Model Configuration / States Gallery</h2>
+<p class="font-body text-body text-muted-text">UI state permutations for the Model Configuration interface.</p>
+</div>
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-lg">
+<!-- State 1: Skeleton Loading -->
+<div class="bg-paper-white border border-structural-border rounded-lg overflow-hidden flex flex-col h-[400px]">
+<div class="p-md border-b border-structural-border bg-surface-bright flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">1. 加载中状态 (Skeleton)</h3>
+</div>
+<div class="p-lg flex-1">
+<div class="w-1/3 h-8 shimmer rounded-DEFAULT mb-lg"></div>
+<div class="space-y-md">
+<div class="flex gap-lg">
+<div class="flex-1 space-y-sm">
+<div class="w-1/4 h-4 shimmer rounded-DEFAULT"></div>
+<div class="w-full h-10 shimmer rounded-DEFAULT border border-structural-border"></div>
+</div>
+<div class="flex-1 space-y-sm">
+<div class="w-1/4 h-4 shimmer rounded-DEFAULT"></div>
+<div class="w-full h-10 shimmer rounded-DEFAULT border border-structural-border"></div>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="w-1/5 h-4 shimmer rounded-DEFAULT"></div>
+<div class="w-full h-32 shimmer rounded-DEFAULT border border-structural-border"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- State 2: Platform Forbidden -->
+<div class="bg-paper-white border border-structural-border rounded-lg overflow-hidden flex flex-col h-[400px]">
+<div class="p-md border-b border-structural-border bg-surface-bright flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">2. 权限不足 (Platform Forbidden)</h3>
+</div>
+<div class="p-lg flex-1 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-[48px] text-muted-text mb-md" style="font-variation-settings: 'wght' 300;">lock</span>
+<h4 class="font-section-title text-section-title text-on-surface mb-sm">无权访问</h4>
+<p class="font-body text-body text-muted-text mb-lg max-w-md">您没有管理模型配置的权限，请联系超级管理员。</p>
+<button class="bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label px-lg py-sm rounded-DEFAULT hover:bg-quiet-panel transition-colors">
+                        返回组织列表
+                    </button>
+</div>
+</div>
+<!-- State 3: Version Conflict -->
+<div class="bg-paper-white border border-structural-border rounded-lg overflow-hidden flex flex-col h-[400px]">
+<div class="p-md border-b border-structural-border bg-surface-bright flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">3. 版本冲突 (Version Conflict)</h3>
+</div>
+<div class="bg-review-amber/10 border-b border-review-amber/20 p-md flex items-start gap-sm">
+<span class="material-symbols-outlined text-review-amber mt-0.5">warning</span>
+<div class="flex-1">
+<p class="font-form-label text-form-label text-on-surface mb-xs">版本冲突：配置已被其他管理员修改。请刷新页面以获取最新版本。</p>
+</div>
+<button class="bg-paper-white border border-structural-border text-on-surface font-metadata text-metadata px-sm py-xs rounded-DEFAULT hover:bg-quiet-panel transition-colors">
+                        刷新页面
+                    </button>
+</div>
+<div class="p-lg flex-1 opacity-70 pointer-events-none">
+<div class="mb-lg border-b border-structural-border pb-sm">
+<h4 class="font-section-title text-section-title text-on-surface">运行参数 (Runtime)</h4>
+</div>
+<div class="grid grid-cols-2 gap-lg mb-md">
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-xs">超时时间 (Timeout ms)</label>
+<input class="w-full bg-paper-white border border-structural-border rounded-DEFAULT px-sm py-sm font-technical-data text-technical-data focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" disabled="" type="text" value="30000"/>
+</div>
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-xs">重试次数 (Retries)</label>
+<input class="w-full bg-paper-white border border-structural-border rounded-DEFAULT px-sm py-sm font-technical-data text-technical-data focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" disabled="" type="text" value="3"/>
+</div>
+</div>
+</div>
+</div>
+<!-- State 4: Secret Not Configured -->
+<div class="bg-paper-white border border-structural-border rounded-lg overflow-hidden flex flex-col h-[400px]">
+<div class="p-md border-b border-structural-border bg-surface-bright flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">4. 密钥未配置 (Secret Not Configured)</h3>
+</div>
+<div class="p-lg flex-1">
+<div class="mb-lg border-b border-structural-border pb-sm flex justify-between items-center">
+<h4 class="font-section-title text-section-title text-on-surface">运行环境概览</h4>
+</div>
+<div class="flex items-center justify-between py-sm border-b border-structural-border mb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-muted-text">key</span>
+<span class="font-form-label text-form-label text-on-surface">Secret Key Status</span>
+</div>
+<span class="font-form-label text-form-label text-critical-red flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-critical-red inline-block"></span>
+                            未配置
+                        </span>
+</div>
+<div class="bg-error-container/20 border border-error-container p-md rounded-DEFAULT flex items-start gap-sm">
+<span class="material-symbols-outlined text-critical-red mt-0.5">error</span>
+<p class="font-body text-body text-on-surface">服务正常运行需要配置API密钥。请联系系统管理员进行后台配置。</p>
+</div>
+</div>
+</div>
+<!-- State 5: Submitting -->
+<div class="bg-paper-white border border-structural-border rounded-lg overflow-hidden flex flex-col h-[400px]">
+<div class="p-md border-b border-structural-border bg-surface-bright flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">5. 保存中状态 (Submitting)</h3>
+</div>
+<div class="p-lg flex-1 relative">
+<!-- Disabled Form Content -->
+<div class="opacity-50 pointer-events-none">
+<div class="mb-lg border-b border-structural-border pb-sm">
+<h4 class="font-section-title text-section-title text-on-surface">运行参数 (Runtime)</h4>
+</div>
+<div class="grid grid-cols-2 gap-lg mb-md">
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-xs">超时时间 (Timeout ms)</label>
+<input class="w-full bg-quiet-panel border border-structural-border rounded-DEFAULT px-sm py-sm font-technical-data text-technical-data text-muted-text" disabled="" type="text" value="60000"/>
+</div>
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-xs">重试次数 (Retries)</label>
+<input class="w-full bg-quiet-panel border border-structural-border rounded-DEFAULT px-sm py-sm font-technical-data text-technical-data text-muted-text" disabled="" type="text" value="5"/>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="absolute bottom-lg right-lg flex gap-md">
+<button class="bg-paper-white border border-structural-border text-muted-text font-form-label text-form-label px-lg py-sm rounded-DEFAULT cursor-not-allowed">
+                            取消
+                        </button>
+<button class="bg-primary text-on-primary font-form-label text-form-label px-lg py-sm rounded-DEFAULT flex items-center gap-sm cursor-wait opacity-90">
+<span class="material-symbols-outlined animate-spin" style="font-size: 18px;">progress_activity</span>
+                            正在保存...
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

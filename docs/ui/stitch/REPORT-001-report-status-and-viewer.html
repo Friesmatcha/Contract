@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>REPORT-001 / Report Status and Viewer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#f1f3ff",
+                        "tertiary-container": "#8d4500",
+                        "tertiary": "#6a3200",
+                        "surface-bright": "#f9f9ff",
+                        "outline-variant": "#c3c6d3",
+                        "surface-container-high": "#e1e8ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-surface": "#121b2e",
+                        "surface-dim": "#d1daf4",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "inverse-on-surface": "#edf0ff",
+                        "surface-tint": "#2b5dac",
+                        "paper-white": "#FFFFFF",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#bcd0ff",
+                        "secondary-container": "#a0f2e5",
+                        "primary-fixed": "#d8e2ff",
+                        "informational-cyan": "#1677A6",
+                        "error-container": "#ffdad6",
+                        "on-background": "#121b2e",
+                        "primary": "#003f89",
+                        "on-primary-fixed": "#001a41",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#016a61",
+                        "on-secondary": "#ffffff",
+                        "muted-text": "#5F6B7A",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#014493",
+                        "surface": "#f9f9ff",
+                        "critical-red": "#C43D3D",
+                        "on-secondary-container": "#117167",
+                        "surface-container-highest": "#d9e2fc",
+                        "on-tertiary-container": "#ffc39d",
+                        "on-surface-variant": "#434751",
+                        "surface-container": "#e9edff",
+                        "workspace-mist": "#F5F7FA",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#d9e2fc",
+                        "on-secondary-fixed-variant": "#005049",
+                        "inverse-surface": "#273044",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-tertiary-fixed": "#311400",
+                        "confirmed-green": "#16805B",
+                        "review-amber": "#B86A00",
+                        "tertiary-fixed": "#ffdcc6",
+                        "on-secondary-fixed": "#00201c",
+                        "primary-container": "#2457a6",
+                        "outline": "#737782",
+                        "background": "#f9f9ff",
+                        "secondary-fixed": "#a0f2e5",
+                        "inverse-primary": "#adc7ff",
+                        "structural-border": "#D7DEE8",
+                        "placeholder-gray": "#8A95A3",
+                        "quiet-panel": "#EEF2F6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "header-height": "56px",
+                        "lg": "24px",
+                        "sidebar-width": "240px",
+                        "margin-compact": "20px",
+                        "margin-desktop": "24px",
+                        "xs": "8px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "technical-data": ["JetBrains Mono"],
+                        "section-title": ["Noto Sans"],
+                        "page-title": ["Noto Sans"],
+                        "metadata": ["Noto Sans"],
+                        "form-label": ["Noto Sans"],
+                        "body": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Noto Sans', sans-serif; }
+        .technical-font { font-family: 'JetBrains Mono', monospace; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface min-h-screen overflow-hidden flex font-body text-body">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] border-r border-structural-border dark:border-outline-variant bg-surface-bright dark:bg-surface-dim flex flex-col overflow-y-auto hide-scrollbar z-20">
+<!-- Brand/Header -->
+<div class="px-md py-lg border-b border-structural-border dark:border-outline-variant">
+<div class="flex items-center gap-sm mb-xs">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings: 'FILL' 1;">description</span>
+<span class="font-page-title text-page-title text-primary dark:text-primary-fixed">合同智审</span>
+</div>
+<div class="font-metadata text-metadata text-muted-text truncate">华东科技有限公司 / 组织管理员</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 py-md flex flex-col gap-xs px-xs">
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body text-body">合同</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-body text-body">预警</span>
+</a>
+<!-- Group: 知识配置 -->
+<div class="mt-md mb-xs px-sm font-metadata text-metadata text-muted-text uppercase tracking-wider">知识配置</div>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">gavel</span>
+<span class="font-body text-body">风险规则</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-body text-body">条款模板</span>
+</a>
+<!-- Group: 组织管理 -->
+<div class="mt-md mb-xs px-sm font-metadata text-metadata text-muted-text uppercase tracking-wider">组织管理</div>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body text-body">组织设置</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body text-body">成员管理</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-body text-body">支持授权</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-body text-body">组织审计</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-body text-body">运营指标</span>
+</a>
+<a class="flex items-center gap-sm px-sm py-sm rounded text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body text-body">反馈统计</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<div class="ml-[240px] flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="h-[56px] bg-paper-white border-b border-structural-border flex items-center justify-between px-lg z-10 shrink-0">
+<div class="flex items-center gap-sm text-muted-text">
+<span class="font-body text-body hover:text-primary cursor-pointer transition-colors">审核结果</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="font-body text-body text-on-surface font-medium">报告</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded hover:bg-surface-container">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="flex items-center gap-xs cursor-pointer hover:opacity-80 transition-opacity">
+<div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-sm">
+                        张
+                    </div>
+<span class="font-body text-body">张明</span>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Area -->
+<main class="flex-1 overflow-y-auto p-lg 2xl:px-[40px] flex justify-center">
+<div class="w-full max-w-[1000px] flex flex-col gap-lg pb-xl">
+<!-- Header & Actions -->
+<div class="flex items-end justify-between border-b border-structural-border pb-md">
+<div>
+<div class="flex items-center gap-md mb-xs">
+<h1 class="font-page-title text-page-title text-on-surface">合同风险分析报告</h1>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-confirmed-green/10 border border-confirmed-green/30 text-confirmed-green font-metadata text-metadata">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                已就绪
+                            </span>
+</div>
+<p class="font-body text-body text-muted-text">系统基于核心审查模型生成的完整风险报告。</p>
+</div>
+<div class="flex items-center gap-sm">
+<button class="px-md py-sm rounded border border-structural-border bg-paper-white text-on-surface font-form-label text-form-label hover:bg-quiet-panel transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                            下载 PDF
+                        </button>
+<button class="px-md py-sm rounded bg-primary text-on-primary font-form-label text-form-label hover:opacity-90 transition-opacity flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">html</span>
+                            下载 HTML
+                        </button>
+</div>
+</div>
+<!-- Metadata Cards -->
+<div class="grid grid-cols-5 gap-md">
+<div class="bg-paper-white border border-structural-border rounded-lg p-md">
+<div class="font-metadata text-metadata text-muted-text mb-1">报告 ID</div>
+<div class="font-technical-data text-technical-data text-on-surface">RP-2025-001</div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded-lg p-md">
+<div class="font-metadata text-metadata text-muted-text mb-1">审查任务 ID</div>
+<div class="font-technical-data text-technical-data text-on-surface">RV-2025-001</div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded-lg p-md">
+<div class="font-metadata text-metadata text-muted-text mb-1">支持格式</div>
+<div class="font-technical-data text-technical-data text-on-surface">HTML, PDF</div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded-lg p-md">
+<div class="font-metadata text-metadata text-muted-text mb-1">生成时间</div>
+<div class="font-technical-data text-technical-data text-on-surface">2025-03-22 10:15</div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded-lg p-md">
+<div class="font-metadata text-metadata text-muted-text mb-1">系统版本</div>
+<div class="font-technical-data text-technical-data text-on-surface">v1.0.4</div>
+</div>
+</div>
+<!-- Disclaimer -->
+<div class="bg-surface-container-low border-l-4 border-informational-cyan p-md rounded-r-lg flex gap-md items-start">
+<span class="material-symbols-outlined text-informational-cyan">info</span>
+<div>
+<h4 class="font-form-label text-form-label text-on-surface mb-1">参考声明</h4>
+<p class="font-body text-body text-muted-text">本报告由智能分析引擎生成，旨在辅助专业人员进行风险识别，不能替代独立法律意见。请结合实际业务场景与人工复核进行最终决策。</p>
+</div>
+</div>
+<!-- Preview Area (Simulated iFrame/HTML Surface) -->
+<div class="bg-paper-white border border-structural-border rounded-lg shadow-sm overflow-hidden flex flex-col h-[600px]">
+<div class="bg-quiet-panel border-b border-structural-border px-md py-sm flex items-center justify-between">
+<div class="flex items-center gap-xs text-muted-text font-metadata text-metadata">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                            内容预览 (HTML格式)
+                        </div>
+<div class="flex items-center gap-sm">
+<button class="text-muted-text hover:text-on-surface transition-colors" title="放大">
+<span class="material-symbols-outlined text-[18px]">zoom_in</span>
+</button>
+<button class="text-muted-text hover:text-on-surface transition-colors" title="缩小">
+<span class="material-symbols-outlined text-[18px]">zoom_out</span>
+</button>
+<div class="w-[1px] h-4 bg-structural-border mx-1"></div>
+<button class="text-muted-text hover:text-on-surface transition-colors" title="全屏">
+<span class="material-symbols-outlined text-[18px]">fullscreen</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-xl bg-paper-white relative">
+<!-- Simulated Document Content -->
+<div class="max-w-[800px] mx-auto">
+<div class="text-center mb-10 border-b-2 border-on-surface pb-6">
+<h2 class="text-2xl font-bold text-on-surface mb-2">华东科技设备采购合同审查报告</h2>
+<p class="text-muted-text font-technical-data">文档编号: HT-2025-03-042 | 审查日期: 2025-03-22</p>
+</div>
+<div class="mb-8">
+<h3 class="text-lg font-bold text-on-surface mb-4 border-l-4 border-primary pl-2">1. 审查结论摘要</h3>
+<div class="bg-quiet-panel p-4 rounded text-sm text-on-surface leading-relaxed">
+                                    综合评估，本合同整体风险可控，但存在 <strong class="text-critical-red">2处高风险</strong> 和 <strong class="text-review-amber">3处中风险</strong> 条款。主要风险集中在违约责任界定不清和管辖权条款缺失。建议在正式签约前对相关条款进行补充协商。
+                                </div>
+</div>
+<div class="mb-8">
+<h3 class="text-lg font-bold text-on-surface mb-4 border-l-4 border-primary pl-2">2. 核心风险分布</h3>
+<div class="w-full h-48 bg-surface-container-lowest border border-structural-border rounded flex items-center justify-center relative overflow-hidden">
+<div class="w-full h-full bg-cover bg-center opacity-80" data-alt="A clean, minimalist bar chart or pie chart visualization displaying risk distribution in professional corporate blue, red, and amber tones on a crisp white background. The chart is precise, data-driven, and highly legible, suited for a legal tech dashboard." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAhDjMeRU51p3VMI8LraOvy9mWhmyu51S-QmODTJZhi3wD-GFDMRHRBrgL8ZRdTdIzlnk2KMwxHzntPedMwJyAstGMJCSy3D3Dh0HNAB1w3mntKUEyfIbuQYYwe42YusgzFSufIdG65mx3FrdROrt61iSoXHLaQ_1eRwPSiitASc0iuCGGRRz8qUBIezm3Da9zH2QgKZ0JP0n11QTv0pIUxOfHHW5pwKTl6JtNxIziEgf7u2rcZdpEPAKNHvTy8PkQ7IqxQ03YUvRs')"></div>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-bold text-on-surface mb-4 border-l-4 border-primary pl-2">3. 重点风险项明细</h3>
+<table class="w-full border-collapse text-sm">
+<thead>
+<tr class="bg-quiet-panel border-b border-structural-border">
+<th class="py-2 px-3 text-left font-medium text-muted-text w-20">级别</th>
+<th class="py-2 px-3 text-left font-medium text-muted-text w-32">条款位置</th>
+<th class="py-2 px-3 text-left font-medium text-muted-text">风险描述与建议</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-structural-border align-top">
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-error-container text-on-error-container font-medium">高风险</span>
+</td>
+<td class="py-3 px-3 font-technical-data text-muted-text">第5.2条</td>
+<td class="py-3 px-3">
+<p class="text-on-surface mb-2 font-medium">延迟交货的违约金上限未明确</p>
+<p class="text-muted-text mb-2">当前描述："如乙方延迟交货，按日支付违约金..." 缺乏总额限制限制。</p>
+<p class="text-informational-cyan text-xs">建议：补充"最高不超过合同总金额的20%"。</p>
+</td>
+</tr>
+<tr class="border-b border-structural-border align-top">
+<td class="py-3 px-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-error-container text-on-error-container font-medium">高风险</span>
+</td>
+<td class="py-3 px-3 font-technical-data text-muted-text">第9.1条</td>
+<td class="py-3 px-3">
+<p class="text-on-surface mb-2 font-medium">争议解决管辖法院对己方不利</p>
+<p class="text-muted-text mb-2">约定由供方所在地法院管辖，增加了我方维权成本。</p>
+<p class="text-informational-cyan text-xs">建议：修改为"由甲方（需方）所在地人民法院管辖"。</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

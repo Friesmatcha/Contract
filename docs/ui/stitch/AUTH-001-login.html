@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>合同智审 - 登录</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Noto Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed": "#a0f2e5",
+                    "confirmed-green": "#16805B",
+                    "on-secondary-container": "#117167",
+                    "on-primary-container": "#bcd0ff",
+                    "inverse-primary": "#adc7ff",
+                    "on-tertiary": "#ffffff",
+                    "secondary": "#016a61",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#e9edff",
+                    "secondary-fixed-dim": "#84d5c9",
+                    "quiet-panel": "#EEF2F6",
+                    "outline": "#737782",
+                    "on-tertiary-fixed": "#311400",
+                    "muted-text": "#5F6B7A",
+                    "structural-border": "#D7DEE8",
+                    "secondary-container": "#a0f2e5",
+                    "inverse-on-surface": "#edf0ff",
+                    "surface-container-lowest": "#ffffff",
+                    "paper-white": "#FFFFFF",
+                    "placeholder-gray": "#8A95A3",
+                    "on-tertiary-container": "#ffc39d",
+                    "workspace-mist": "#F5F7FA",
+                    "on-background": "#121b2e",
+                    "tertiary": "#6a3200",
+                    "surface-variant": "#d9e2fc",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#d1daf4",
+                    "surface": "#f9f9ff",
+                    "tertiary-fixed": "#ffdcc6",
+                    "review-amber": "#B86A00",
+                    "on-primary-fixed-variant": "#014493",
+                    "on-secondary": "#ffffff",
+                    "surface-bright": "#f9f9ff",
+                    "primary-container": "#2457a6",
+                    "error": "#ba1a1a",
+                    "inverse-surface": "#273044",
+                    "background": "#f9f9ff",
+                    "primary-fixed": "#d8e2ff",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "surface-container-highest": "#d9e2fc",
+                    "informational-cyan": "#1677A6",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-surface-variant": "#434751",
+                    "on-surface": "#121b2e",
+                    "primary": "#003f89",
+                    "on-primary-fixed": "#001a41",
+                    "primary-fixed-dim": "#adc7ff",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#2b5dac",
+                    "surface-container-high": "#e1e8ff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#00201c",
+                    "on-secondary-fixed-variant": "#005049",
+                    "surface-container-low": "#f1f3ff",
+                    "outline-variant": "#c3c6d3",
+                    "tertiary-container": "#8d4500",
+                    "critical-red": "#C43D3D"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "md": "16px",
+                    "header-height": "56px",
+                    "margin-desktop": "24px",
+                    "base": "4px",
+                    "xl": "32px",
+                    "sm": "12px",
+                    "lg": "24px",
+                    "sidebar-width": "240px",
+                    "margin-compact": "20px"
+            },
+            "fontFamily": {
+                    "metadata": [
+                            "Noto Sans"
+                    ],
+                    "body": [
+                            "Noto Sans"
+                    ],
+                    "technical-data": [
+                            "JetBrains Mono", "monospace"
+                    ],
+                    "section-title": [
+                            "Noto Sans"
+                    ],
+                    "page-title": [
+                            "Noto Sans"
+                    ],
+                    "form-label": [
+                            "Noto Sans"
+                    ]
+            },
+            "fontSize": {
+                    "metadata": [
+                            "12px",
+                            {
+                                    "lineHeight": "18px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body": [
+                            "14px",
+                            {
+                                    "lineHeight": "22px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "technical-data": [
+                            "13px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "section-title": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "page-title": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "form-label": [
+                            "13px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        /* Custom styles to enforce 1px Structural Border for inputs on focus */
+        input:focus {
+            box-shadow: 0 0 0 1px #2457a6 !important;
+            border-color: #2457a6 !important;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body min-h-screen flex flex-col items-center justify-center antialiased">
+<!-- Main Content Area -->
+<main class="w-full flex-grow flex flex-col items-center justify-center px-margin-desktop py-lg">
+<!-- Identity & Descriptor -->
+<div class="text-center mb-xl">
+<h1 class="font-page-title text-page-title text-on-surface mb-xs tracking-tight">合同智审</h1>
+<p class="font-metadata text-metadata text-muted-text">企业合同智能审核与风险预警系统</p>
+</div>
+<!-- Login Form Container -->
+<div class="w-full max-w-[400px] bg-paper-white border border-structural-border rounded shadow-sm p-lg">
+<h2 class="font-section-title text-section-title text-on-surface mb-sm">登录</h2>
+<!-- Reserved Error Region (Hidden by default, height reserved) -->
+<div class="h-[24px] mb-md font-metadata text-metadata text-error invisible flex items-center" id="error-message">
+<span class="material-symbols-outlined text-[16px] mr-base" style="font-variation-settings: 'FILL' 1;">error</span>
+<span>用户名或密码错误。</span>
+</div>
+<form class="space-y-md" onsubmit="event.preventDefault(); showError();">
+<!-- Email Input -->
+<div class="flex flex-col">
+<label class="font-form-label text-form-label text-on-surface mb-base" for="email">邮箱</label>
+<input class="w-full h-[40px] px-sm bg-paper-white border border-structural-border rounded text-body font-body text-on-surface placeholder-placeholder-gray transition-colors" id="email" name="email" placeholder="name@company.com" required="" type="email"/>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col">
+<div class="flex justify-between items-center mb-base">
+<label class="font-form-label text-form-label text-on-surface" for="password">密码</label>
+<a class="font-metadata text-metadata text-primary hover:text-surface-tint transition-colors" href="#">忘记密码？</a>
+</div>
+<div class="relative">
+<input class="w-full h-[40px] pl-sm pr-10 bg-paper-white border border-structural-border rounded text-body font-body text-on-surface transition-colors" id="password" name="password" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 px-sm flex items-center text-placeholder-gray hover:text-muted-text transition-colors" onclick="togglePasswordVisibility()" type="button">
+<span class="material-symbols-outlined text-[20px]" id="visibility-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Submit Button -->
+<button class="w-full h-[40px] mt-md bg-primary-container text-on-primary font-section-title text-section-title rounded hover:bg-surface-tint active:bg-primary transition-colors flex items-center justify-center" type="submit">
+                    登录
+                </button>
+</form>
+</div>
+</main>
+<!-- Minimal Footer -->
+<!-- JSON Component: Footer -->
+<footer class="bg-workspace-mist text-muted-text font-metadata text-metadata full-width bottom-0 border-t border-structural-border flex flex-col md:flex-row justify-center items-center py-md px-margin-desktop w-full mt-auto">
+<span class="text-muted-text text-center w-full">© 2024 合同智审. All rights reserved.</span>
+</footer>
+<script>
+        // Simple script to toggle password visibility
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const visibilityIcon = document.getElementById('visibility-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                visibilityIcon.textContent = 'visibility_off';
+            } else {
+                passwordInput.type = 'password';
+                visibilityIcon.textContent = 'visibility';
+            }
+        }
+
+        // Demo function to show error state
+        function showError() {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.classList.remove('invisible');
+            
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.classList.add('border-error');
+                input.classList.remove('border-structural-border');
+            });
+            
+            // Remove error after 3 seconds for demo purposes
+            setTimeout(() => {
+                errorDiv.classList.add('invisible');
+                inputs.forEach(input => {
+                    input.classList.remove('border-error');
+                    input.classList.add('border-structural-border');
+                });
+            }, 3000);
+        }
+    </script>
+</body></html>

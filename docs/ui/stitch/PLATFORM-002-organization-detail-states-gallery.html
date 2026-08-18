@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>合同智审 - PLATFORM-002 / Organization Detail / States Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#737782",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-dim": "#d1daf4",
+                        "critical-red": "#C43D3D",
+                        "surface-container-highest": "#d9e2fc",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "primary-container": "#2457a6",
+                        "on-background": "#121b2e",
+                        "informational-cyan": "#1677A6",
+                        "secondary": "#016a61",
+                        "tertiary-container": "#8d4500",
+                        "quiet-panel": "#EEF2F6",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#6a3200",
+                        "on-tertiary-fixed": "#311400",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#edf0ff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#d9e2fc",
+                        "on-surface": "#121b2e",
+                        "inverse-primary": "#adc7ff",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container-lowest": "#ffffff",
+                        "review-amber": "#B86A00",
+                        "on-primary-fixed-variant": "#014493",
+                        "surface-container": "#e9edff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#a0f2e5",
+                        "inverse-surface": "#273044",
+                        "on-secondary-container": "#117167",
+                        "surface-tint": "#2b5dac",
+                        "paper-white": "#FFFFFF",
+                        "outline-variant": "#c3c6d3",
+                        "on-secondary": "#ffffff",
+                        "muted-text": "#5F6B7A",
+                        "on-error": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "surface-container-low": "#f1f3ff",
+                        "on-tertiary-container": "#ffc39d",
+                        "background": "#f9f9ff",
+                        "confirmed-green": "#16805B",
+                        "surface-container-high": "#e1e8ff",
+                        "placeholder-gray": "#8A95A3",
+                        "secondary-container": "#a0f2e5",
+                        "on-primary-container": "#bcd0ff",
+                        "on-primary-fixed": "#001a41",
+                        "structural-border": "#D7DEE8",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-surface-variant": "#434751",
+                        "primary-fixed-dim": "#adc7ff",
+                        "primary": "#003f89",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary": "#ffffff",
+                        "primary-fixed": "#d8e2ff",
+                        "on-secondary-fixed-variant": "#005049",
+                        "workspace-mist": "#F5F7FA"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "sm": "12px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "sidebar-width": "240px",
+                        "margin-desktop": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "margin-compact": "20px",
+                        "md": "16px",
+                        "header-height": "56px"
+                    },
+                    "fontFamily": {
+                        "technical-data": ["JetBrains Mono"],
+                        "page-title": ["Noto Sans"],
+                        "form-label": ["Noto Sans"],
+                        "metadata": ["Noto Sans"],
+                        "section-title": ["Noto Sans"],
+                        "body": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .skeleton-shimmer {
+            animation: shimmer 2s infinite linear;
+            background: linear-gradient(to right, #EEF2F6 4%, #F5F7FA 25%, #EEF2F6 36%);
+            background-size: 1000px 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body h-screen flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar-width bg-surface dark:bg-inverse-surface border-r border-structural-border dark:border-outline flex flex-col z-20">
+<div class="h-header-height flex items-center px-lg border-b border-structural-border">
+<span class="font-page-title text-page-title font-bold text-primary dark:text-primary-fixed-dim">合同智审</span>
+</div>
+<div class="px-lg py-md border-b border-structural-border">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">domain</span>
+</div>
+<div>
+<div class="font-form-label text-form-label text-on-surface">平台工作区</div>
+<div class="font-metadata text-metadata text-muted-text">平台管理员</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col py-sm">
+<!-- Active Tab -->
+<a class="flex items-center gap-md px-md py-sm bg-surface-container-high dark:bg-on-surface-variant border-l-4 border-primary text-primary dark:text-primary-fixed-dim font-bold opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span>组织</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-outline-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span>模型配置</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-outline-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors border-l-4 border-transparent" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span>平台审计</span>
+</a>
+</div>
+</nav>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 h-header-height z-10 bg-paper-white dark:bg-surface-container-low border-b border-structural-border dark:border-outline flex justify-between items-center px-margin-desktop w-[calc(100%-240px)] ml-sidebar-width">
+<div class="flex items-center gap-sm font-metadata text-metadata">
+<a class="text-muted-text hover:text-primary cursor-pointer transition-colors" href="#">组织列表</a>
+<span class="material-symbols-outlined text-muted-text text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">组织详情状态画廊</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-quiet-panel text-muted-text hover:text-primary transition-colors cursor-pointer scale-95 transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-structural-border object-cover" data-alt="A small, professional corporate headshot of a business administrator in a modern office setting. The lighting is soft and neutral, conveying trust and reliability. Clear focus, high resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDijgkAvradRbbAiUtgUZj_SlWCcn6yPxZMStmap63uV9s8K8PHE3ZN7Kda3mXBgDoYos9Ge2Y5UsPYmM_JFzWgh2BkOh_SLzMRaHYKuM3lask6jbLqxLPf94HvivVm3xktbmm9ypmuQ6hkVAU2eyVyVzUp6AdD_DHVX4WjY2A5c5nr24yZJNH3p08H0ZQ8hcm5iPznjT_VNBqfI4t7mlJKsQKGsnbwOMcqX1Lm8flyivILw98oJY2HKYItB9cSEPeVvmL8q9zJXTk"/>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-sidebar-width mt-header-height w-[calc(100%-240px)] h-[calc(100vh-56px)] overflow-y-auto p-margin-desktop bg-workspace-mist">
+<div class="max-w-7xl mx-auto space-y-lg pb-xl">
+<!-- Header -->
+<div class="flex items-center justify-between">
+<div>
+<h1 class="font-page-title text-page-title text-on-surface">PLATFORM-002: States Gallery</h1>
+<p class="font-body text-body text-muted-text mt-xs">Demonstrating various UI states for the Organization Detail page.</p>
+</div>
+</div>
+<!-- Bento Grid Layout for States -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-lg">
+<!-- 1. Detail Skeleton (Loading State) -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-lg flex flex-col h-full shadow-sm">
+<div class="flex items-center justify-between mb-md pb-sm border-b border-structural-border">
+<h2 class="font-section-title text-section-title text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-muted-text">hourglass_empty</span>
+                            1. Detail Skeleton
+                        </h2>
+<span class="bg-surface-container px-sm py-xs rounded font-technical-data text-technical-data text-muted-text">Loading State</span>
+</div>
+<div class="space-y-lg flex-1">
+<!-- Header Skeleton -->
+<div class="flex items-start justify-between">
+<div class="space-y-xs w-1/2">
+<div class="h-6 w-3/4 skeleton-shimmer rounded"></div>
+<div class="h-4 w-1/2 skeleton-shimmer rounded"></div>
+</div>
+<div class="h-8 w-24 skeleton-shimmer rounded"></div>
+</div>
+<!-- Form Skeleton -->
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-xs">
+<div class="h-4 w-16 skeleton-shimmer rounded"></div>
+<div class="h-10 w-full skeleton-shimmer rounded border border-structural-border"></div>
+</div>
+<div class="space-y-xs">
+<div class="h-4 w-24 skeleton-shimmer rounded"></div>
+<div class="h-10 w-full skeleton-shimmer rounded border border-structural-border"></div>
+</div>
+<div class="space-y-xs col-span-2">
+<div class="h-4 w-32 skeleton-shimmer rounded"></div>
+<div class="h-24 w-full skeleton-shimmer rounded border border-structural-border"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Platform Forbidden (Error State) -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-lg flex flex-col h-full shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-md pb-sm border-b border-structural-border absolute top-lg left-lg right-lg z-10 bg-paper-white">
+<h2 class="font-section-title text-section-title text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-critical-red">gpp_bad</span>
+                            2. Platform Forbidden
+                        </h2>
+<span class="bg-error-container text-on-error-container px-sm py-xs rounded font-technical-data text-technical-data">Error State</span>
+</div>
+<!-- Empty State / Error Layout -->
+<div class="flex-1 flex flex-col items-center justify-center mt-xl pt-xl text-center">
+<div class="w-16 h-16 rounded-full bg-error-container flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-[32px] text-error" style="font-variation-settings: 'FILL' 1;">block</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-xs">Access Denied</h3>
+<p class="font-body text-body text-muted-text max-w-sm mb-lg">您无权管理该组织，请联系超级管理员获取授权。</p>
+<button class="bg-surface border border-structural-border text-on-surface px-md py-sm rounded hover:bg-quiet-panel transition-colors font-form-label text-form-label flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            返回列表
+                        </button>
+</div>
+</section>
+<!-- 3. Version Conflict (Alert Banner) -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-lg flex flex-col h-full shadow-sm">
+<div class="flex items-center justify-between mb-md pb-sm border-b border-structural-border">
+<h2 class="font-section-title text-section-title text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-review-amber">warning</span>
+                            3. Version Conflict
+                        </h2>
+<span class="bg-[#FFF8E6] text-review-amber px-sm py-xs rounded font-technical-data text-technical-data border border-[#FBE3B8]">Alert State</span>
+</div>
+<!-- Alert Banner -->
+<div class="bg-[#FFF8E6] border border-[#FBE3B8] rounded-md p-md flex items-start gap-md mb-lg">
+<span class="material-symbols-outlined text-review-amber mt-0.5">info</span>
+<div class="flex-1">
+<h4 class="font-form-label text-form-label text-on-surface">版本冲突</h4>
+<p class="font-body text-body text-muted-text mt-xs">检测到该组织已被其他管理员更新，请刷新页面以获取最新数据。</p>
+</div>
+<button class="bg-white border border-[#FBE3B8] text-on-surface px-sm py-xs rounded shadow-sm hover:bg-quiet-panel transition-colors font-form-label text-form-label flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+                            刷新
+                        </button>
+</div>
+<!-- Mock Read-Only Content -->
+<div class="opacity-60 pointer-events-none filter grayscale-[30%]">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center text-on-primary-container font-page-title">T</div>
+<div>
+<div class="font-section-title text-section-title">TechNova Solutions</div>
+<div class="font-technical-data text-technical-data text-muted-text">ORG-2023-8891</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="font-form-label text-form-label text-muted-text block mb-xs">行业</label>
+<input class="w-full bg-surface-container-lowest border border-structural-border rounded px-sm py-xs text-on-surface font-body text-body" disabled="" type="text" value="Information Technology"/>
+</div>
+<div>
+<label class="font-form-label text-form-label text-muted-text block mb-xs">注册地</label>
+<input class="w-full bg-surface-container-lowest border border-structural-border rounded px-sm py-xs text-on-surface font-body text-body" disabled="" type="text" value="Beijing, China"/>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Disabled State (Read-only) -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-lg flex flex-col h-full shadow-sm relative">
+<div class="flex items-center justify-between mb-md pb-sm border-b border-structural-border">
+<h2 class="font-section-title text-section-title text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-muted-text">visibility_off</span>
+                            4. Disabled State
+                        </h2>
+<span class="bg-surface-dim text-on-surface-variant px-sm py-xs rounded font-technical-data text-technical-data">Read-Only</span>
+</div>
+<!-- Disabled Banner -->
+<div class="bg-surface-dim border-l-4 border-outline-variant p-md mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">cancel</span>
+<p class="font-body text-body text-on-surface-variant"><strong>已停用:</strong> 该组织已被禁用，业务功能已暂停。</p>
+</div>
+<!-- Read-only Form -->
+<div class="space-y-md">
+<div class="flex items-center justify-between mb-sm">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-variant rounded flex items-center justify-center text-on-surface-variant font-page-title">G</div>
+<div>
+<div class="font-section-title text-section-title text-on-surface-variant">Global Logistics Corp</div>
+<div class="font-technical-data text-technical-data text-muted-text">ORG-2023-4421</div>
+</div>
+</div>
+<span class="border border-outline-variant text-on-surface-variant px-sm py-xs rounded-full font-metadata text-metadata flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+                                Inactive
+                            </span>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div>
+<label class="font-form-label text-form-label text-muted-text block mb-xs">负责人</label>
+<div class="w-full bg-quiet-panel border border-structural-border rounded px-sm py-xs text-muted-text font-body text-body flex items-center gap-xs cursor-not-allowed">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                                    张三 (zhangsan@glc.com)
+                                </div>
+</div>
+<div>
+<label class="font-form-label text-form-label text-muted-text block mb-xs">联系电话</label>
+<div class="w-full bg-quiet-panel border border-structural-border rounded px-sm py-xs text-muted-text font-body text-body cursor-not-allowed">
+                                    +86 138 0013 8000
+                                </div>
+</div>
+<div class="col-span-2">
+<label class="font-form-label text-form-label text-muted-text block mb-xs">停用原因</label>
+<textarea class="w-full bg-quiet-panel border border-structural-border rounded px-sm py-xs text-muted-text font-body text-body h-20 resize-none cursor-not-allowed" disabled="">合同到期未续约，由平台管理员操作停用。相关业务数据已归档处理。</textarea>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

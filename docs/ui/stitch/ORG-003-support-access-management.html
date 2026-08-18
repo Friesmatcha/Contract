@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>支持授权管理 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "informational-cyan": "#1677A6",
+                    "background": "#f9f9ff",
+                    "on-secondary-fixed": "#00201c",
+                    "critical-red": "#C43D3D",
+                    "surface-container-low": "#f1f3ff",
+                    "outline": "#737782",
+                    "muted-text": "#5F6B7A",
+                    "structural-border": "#D7DEE8",
+                    "on-primary-fixed": "#001a41",
+                    "inverse-on-surface": "#edf0ff",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed": "#311400",
+                    "on-primary-container": "#bcd0ff",
+                    "primary-fixed-dim": "#adc7ff",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "secondary-fixed": "#a0f2e5",
+                    "secondary": "#016a61",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#273044",
+                    "on-surface-variant": "#434751",
+                    "placeholder-gray": "#8A95A3",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#117167",
+                    "tertiary-fixed": "#ffdcc6",
+                    "on-tertiary-container": "#ffc39d",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed-variant": "#014493",
+                    "review-amber": "#B86A00",
+                    "surface-dim": "#d1daf4",
+                    "primary-container": "#2457a6",
+                    "surface-variant": "#d9e2fc",
+                    "surface-bright": "#f9f9ff",
+                    "surface-tint": "#2b5dac",
+                    "surface": "#f9f9ff",
+                    "outline-variant": "#c3c6d3",
+                    "workspace-mist": "#F5F7FA",
+                    "primary-fixed": "#d8e2ff",
+                    "secondary-fixed-dim": "#84d5c9",
+                    "paper-white": "#FFFFFF",
+                    "primary": "#003f89",
+                    "confirmed-green": "#16805B",
+                    "surface-container-high": "#e1e8ff",
+                    "on-error-container": "#93000a",
+                    "surface-container-highest": "#d9e2fc",
+                    "secondary-container": "#a0f2e5",
+                    "on-surface": "#121b2e",
+                    "tertiary-container": "#8d4500",
+                    "tertiary": "#6a3200",
+                    "quiet-panel": "#EEF2F6",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#e9edff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#005049",
+                    "on-background": "#121b2e",
+                    "inverse-primary": "#adc7ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "8px",
+                    "base": "4px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "header-height": "56px",
+                    "sidebar-width": "240px",
+                    "margin-desktop": "24px",
+                    "margin-compact": "20px",
+                    "xl": "32px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "technical-data": ["JetBrains Mono"],
+                    "page-title": ["Noto Sans"],
+                    "metadata": ["Noto Sans"],
+                    "section-title": ["Noto Sans"],
+                    "form-label": ["Noto Sans"],
+                    "body": ["Noto Sans"]
+            },
+            "fontSize": {
+                    "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}],
+                    "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}],
+                    "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                    "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
+                    "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body text-body antialiased min-h-screen flex flex-col md:flex-row">
+<!-- TopNavBar (Responsive top bar) -->
+<header class="md:hidden fixed top-0 w-full h-header-height z-50 flex justify-between items-center px-lg bg-paper-white border-b border-structural-border">
+<div class="font-page-title text-page-title font-semibold text-on-surface">
+            合同智审
+        </div>
+<div class="flex items-center gap-md text-primary">
+<span class="material-symbols-outlined cursor-pointer hover:opacity-80 transition-opacity">notifications</span>
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-structural-border">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A small professional corporate avatar portrait of a business executive in a well-lit modern office setting. The style is clean, corporate photography with natural light and a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaydVkAhqLXT_rYmyC9g7ntTxgWsd_oLJhpRv3VMcaS1oy8Iah4inrCVEHZoxrtzMiakhnqUcumo_x0LNX8864aJ2Bo7fvuAeWf1hNufdtircZV6jMx2ZwOjmzLDx_YzIy7NQw2U4enhHOiASmLabZmh8yC5vaB4j9xIoxiBnCpv317o-BtGXCZML1Kxus96fi2RjA4aX69swwKIG2Yzm_4WErO-zgEYD2ngB95KJEUheDjSiy2Xsm9Wh8HG-spgnz4wtDM-KOyZM"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Desktop Shell) -->
+<nav class="hidden md:flex fixed left-0 top-0 bottom-0 w-sidebar-width flex-col pt-md bg-workspace-mist border-r border-structural-border z-40">
+<!-- Brand/Header -->
+<div class="px-md mb-lg">
+<div class="flex items-center gap-xs mb-md">
+<div class="w-8 h-8 bg-primary text-on-primary rounded flex items-center justify-center">
+<span class="material-symbols-outlined icon-fill text-[20px]">description</span>
+</div>
+<h1 class="font-section-title text-section-title font-bold text-on-surface">合同智审</h1>
+</div>
+<div class="p-xs bg-surface-container-high rounded border border-structural-border">
+<div class="font-form-label text-form-label text-on-surface line-clamp-1">华东科技有限公司</div>
+<div class="font-metadata text-metadata text-muted-text">组织管理员</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto px-xs space-y-[2px]">
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span>合同</span>
+</a>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+<span>预警</span>
+</a>
+<div class="mt-md mb-xs px-xs font-metadata text-metadata text-muted-text uppercase tracking-wider">知识配置</div>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+<span>风险规则</span>
+</a>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span>条款模板</span>
+</a>
+<div class="mt-md mb-xs px-xs font-metadata text-metadata text-muted-text uppercase tracking-wider">组织管理</div>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span>组织设置</span>
+</a>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span>成员管理</span>
+</a>
+<!-- ACTIVE NAV ITEM -->
+<a class="flex items-center gap-sm px-xs py-xs rounded bg-surface-container-high text-primary border-l-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px] icon-fill">admin_panel_settings</span>
+<span class="font-medium">支持授权</span>
+</a>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">history_edu</span>
+<span>组织审计</span>
+</a>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span>运营指标</span>
+</a>
+<a class="flex items-center gap-sm px-xs py-xs rounded text-muted-text hover:text-on-surface hover:bg-surface-container-low transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined text-[20px]">analytics</span>
+<span>反馈统计</span>
+</a>
+</div>
+<!-- User Profile (Bottom of Sidebar) -->
+<div class="p-md border-t border-structural-border mt-auto">
+<div class="flex items-center gap-xs cursor-pointer hover:opacity-80">
+<div class="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden border border-structural-border">
+<img alt="User Avatar" class="w-full h-full object-cover" data-alt="A small professional corporate avatar portrait of a business executive in a well-lit modern office setting. The style is clean, corporate photography with natural light and a neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCARxaraK3umLCqc3CNZEAfYDuMNnHC25ce6yPeqPC_YpuUSab8TZ_Au6XUVjnecWEjV_F1nXc0TrIX-XE-lLpwnPOn87mVj2lDCFDHlB9PfjyWAUK72AlHF2yV988kfMCRH7wfXz2kuG87tntiEudJ0H6uw27rX9iJEPdJ4LFCW3Gpdvvk2BJwiKy5RvnM_4q1lcMl424GdoUZJpuAacb1LxsbppkTxBLvdFsQXyTiT5hzXj7VvyJoE1wY9bAXnNsbkMemCvh6s1w"/>
+</div>
+<div class="flex-1">
+<div class="font-form-label text-form-label text-on-surface">李经理</div>
+</div>
+<span class="material-symbols-outlined text-muted-text text-[20px]">expand_less</span>
+</div>
+</div>
+</nav>
+<!-- Main Workspace -->
+<main class="flex-1 md:ml-sidebar-width pt-[calc(var(--spacing-header-height)+var(--spacing-md))] md:pt-margin-desktop px-margin-compact md:px-margin-desktop pb-xl min-h-screen flex flex-col">
+<!-- Security Alert Banner -->
+<div class="bg-surface-container-low border border-structural-border rounded flex items-center gap-sm p-sm mb-lg">
+<span class="material-symbols-outlined text-informational-cyan text-[20px] icon-fill">info</span>
+<span class="text-on-surface">支持访问默认只读，最长 4 小时，每次访问可审计。</span>
+</div>
+<!-- Header Area -->
+<div class="flex justify-between items-center mb-lg">
+<h2 class="font-page-title text-page-title text-on-surface">支持授权管理</h2>
+<button class="bg-primary text-on-primary hover:bg-primary/90 px-md py-xs rounded font-form-label text-form-label transition-colors flex items-center gap-xs h-[36px]" onclick="document.getElementById('create-dialog').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                创建支持授权
+            </button>
+</div>
+<!-- Filter Bar -->
+<div class="flex gap-sm mb-md border-b border-structural-border pb-xs">
+<button class="px-sm py-xs font-form-label text-form-label text-primary border-b-2 border-primary -mb-[calc(var(--spacing-xs)+2px)]">全部</button>
+<button class="px-sm py-xs font-form-label text-form-label text-muted-text hover:text-on-surface transition-colors">活跃</button>
+<button class="px-sm py-xs font-form-label text-form-label text-muted-text hover:text-on-surface transition-colors">已过期</button>
+<button class="px-sm py-xs font-form-label text-form-label text-muted-text hover:text-on-surface transition-colors">已撤销</button>
+</div>
+<!-- Grant Table Container -->
+<div class="bg-paper-white border border-structural-border rounded flex-1 overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[900px]">
+<thead>
+<tr class="bg-workspace-mist border-b border-structural-border">
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[15%]">平台用户</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[15%]">授权范围</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[20%]">原因</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[15%]">开始时间</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[15%]">到期时间</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[10%]">状态</th>
+<th class="py-sm px-md font-form-label text-form-label text-muted-text font-medium w-[10%]">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-structural-border">
+<!-- Row 1: Active -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-sm px-md text-on-surface">平台支持 A</td>
+<td class="py-sm px-md text-on-surface">全局只读</td>
+<td class="py-sm px-md text-on-surface truncate max-w-[200px]" title="排查 API 500 错误">排查 API 500 错误</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2024-03-22 10:00</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">
+                                2024-03-22 14:00
+                                <div class="text-primary mt-[2px] font-medium text-[11px]">(剩余 01:22:45)</div>
+</td>
+<td class="py-sm px-md">
+<div class="inline-flex items-center gap-xs px-xs py-[2px] bg-confirmed-green/10 text-confirmed-green border border-confirmed-green/20 rounded font-metadata text-metadata">
+<div class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></div>
+                                    活跃
+                                </div>
+</td>
+<td class="py-sm px-md">
+<button class="text-critical-red hover:text-critical-red/80 font-form-label text-form-label transition-colors">撤销</button>
+</td>
+</tr>
+<!-- Row 2: Expired -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-sm px-md text-on-surface">平台支持 B</td>
+<td class="py-sm px-md text-on-surface">风险规则配置</td>
+<td class="py-sm px-md text-on-surface truncate max-w-[200px]" title="协助配置高风险规则">协助配置高风险规则</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2024-03-21 09:00</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2024-03-21 11:00</td>
+<td class="py-sm px-md">
+<div class="inline-flex items-center gap-xs px-xs py-[2px] bg-surface-container-low text-muted-text border border-structural-border rounded font-metadata text-metadata">
+<div class="w-1.5 h-1.5 rounded-full bg-muted-text"></div>
+                                    已过期
+                                </div>
+</td>
+<td class="py-sm px-md">
+<button class="text-primary hover:text-primary/80 font-form-label text-form-label transition-colors" onclick="document.getElementById('detail-drawer').classList.remove('translate-x-full')">详情</button>
+</td>
+</tr>
+<!-- Row 3: Revoked -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-sm px-md text-on-surface">平台支持 C</td>
+<td class="py-sm px-md text-on-surface">成员管理</td>
+<td class="py-sm px-md text-on-surface truncate max-w-[200px]" title="撤回误发出的邀请">撤回误发出的邀请</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2024-03-20 15:00</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2024-03-20 16:00</td>
+<td class="py-sm px-md">
+<div class="inline-flex items-center gap-xs px-xs py-[2px] bg-error-container text-on-error-container border border-error-container rounded font-metadata text-metadata">
+<span class="material-symbols-outlined text-[12px]">block</span>
+                                    已撤销
+                                </div>
+</td>
+<td class="py-sm px-md">
+<button class="text-primary hover:text-primary/80 font-form-label text-form-label transition-colors" onclick="document.getElementById('detail-drawer').classList.remove('translate-x-full')">详情</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (Placeholder structure) -->
+<div class="mt-auto border-t border-structural-border p-sm flex items-center justify-between bg-paper-white text-muted-text font-metadata text-metadata">
+<div>共 3 条记录</div>
+<div class="flex gap-xs">
+<button class="w-8 h-8 rounded border border-structural-border flex items-center justify-center hover:bg-surface-container-low disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded border border-primary bg-primary-fixed-dim text-primary flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded border border-structural-border flex items-center justify-center hover:bg-surface-container-low disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Create Dialog (Overlay State) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-inverse-surface/40 backdrop-blur-sm p-margin-compact" id="create-dialog">
+<div class="bg-paper-white rounded-lg shadow-lg w-full max-w-[480px] border border-structural-border flex flex-col overflow-hidden">
+<div class="px-lg py-md border-b border-structural-border flex justify-between items-center">
+<h3 class="font-section-title text-section-title text-on-surface">创建支持授权</h3>
+<button class="text-muted-text hover:text-on-surface transition-colors" onclick="document.getElementById('create-dialog').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<!-- Form Group -->
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">授权范围 <span class="text-critical-red">*</span></label>
+<select class="w-full bg-paper-white border border-structural-border rounded px-sm py-xs text-on-surface font-body text-body focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+<option>全局只读</option>
+<option>风险规则配置只读</option>
+<option>成员管理只读</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">授权原因 <span class="text-critical-red">*</span></label>
+<textarea class="w-full bg-paper-white border border-structural-border rounded px-sm py-xs text-on-surface font-body text-body focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-placeholder-gray resize-none" placeholder="请详细描述需要支持排查的问题..." rows="3"></textarea>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">有效期 (最长4小时) <span class="text-critical-red">*</span></label>
+<select class="w-full bg-paper-white border border-structural-border rounded px-sm py-xs text-on-surface font-body text-body focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+<option>1 小时</option>
+<option>2 小时</option>
+<option>4 小时</option>
+</select>
+</div>
+<div class="mt-xs p-sm bg-surface-container-low border border-structural-border rounded text-muted-text font-metadata text-metadata">
+                    授权说明：授权后平台支持人员将获得 4 小时只读访问权限，所有操作将被审计记录。
+                </div>
+</div>
+<div class="px-lg py-md border-t border-structural-border bg-workspace-mist flex justify-end gap-sm">
+<button class="px-md py-xs rounded bg-paper-white border border-structural-border text-on-surface hover:bg-surface-container-low transition-colors font-form-label text-form-label h-[36px]" onclick="document.getElementById('create-dialog').classList.add('hidden')">取消</button>
+<button class="px-md py-xs rounded bg-primary text-on-primary hover:bg-primary/90 transition-colors font-form-label text-form-label h-[36px]">立即授权</button>
+</div>
+</div>
+</div>
+<!-- Detail Drawer (Right Side State) -->
+<div class="fixed inset-y-0 right-0 z-50 w-full md:w-[480px] bg-paper-white shadow-[-4px_0_24px_rgba(0,0,0,0.05)] border-l border-structural-border transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col" id="detail-drawer">
+<div class="px-lg py-md border-b border-structural-border flex justify-between items-center bg-workspace-mist">
+<h3 class="font-section-title text-section-title text-on-surface">授权详情</h3>
+<button class="text-muted-text hover:text-on-surface transition-colors p-xs hover:bg-surface-container-low rounded-full" onclick="document.getElementById('detail-drawer').classList.add('translate-x-full')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-lg flex flex-col gap-lg">
+<!-- Metadata Section -->
+<div class="grid grid-cols-2 gap-md border border-structural-border rounded p-sm bg-surface-container-lowest">
+<div class="flex flex-col gap-[2px]">
+<span class="font-metadata text-metadata text-muted-text">平台用户</span>
+<span class="text-on-surface font-medium">平台支持 B</span>
+</div>
+<div class="flex flex-col gap-[2px]">
+<span class="font-metadata text-metadata text-muted-text">状态</span>
+<div class="inline-flex items-center gap-xs px-xs py-[2px] bg-surface-container-low text-muted-text border border-structural-border rounded w-fit font-metadata text-metadata mt-1">
+<div class="w-1.5 h-1.5 rounded-full bg-muted-text"></div>
+                        已过期
+                    </div>
+</div>
+<div class="flex flex-col gap-[2px] col-span-2">
+<span class="font-metadata text-metadata text-muted-text">授权范围</span>
+<span class="text-on-surface">风险规则配置</span>
+</div>
+<div class="flex flex-col gap-[2px] col-span-2">
+<span class="font-metadata text-metadata text-muted-text">原因</span>
+<span class="text-on-surface">协助配置高风险规则</span>
+</div>
+<div class="flex flex-col gap-[2px]">
+<span class="font-metadata text-metadata text-muted-text">开始时间</span>
+<span class="font-technical-data text-technical-data text-on-surface">2024-03-21 09:00</span>
+</div>
+<div class="flex flex-col gap-[2px]">
+<span class="font-metadata text-metadata text-muted-text">到期时间</span>
+<span class="font-technical-data text-technical-data text-on-surface">2024-03-21 11:00</span>
+</div>
+</div>
+<!-- Audit Detail Section -->
+<div class="flex flex-col gap-sm">
+<h4 class="font-form-label text-form-label text-on-surface font-semibold flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">history</span>
+                    审计详情
+                </h4>
+<div class="border border-structural-border rounded overflow-hidden">
+<table class="w-full text-left">
+<thead class="bg-workspace-mist border-b border-structural-border">
+<tr>
+<th class="py-xs px-sm font-metadata text-metadata text-muted-text font-medium">访问时间</th>
+<th class="py-xs px-sm font-metadata text-metadata text-muted-text font-medium">操作类型</th>
+<th class="py-xs px-sm font-metadata text-metadata text-muted-text font-medium">资源 ID</th>
+<th class="py-xs px-sm font-metadata text-metadata text-muted-text font-medium">访问 IP</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-structural-border font-technical-data text-technical-data">
+<tr class="hover:bg-quiet-panel transition-colors">
+<td class="py-xs px-sm text-muted-text">09:15:22</td>
+<td class="py-xs px-sm text-on-surface">查看</td>
+<td class="py-xs px-sm text-muted-text">rule_8819x</td>
+<td class="py-xs px-sm text-muted-text">192.168.1.104</td>
+</tr>
+<tr class="hover:bg-quiet-panel transition-colors">
+<td class="py-xs px-sm text-muted-text">09:12:05</td>
+<td class="py-xs px-sm text-on-surface">列表查询</td>
+<td class="py-xs px-sm text-muted-text">-</td>
+<td class="py-xs px-sm text-muted-text">192.168.1.104</td>
+</tr>
+<tr class="hover:bg-quiet-panel transition-colors">
+<td class="py-xs px-sm text-muted-text">09:01:10</td>
+<td class="py-xs px-sm text-on-surface">登录授权会话</td>
+<td class="py-xs px-sm text-muted-text">-</td>
+<td class="py-xs px-sm text-muted-text">192.168.1.104</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="p-md border-t border-structural-border bg-workspace-mist">
+<button class="w-full px-md py-xs rounded bg-paper-white border border-structural-border text-on-surface hover:bg-surface-container-low transition-colors font-form-label text-form-label h-[36px]" onclick="document.getElementById('detail-drawer').classList.add('translate-x-full')">关闭</button>
+</div>
+</div>
+</body></html>

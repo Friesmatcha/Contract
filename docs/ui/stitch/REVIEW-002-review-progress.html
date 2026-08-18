@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Review Progress - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#014493",
+                        "on-primary-container": "#bcd0ff",
+                        "inverse-primary": "#adc7ff",
+                        "tertiary-container": "#8d4500",
+                        "inverse-surface": "#273044",
+                        "primary": "#003f89",
+                        "informational-cyan": "#1677A6",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary-fixed": "#ffdcc6",
+                        "paper-white": "#FFFFFF",
+                        "primary-fixed": "#d8e2ff",
+                        "surface-container-high": "#e1e8ff",
+                        "on-surface": "#121b2e",
+                        "surface-container": "#e9edff",
+                        "on-tertiary-container": "#ffc39d",
+                        "quiet-panel": "#EEF2F6",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c3c6d3",
+                        "critical-red": "#C43D3D",
+                        "on-error": "#ffffff",
+                        "surface": "#f9f9ff",
+                        "workspace-mist": "#F5F7FA",
+                        "on-secondary-fixed": "#00201c",
+                        "on-tertiary": "#ffffff",
+                        "muted-text": "#5F6B7A",
+                        "placeholder-gray": "#8A95A3",
+                        "on-tertiary-fixed": "#311400",
+                        "on-secondary-container": "#117167",
+                        "on-primary-fixed": "#001a41",
+                        "on-surface-variant": "#434751",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d1daf4",
+                        "on-secondary-fixed-variant": "#005049",
+                        "error-container": "#ffdad6",
+                        "secondary": "#016a61",
+                        "structural-border": "#D7DEE8",
+                        "primary-fixed-dim": "#adc7ff",
+                        "secondary-container": "#a0f2e5",
+                        "outline": "#737782",
+                        "on-error-container": "#93000a",
+                        "surface-variant": "#d9e2fc",
+                        "surface-container-highest": "#d9e2fc",
+                        "on-background": "#121b2e",
+                        "surface-bright": "#f9f9ff",
+                        "tertiary": "#6a3200",
+                        "surface-container-low": "#f1f3ff",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "surface-tint": "#2b5dac",
+                        "secondary-fixed": "#a0f2e5",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "background": "#f9f9ff",
+                        "confirmed-green": "#16805B",
+                        "review-amber": "#B86A00",
+                        "primary-container": "#2457a6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "12px",
+                        "lg": "24px",
+                        "header-height": "56px",
+                        "margin-compact": "20px",
+                        "xl": "32px",
+                        "sidebar-width": "240px",
+                        "xs": "8px",
+                        "margin-desktop": "24px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "technical-data": ["JetBrains Mono"],
+                        "body": ["Noto Sans"],
+                        "form-label": ["Noto Sans"],
+                        "metadata": ["Noto Sans"],
+                        "section-title": ["Noto Sans"],
+                        "page-title": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
+                        "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body font-body antialiased flex">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-paper-white dark:bg-inverse-surface border-r border-structural-border dark:border-outline-variant flex flex-col h-full py-md z-40">
+<div class="px-md pb-lg">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+</div>
+<div>
+<h1 class="font-page-title text-[18px] font-bold text-primary dark:text-inverse-primary truncate">合同智审</h1>
+</div>
+</div>
+<div class="mt-sm pl-11">
+<p class="font-body text-body text-on-surface truncate">华东科技有限公司</p>
+<p class="font-metadata text-metadata text-muted-text truncate">组织管理员</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto px-xs">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-primary dark:text-inverse-primary font-bold border-l-4 border-primary bg-surface-container-low dark:bg-on-primary-fixed-variant" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-body text-body">合同</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">warning</span>
+<span class="font-body text-body">预警</span>
+</a>
+</li>
+<div class="mt-md mb-xs px-md">
+<span class="font-metadata text-metadata text-muted-text uppercase tracking-wider">知识配置</span>
+</div>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">gavel</span>
+<span class="font-body text-body">风险规则</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">extension</span>
+<span class="font-body text-body">条款模板</span>
+</a>
+</li>
+<div class="mt-md mb-xs px-md">
+<span class="font-metadata text-metadata text-muted-text uppercase tracking-wider">组织管理</span>
+</div>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-body text-body">组织设置</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-body text-body">成员管理</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">verified_user</span>
+<span class="font-body text-body">支持授权</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-body text-body">组织审计</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">monitoring</span>
+<span class="font-body text-body">运营指标</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-md py-sm cursor-pointer transition-all duration-200 text-muted-text dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-quiet-panel dark:hover:bg-on-primary-fixed-variant rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">feedback</span>
+<span class="font-body text-body">反馈统计</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 h-header-height z-50 bg-paper-white dark:bg-inverse-surface border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg ml-[240px] w-[calc(100%-240px)]">
+<div class="flex items-center gap-md">
+<!-- Breadcrumbs in Header -->
+<nav class="flex items-center font-body text-body text-muted-text">
+<a class="hover:text-primary transition-colors" href="#">合同</a>
+<span class="material-symbols-outlined text-[16px] mx-xs">chevron_right</span>
+<span class="font-technical-data text-technical-data">HT-2025-001</span>
+<span class="material-symbols-outlined text-[16px] mx-xs">chevron_right</span>
+<span class="text-on-surface font-medium">审核任务</span>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-muted-text hover:text-primary transition-colors cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="text-muted-text hover:text-primary transition-colors cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="ml-[240px] mt-[56px] w-[calc(100%-240px)] min-h-[calc(100vh-56px)] p-margin-desktop flex flex-col items-center justify-start">
+<!-- Header Section -->
+<div class="w-full max-w-4xl flex justify-between items-start mb-lg">
+<div>
+<div class="flex items-center gap-sm mb-xs">
+<h2 class="font-page-title text-page-title text-on-surface">RV-2025-001</h2>
+<span class="inline-flex items-center gap-xs px-2 py-1 rounded-DEFAULT bg-surface-container-high text-primary border border-primary-fixed-dim font-metadata text-metadata">
+<span class="material-symbols-outlined text-[14px] spin-slow">sync</span>
+                        正在执行审核
+                    </span>
+</div>
+</div>
+<button class="bg-paper-white text-on-surface border border-structural-border hover:bg-quiet-panel transition-colors py-sm px-md rounded-lg font-form-label text-form-label flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                返回合同
+            </button>
+</div>
+<!-- Progress Card -->
+<div class="w-full max-w-4xl bg-paper-white border border-structural-border rounded-xl p-xl shadow-sm mb-lg">
+<div class="flex flex-col items-center justify-center mb-xl">
+<!-- Large Circular Progress or Prominent Bar. Using a large bar here for better horizontal flow in a card -->
+<div class="w-full relative h-4 bg-surface-container rounded-full overflow-hidden mb-md border border-structural-border">
+<div class="absolute top-0 left-0 h-full bg-primary transition-all duration-1000 ease-out" style="width: 68%;"></div>
+</div>
+<div class="flex items-baseline gap-xs text-primary mb-sm">
+<span class="text-[48px] font-technical-data font-bold leading-none tracking-tight">68</span>
+<span class="text-[24px] font-technical-data font-bold">%</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-xs">风险分析</h3>
+<p class="font-body text-body text-muted-text">系统正在完成风险分析</p>
+</div>
+<!-- Vertical Timeline -->
+<div class="mt-xl pt-xl border-t border-structural-border">
+<div class="relative pl-6 space-y-md before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-structural-border">
+<!-- Stage 1: 解析 -->
+<div class="relative flex items-center justify-between group">
+<div class="flex items-center gap-md">
+<div class="absolute left-[-24px] flex items-center justify-center w-6 h-6 rounded-full bg-paper-white border-2 border-confirmed-green text-confirmed-green z-10">
+<span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body text-body text-on-surface font-medium">解析</span>
+</div>
+<span class="font-technical-data text-metadata text-muted-text">2025-03-20 14:30:15</span>
+</div>
+<!-- Stage 2: 分类 -->
+<div class="relative flex items-center justify-between group">
+<div class="flex items-center gap-md">
+<div class="absolute left-[-24px] flex items-center justify-center w-6 h-6 rounded-full bg-paper-white border-2 border-confirmed-green text-confirmed-green z-10">
+<span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body text-body text-on-surface font-medium">分类</span>
+</div>
+<span class="font-technical-data text-metadata text-muted-text">2025-03-20 14:30:22</span>
+</div>
+<!-- Stage 3: 字段抽取 -->
+<div class="relative flex items-center justify-between group">
+<div class="flex items-center gap-md">
+<div class="absolute left-[-24px] flex items-center justify-center w-6 h-6 rounded-full bg-paper-white border-2 border-confirmed-green text-confirmed-green z-10">
+<span class="material-symbols-outlined text-[14px] font-bold" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-body text-body text-on-surface font-medium">字段抽取</span>
+</div>
+<span class="font-technical-data text-metadata text-muted-text">2025-03-20 14:30:45</span>
+</div>
+<!-- Stage 4: 风险分析 (In Progress) -->
+<div class="relative flex items-center justify-between group">
+<div class="flex items-center gap-md">
+<div class="absolute left-[-24px] flex items-center justify-center w-6 h-6 rounded-full bg-paper-white border-2 border-review-amber text-review-amber z-10">
+<span class="material-symbols-outlined text-[14px] spin-slow" style="font-variation-settings: 'FILL' 0;">autorenew</span>
+</div>
+<span class="font-body text-body text-review-amber font-bold">风险分析</span>
+</div>
+<span class="font-technical-data text-metadata text-review-amber">处理中...</span>
+</div>
+<!-- Stage 5: 条款比对 (Pending) -->
+<div class="relative flex items-center justify-between group">
+<div class="flex items-center gap-md">
+<div class="absolute left-[-24px] flex items-center justify-center w-6 h-6 rounded-full bg-paper-white border-2 border-outline-variant text-outline-variant z-10">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+</div>
+<span class="font-body text-body text-muted-text">条款比对</span>
+</div>
+<span class="font-technical-data text-metadata text-placeholder-gray">--</span>
+</div>
+</div>
+</div>
+<!-- Polling Indicator -->
+<div class="mt-lg pt-md border-t border-structural-border flex justify-end items-center gap-xs text-muted-text font-metadata text-metadata">
+<span class="material-symbols-outlined text-[14px] spin-slow">progress_activity</span>
+                正在获取最新状态
+            </div>
+</div>
+<!-- Hidden Failed State Design Pattern Reservation -->
+<!-- 
+        <div class="w-full max-w-4xl bg-error-container border border-error rounded-xl p-md shadow-sm mb-lg flex items-start gap-md hidden">
+            <span class="material-symbols-outlined text-error text-[24px]">error</span>
+            <div>
+                <h3 class="font-section-title text-section-title text-on-error-container mb-xs">分析任务失败</h3>
+                <p class="font-body text-body text-on-error-container opacity-80">无法连接到风险规则引擎，请稍后重试或联系系统管理员。</p>
+            </div>
+        </div>
+        -->
+</main>
+</body></html>

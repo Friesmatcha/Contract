@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>接受邀请 - 合同智审</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#a0f2e5",
+                        "on-primary-fixed-variant": "#014493",
+                        "inverse-surface": "#273044",
+                        "on-tertiary-container": "#ffc39d",
+                        "on-secondary-container": "#117167",
+                        "surface": "#f9f9ff",
+                        "tertiary-container": "#8d4500",
+                        "primary": "#003f89",
+                        "primary-fixed-dim": "#adc7ff",
+                        "outline": "#737782",
+                        "error": "#ba1a1a",
+                        "critical-red": "#C43D3D",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-secondary-fixed": "#00201c",
+                        "paper-white": "#FFFFFF",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "surface-container-low": "#f1f3ff",
+                        "structural-border": "#D7DEE8",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "muted-text": "#5F6B7A",
+                        "surface-tint": "#2b5dac",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary": "#ffffff",
+                        "secondary": "#016a61",
+                        "tertiary": "#6a3200",
+                        "placeholder-gray": "#8A95A3",
+                        "on-surface": "#121b2e",
+                        "on-error": "#ffffff",
+                        "background": "#f9f9ff",
+                        "inverse-primary": "#adc7ff",
+                        "review-amber": "#B86A00",
+                        "surface-container": "#e9edff",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-variant": "#d9e2fc",
+                        "on-background": "#121b2e",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#d9e2fc",
+                        "on-surface-variant": "#434751",
+                        "informational-cyan": "#1677A6",
+                        "workspace-mist": "#F5F7FA",
+                        "on-secondary-fixed-variant": "#005049",
+                        "on-primary-fixed": "#001a41",
+                        "surface-bright": "#f9f9ff",
+                        "on-tertiary-fixed": "#311400",
+                        "surface-container-high": "#e1e8ff",
+                        "on-primary-container": "#bcd0ff",
+                        "secondary-container": "#a0f2e5",
+                        "on-primary": "#ffffff",
+                        "quiet-panel": "#EEF2F6",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d1daf4",
+                        "primary-container": "#2457a6",
+                        "on-error-container": "#93000a",
+                        "confirmed-green": "#16805B",
+                        "outline-variant": "#c3c6d3",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "lg": "24px",
+                        "sm": "12px",
+                        "margin-desktop": "24px",
+                        "sidebar-width": "240px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "xl": "32px",
+                        "margin-compact": "20px",
+                        "header-height": "56px"
+                    },
+                    "fontFamily": {
+                        "form-label": ["Noto Sans"],
+                        "body": ["Noto Sans"],
+                        "section-title": ["Noto Sans"],
+                        "page-title": ["Noto Sans"],
+                        "metadata": ["Noto Sans"],
+                        "technical-data": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist min-h-screen flex items-center justify-center font-body text-body text-on-surface antialiased p-lg">
+<div class="w-full max-w-md">
+<!-- Brand Logo -->
+<div class="text-center mb-xl">
+<h1 class="font-page-title text-page-title text-primary font-bold tracking-tight">合同智审</h1>
+</div>
+<!-- Auth Card -->
+<div class="bg-paper-white rounded-lg border border-structural-border overflow-hidden">
+<div class="p-xl">
+<!-- Heading & Subtext -->
+<div class="text-center mb-xl">
+<h2 class="font-page-title text-page-title text-on-surface mb-xs">接受邀请</h2>
+<p class="font-body text-body text-muted-text">验证邀请后即可继续。</p>
+</div>
+<!-- Alert Reservation (Hidden by default, shown here for demonstration) -->
+<div class="hidden mb-lg p-md bg-error-container text-on-error-container rounded border border-[#ffb4ab] flex items-start gap-sm">
+<span class="material-symbols-outlined text-[#93000a] shrink-0 mt-0.5">error</span>
+<div class="font-body text-body">
+<strong>邀请已过期</strong>
+<p class="mt-base text-[#93000a]">请联系您的管理员重新发送邀请链接。</p>
+</div>
+</div>
+<!-- Form -->
+<form class="space-y-md">
+<!-- Display Name -->
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-base" for="displayName">展示名</label>
+<input class="w-full h-10 px-sm bg-paper-white border border-structural-border rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface placeholder-placeholder-gray transition-colors" id="displayName" name="displayName" placeholder="输入您的展示名称" type="text"/>
+</div>
+<!-- Password -->
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-base" for="password">密码</label>
+<input class="w-full h-10 px-sm bg-paper-white border border-structural-border rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface placeholder-placeholder-gray transition-colors" id="password" name="password" placeholder="设置密码" type="password"/>
+</div>
+<!-- Confirm Password -->
+<div>
+<label class="block font-form-label text-form-label text-on-surface mb-base" for="confirmPassword">确认密码</label>
+<input class="w-full h-10 px-sm bg-paper-white border border-structural-border rounded focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface placeholder-placeholder-gray transition-colors" id="confirmPassword" name="confirmPassword" placeholder="再次输入密码" type="password"/>
+</div>
+<!-- Helper Text -->
+<div class="mt-xs">
+<p class="font-metadata text-metadata text-muted-text flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">info</span>
+                            这些字段仅在创建新账号时需要。
+                        </p>
+</div>
+<!-- Actions -->
+<div class="pt-lg space-y-md">
+<button class="w-full h-10 flex justify-center items-center bg-primary text-on-primary font-section-title text-section-title rounded hover:bg-primary-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="submit">
+                            接受邀请
+                        </button>
+<div class="text-center">
+<a class="font-body text-body text-primary hover:text-primary-container transition-colors" href="#">
+                                返回登录
+                            </a>
+</div>
+</div>
+</form>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-xl text-center">
+<p class="font-metadata text-metadata text-muted-text">
+                © 2024 合同智审. All rights reserved.
+            </p>
+</div>
+</div>
+</body></html>

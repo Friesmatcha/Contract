@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLATFORM-003 / Model Configuration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-bright": "#f9f9ff",
+                "surface": "#f9f9ff",
+                "muted-text": "#5F6B7A",
+                "on-primary-container": "#bcd0ff",
+                "surface-container": "#e9edff",
+                "quiet-panel": "#EEF2F6",
+                "surface-container-lowest": "#ffffff",
+                "primary-fixed-dim": "#adc7ff",
+                "on-background": "#121b2e",
+                "tertiary": "#6a3200",
+                "secondary-fixed-dim": "#84d5c9",
+                "on-tertiary": "#ffffff",
+                "on-error-container": "#93000a",
+                "critical-red": "#C43D3D",
+                "tertiary-fixed-dim": "#ffb786",
+                "surface-tint": "#2b5dac",
+                "surface-container-low": "#f1f3ff",
+                "on-primary": "#ffffff",
+                "secondary-container": "#a0f2e5",
+                "paper-white": "#FFFFFF",
+                "tertiary-container": "#8d4500",
+                "outline": "#737782",
+                "on-error": "#ffffff",
+                "background": "#f9f9ff",
+                "error-container": "#ffdad6",
+                "inverse-on-surface": "#edf0ff",
+                "inverse-primary": "#adc7ff",
+                "surface-container-high": "#e1e8ff",
+                "workspace-mist": "#F5F7FA",
+                "secondary": "#016a61",
+                "on-tertiary-fixed": "#311400",
+                "on-surface-variant": "#434751",
+                "on-tertiary-fixed-variant": "#723600",
+                "surface-dim": "#d1daf4",
+                "review-amber": "#B86A00",
+                "confirmed-green": "#16805B",
+                "tertiary-fixed": "#ffdcc6",
+                "primary-container": "#2457a6",
+                "placeholder-gray": "#8A95A3",
+                "secondary-fixed": "#a0f2e5",
+                "on-secondary-container": "#117167",
+                "surface-container-highest": "#d9e2fc",
+                "structural-border": "#D7DEE8",
+                "error": "#ba1a1a",
+                "on-secondary-fixed-variant": "#005049",
+                "inverse-surface": "#273044",
+                "on-secondary": "#ffffff",
+                "primary-fixed": "#d8e2ff",
+                "on-tertiary-container": "#ffc39d",
+                "surface-variant": "#d9e2fc",
+                "on-secondary-fixed": "#00201c",
+                "outline-variant": "#c3c6d3",
+                "on-primary-fixed": "#001a41",
+                "primary": "#003f89",
+                "on-primary-fixed-variant": "#014493",
+                "on-surface": "#121b2e",
+                "informational-cyan": "#1677A6"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "margin-compact": "20px",
+                "sidebar-width": "240px",
+                "margin-desktop": "24px",
+                "lg": "24px",
+                "md": "16px",
+                "header-height": "56px",
+                "xs": "8px",
+                "sm": "12px",
+                "base": "4px",
+                "xl": "32px"
+        },
+        "fontFamily": {
+                "page-title": [
+                        "Noto Sans"
+                ],
+                "body": [
+                        "Noto Sans"
+                ],
+                "technical-data": [
+                        "JetBrains Mono"
+                ],
+                "form-label": [
+                        "Noto Sans"
+                ],
+                "section-title": [
+                        "Noto Sans"
+                ],
+                "metadata": [
+                        "Noto Sans"
+                ]
+        },
+        "fontSize": {
+                "page-title": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "0",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body": [
+                        "14px",
+                        {
+                                "lineHeight": "22px",
+                                "letterSpacing": "0",
+                                "fontWeight": "400"
+                        }
+                ],
+                "technical-data": [
+                        "13px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0",
+                                "fontWeight": "400"
+                        }
+                ],
+                "form-label": [
+                        "13px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0",
+                                "fontWeight": "500"
+                        }
+                ],
+                "section-title": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "letterSpacing": "0",
+                                "fontWeight": "600"
+                        }
+                ],
+                "metadata": [
+                        "12px",
+                        {
+                                "lineHeight": "18px",
+                                "letterSpacing": "0",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+  body {
+    background-color: #F5F7FA; /* workspace-mist fallback */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .toggle-checkbox:checked {
+    right: 0;
+    border-color: #003f89; /* primary */
+  }
+  .toggle-checkbox:checked + .toggle-label {
+    background-color: #003f89; /* primary */
+  }
+  .toggle-checkbox:checked + .toggle-label:after {
+    transform: translateX(100%);
+    border-color: white;
+  }
+  /* Scrollbar styling for a cleaner look */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D7DEE8; /* structural-border */
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8A95A3; /* placeholder-gray */
+  }
+</style>
+</head>
+<body class="text-on-surface antialiased flex h-screen w-full bg-workspace-mist">
+<!-- Navigation Shell: SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-sidebar-width bg-surface border-r border-structural-border flex flex-col z-20 transition-all duration-300">
+<!-- Header Area -->
+<div class="px-lg py-lg border-b border-structural-border">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">description</span>
+<h1 class="font-page-title text-page-title text-primary">合同智审</h1>
+</div>
+<div class="mt-xs font-metadata text-metadata text-muted-text">平台工作区 / 平台管理员</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto py-md">
+<!-- Item 1: 组织 -->
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+<span class="font-body text-body">组织</span>
+</a>
+<!-- Item 2: 模型配置 (Active) -->
+<a class="flex items-center gap-md px-md py-sm bg-surface-container-high border-l-4 border-primary text-primary font-bold transition-opacity opacity-90" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">settings_suggest</span>
+<span class="font-body text-body font-bold">模型配置</span>
+</a>
+<!-- Item 3: 平台审计 -->
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">policy</span>
+<span class="font-body text-body">平台审计</span>
+</a>
+</div>
+</nav>
+<!-- Main Workspace -->
+<div class="flex flex-col flex-1 ml-sidebar-width h-screen relative">
+<!-- Navigation Shell: TopAppBar -->
+<header class="fixed top-0 right-0 h-header-height z-10 bg-paper-white border-b border-structural-border flex justify-between items-center px-margin-desktop w-[calc(100%-240px)] shadow-sm">
+<!-- Breadcrumb Context -->
+<div class="flex items-center gap-xs font-metadata text-metadata">
+<span class="text-muted-text hover:text-primary cursor-pointer transition-colors">平台管理</span>
+<span class="material-symbols-outlined text-[16px] text-muted-text">chevron_right</span>
+<span class="text-primary font-medium">模型配置</span>
+</div>
+<!-- Actions & Profile -->
+<div class="flex items-center gap-lg">
+<button class="text-muted-text hover:text-primary transition-transform hover:scale-95 flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-variant border border-structural-border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A professional corporate headshot of a platform administrator, neutral lighting, minimalist background, high quality portrait, slight smile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKrRvnctjj1jy-AkPYdUGrEuw1ZIpD40JFKST0_nvC6BQdWmP1BXVArvMHZQGFl6J7DHXKjb4AvxrGY-0zEgFChWgk2jkctDMZI5_34m1Ipg3dr88A6xlLrqyhWSfZx2gTPzDsmdpYJjWed0l9d5RSAK6joyh2tnFOIfjyuwBBCenuw7w73VE-sIv-qtxc7r41W9d0duE5GjhIOR4m13CYQ0B_HE7TP9fSZQDRMv1nymF9RW3QvvnmfZB9ElywGo3KpGkK1rDurnE"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<main class="flex-1 mt-header-height p-margin-desktop overflow-y-auto">
+<div class="max-w-[960px] mx-auto w-full pb-xl">
+<!-- Page Header -->
+<div class="mb-md">
+<h1 class="font-page-title text-page-title text-on-surface">模型配置</h1>
+</div>
+<!-- Success Alert -->
+<div class="mb-lg bg-paper-white border-l-4 border-confirmed-green px-md py-sm flex items-center gap-md rounded-r shadow-sm">
+<span class="material-symbols-outlined text-confirmed-green">check_circle</span>
+<span class="font-body text-body text-on-surface flex-1">当前配置已生效</span>
+</div>
+<!-- Section 1: Read-only Environment -->
+<section class="bg-paper-white border border-structural-border rounded shadow-sm mb-lg overflow-hidden">
+<div class="px-lg py-md border-b border-structural-border bg-surface-bright">
+<h2 class="font-section-title text-section-title text-on-surface">运行环境概览</h2>
+</div>
+<div class="p-lg grid grid-cols-1 md:grid-cols-2 gap-lg bg-paper-white">
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">服务提供商 (Provider)</span>
+<span class="font-technical-data text-technical-data text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">cloud</span>
+              Azure OpenAI
+            </span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">模型标识 (Model Identity)</span>
+<span class="font-technical-data text-technical-data text-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">smart_toy</span>
+              gpt-4-turbo
+            </span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">访问端点 (API Endpoint)</span>
+<span class="font-technical-data text-technical-data text-on-surface bg-workspace-mist px-sm py-1 rounded border border-structural-border w-fit">
+              https://api.internal.legalops.corp/v1/engines
+            </span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">安全凭证状态 (Secret Key)</span>
+<span class="font-technical-data text-technical-data text-confirmed-green flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">lock_open</span>
+              已配置 (sk-***a8f)
+            </span>
+</div>
+</div>
+</section>
+<!-- Section 2: Editable Form -->
+<section class="bg-paper-white border border-structural-border rounded shadow-sm">
+<div class="px-lg py-md border-b border-structural-border bg-surface-bright">
+<h2 class="font-section-title text-section-title text-on-surface">运行时参数</h2>
+</div>
+<div class="p-lg flex flex-col gap-lg">
+<!-- Row 1: Numeric Inputs -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">超时时间 (Timeout)</label>
+<div class="relative">
+<input class="w-full bg-paper-white border border-structural-border rounded px-sm py-2 font-technical-data text-technical-data text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary pr-xl" type="number" value="60"/>
+<span class="absolute right-sm top-1/2 -translate-y-1/2 font-metadata text-metadata text-muted-text pointer-events-none">秒</span>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">重试次数 (Retry Count)</label>
+<div class="relative flex items-center">
+<input class="w-full h-2 bg-surface-variant rounded-lg appearance-none cursor-pointer accent-primary" max="5" min="0" type="range" value="3"/>
+<span class="ml-md font-technical-data text-technical-data text-on-surface w-6 text-right">3</span>
+</div>
+<span class="font-metadata text-metadata text-muted-text">网络异常或限流时的自动重试上限 (0-5)</span>
+</div>
+</div>
+<!-- Row 2: Toggles -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg border-t border-structural-border pt-lg">
+<div class="flex items-center justify-between p-sm bg-workspace-mist border border-structural-border rounded">
+<div class="flex flex-col gap-base">
+<span class="font-form-label text-form-label text-on-surface">状态监控 (Status Tracking)</span>
+<span class="font-metadata text-metadata text-muted-text">将运行时指标上报至 APM</span>
+</div>
+<!-- Custom Toggle -->
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-paper-white border-2 border-primary appearance-none cursor-pointer z-10 top-0.5 right-0 transition-all duration-200" id="toggle1" name="toggle1" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-primary cursor-pointer transition-colors duration-200" for="toggle1"></label>
+</div>
+</div>
+<div class="flex items-center justify-between p-sm bg-workspace-mist border border-structural-border rounded">
+<div class="flex flex-col gap-base">
+<span class="font-form-label text-form-label text-on-surface">详细日志记录 (Detailed Logging)</span>
+<span class="font-metadata text-metadata text-muted-text">记录完整的请求与响应载荷 (合规注意)</span>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-paper-white border-2 border-outline appearance-none cursor-pointer z-10 top-0.5 left-0 transition-all duration-200" id="toggle2" name="toggle2" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-200" for="toggle2"></label>
+</div>
+</div>
+</div>
+<!-- Row 3: Concurrency -->
+<div class="flex flex-col gap-xs w-full md:w-1/2 md:pr-sm mt-sm">
+<label class="font-form-label text-form-label text-on-surface">并发限制 (Concurrency Limit)</label>
+<input class="w-full bg-paper-white border border-structural-border rounded px-sm py-2 font-technical-data text-technical-data text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" type="number" value="100"/>
+<span class="font-metadata text-metadata text-muted-text">限制同时发送至推理引擎的请求数量</span>
+</div>
+</div>
+</section>
+<!-- Footer Actions -->
+<div class="mt-lg flex justify-end gap-md pb-xl">
+<button class="bg-paper-white border border-structural-border text-on-surface px-lg py-2 rounded focus:outline-none hover:bg-quiet-panel transition-colors font-form-label shadow-sm">
+          重置
+        </button>
+<button class="bg-primary text-on-primary px-lg py-2 rounded focus:outline-none hover:bg-on-primary-fixed-variant transition-colors font-form-label shadow-sm">
+          保存配置
+        </button>
+</div>
+<!-- STATES GALLERY (For demonstration purposes as requested) -->
+<div class="mt-xl pt-xl border-t border-structural-border border-dashed">
+<h3 class="font-page-title text-page-title text-on-surface mb-lg text-muted-text">States Gallery (Reference)</h3>
+<div class="flex flex-col gap-xl">
+<!-- 1. Form Skeleton -->
+<div>
+<h4 class="font-section-title text-section-title mb-sm text-muted-text">1. Form Skeleton (Loading)</h4>
+<div class="bg-paper-white border border-structural-border rounded p-lg animate-pulse">
+<div class="h-6 w-1/4 bg-surface-variant rounded mb-lg"></div>
+<div class="grid grid-cols-2 gap-lg">
+<div>
+<div class="h-4 w-20 bg-surface-variant rounded mb-2"></div>
+<div class="h-10 w-full bg-surface-variant rounded"></div>
+</div>
+<div>
+<div class="h-4 w-24 bg-surface-variant rounded mb-2"></div>
+<div class="h-10 w-full bg-surface-variant rounded"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- 2. Platform Forbidden -->
+<div>
+<h4 class="font-section-title text-section-title mb-sm text-muted-text">2. Platform Forbidden (403)</h4>
+<div class="bg-paper-white border border-error-container rounded p-xl flex flex-col items-center justify-center min-h-[300px]">
+<span class="material-symbols-outlined text-[64px] text-error mb-md" style="font-variation-settings: 'FILL' 1;">gpp_bad</span>
+<h2 class="font-page-title text-page-title text-on-surface mb-sm">无权访问此平台工作区</h2>
+<p class="font-body text-body text-muted-text text-center max-w-[400px]">
+                您的账户缺少访问「模型配置」模块所需的管理员权限。请联系平台系统管理员申请相应授权。
+              </p>
+</div>
+</div>
+<!-- 3. Version Conflict -->
+<div>
+<h4 class="font-section-title text-section-title mb-sm text-muted-text">3. Version Conflict (Alert)</h4>
+<div class="bg-paper-white border-l-4 border-review-amber px-md py-sm flex items-center gap-md rounded-r shadow-sm">
+<span class="material-symbols-outlined text-review-amber">warning</span>
+<span class="font-body text-body text-on-surface flex-1">检测到配置版本冲突。其他管理员已更新此环境的参数。</span>
+<button class="text-primary hover:text-on-primary-fixed-variant font-form-label px-sm py-1 border border-primary rounded transition-colors bg-surface-bright">刷新</button>
+</div>
+</div>
+<!-- 4. Secret Not Configured -->
+<div>
+<h4 class="font-section-title text-section-title mb-sm text-muted-text">4. Secret Not Configured</h4>
+<div class="bg-error-container border border-error px-md py-sm flex items-center gap-md rounded shadow-sm mb-md">
+<span class="material-symbols-outlined text-error">error</span>
+<span class="font-body text-body text-on-error-container">API密钥未配置，模型服务当前处于不可用状态。</span>
+</div>
+<div class="p-lg grid grid-cols-1 border border-structural-border bg-paper-white rounded">
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">安全凭证状态 (Secret Key)</span>
+<span class="font-technical-data text-technical-data text-error flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]">key_off</span>
+                  未配置
+                </span>
+<input class="mt-xs w-full max-w-[400px] bg-workspace-mist border border-structural-border rounded px-sm py-2 font-technical-data text-placeholder-gray cursor-not-allowed" disabled="" placeholder="此字段不可编辑" type="text"/>
+</div>
+</div>
+</div>
+<!-- 5. Submitting State -->
+<div>
+<h4 class="font-section-title text-section-title mb-sm text-muted-text">5. Submitting State</h4>
+<div class="bg-paper-white border border-structural-border rounded p-lg opacity-60 pointer-events-none relative">
+<div class="grid grid-cols-2 gap-lg mb-lg">
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">并发限制</label>
+<input class="w-full bg-workspace-mist border border-structural-border rounded px-sm py-2 font-technical-data text-muted-text" disabled="" type="number" value="100"/>
+</div>
+</div>
+<div class="flex justify-end gap-md mt-md">
+<button class="bg-primary text-on-primary px-lg py-2 rounded font-form-label flex items-center gap-sm shadow-sm cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  正在保存...
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>创建审核 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-surface": "#273044",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "tertiary-fixed": "#ffdcc6",
+                    "secondary-fixed": "#a0f2e5",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-tertiary-fixed": "#311400",
+                    "surface-container-high": "#e1e8ff",
+                    "primary": "#003f89",
+                    "error-container": "#ffdad6",
+                    "muted-text": "#5F6B7A",
+                    "on-error": "#ffffff",
+                    "on-background": "#121b2e",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#c3c6d3",
+                    "outline": "#737782",
+                    "workspace-mist": "#F5F7FA",
+                    "surface-container-highest": "#d9e2fc",
+                    "inverse-primary": "#adc7ff",
+                    "on-tertiary": "#ffffff",
+                    "paper-white": "#FFFFFF",
+                    "on-secondary-container": "#117167",
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#d1daf4",
+                    "tertiary": "#6a3200",
+                    "tertiary-container": "#8d4500",
+                    "surface-container": "#e9edff",
+                    "background": "#f9f9ff",
+                    "surface-bright": "#f9f9ff",
+                    "structural-border": "#D7DEE8",
+                    "critical-red": "#C43D3D",
+                    "secondary-fixed-dim": "#84d5c9",
+                    "review-amber": "#B86A00",
+                    "informational-cyan": "#1677A6",
+                    "surface-tint": "#2b5dac",
+                    "on-surface": "#121b2e",
+                    "secondary-container": "#a0f2e5",
+                    "secondary": "#016a61",
+                    "on-tertiary-container": "#ffc39d",
+                    "on-secondary-fixed": "#00201c",
+                    "on-surface-variant": "#434751",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary-container": "#bcd0ff",
+                    "primary-container": "#2457a6",
+                    "error": "#ba1a1a",
+                    "confirmed-green": "#16805B",
+                    "on-primary-fixed": "#001a41",
+                    "surface-variant": "#d9e2fc",
+                    "surface-container-low": "#f1f3ff",
+                    "quiet-panel": "#EEF2F6",
+                    "on-secondary-fixed-variant": "#005049",
+                    "placeholder-gray": "#8A95A3",
+                    "on-primary-fixed-variant": "#014493",
+                    "inverse-on-surface": "#edf0ff",
+                    "primary-fixed-dim": "#adc7ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "24px",
+                    "base": "4px",
+                    "margin-compact": "20px",
+                    "sm": "12px",
+                    "sidebar-width": "240px",
+                    "header-height": "56px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "xs": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "section-title": [
+                            "Noto Sans"
+                    ],
+                    "body": [
+                            "Noto Sans"
+                    ],
+                    "form-label": [
+                            "Noto Sans"
+                    ],
+                    "page-title": [
+                            "Noto Sans"
+                    ],
+                    "metadata": [
+                            "Noto Sans"
+                    ],
+                    "technical-data": [
+                            "JetBrains Mono"
+                    ]
+            },
+            "fontSize": {
+                    "section-title": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body": [
+                            "14px",
+                            {
+                                    "lineHeight": "22px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "form-label": [
+                            "13px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "page-title": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "metadata": [
+                            "12px",
+                            {
+                                    "lineHeight": "18px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "technical-data": [
+                            "13px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+        },
+        },
+      }
+    </script>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="w-[240px] h-screen fixed left-0 top-0 border-r border-structural-border dark:border-outline-variant bg-surface dark:bg-inverse-surface z-50 flex flex-col font-body text-body">
+<!-- Header -->
+<div class="p-lg border-b border-structural-border flex items-center gap-sm">
+<div class="w-8 h-8 rounded bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="description" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<div>
+<h1 class="font-page-title text-section-title text-primary dark:text-inverse-primary leading-tight">合同智审</h1>
+<p class="font-metadata text-metadata text-on-surface mt-xs">华东科技有限公司</p>
+<p class="font-metadata text-metadata text-muted-text">组织管理员</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 overflow-y-auto py-sm">
+<ul class="flex flex-col">
+<li>
+<a class="flex items-center gap-sm px-lg py-sm bg-surface-container dark:bg-surface-container-high text-primary dark:text-inverse-primary border-l-4 border-primary dark:border-inverse-primary font-section-title cursor-pointer transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                        合同
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+                        预警
+                    </a>
+</li>
+<li class="mt-md mb-xs px-lg font-metadata text-metadata text-muted-text uppercase tracking-wider">
+                    知识配置
+                </li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+                        风险规则
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+                        条款模板
+                    </a>
+</li>
+<li class="mt-md mb-xs px-lg font-metadata text-metadata text-muted-text uppercase tracking-wider">
+                    组织管理
+                </li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="settings_organization">replace_audio</span>
+                        组织设置
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                        成员管理
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+                        支持授权
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+                        组织审计
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                        运营指标
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-lg py-sm border-l-4 border-transparent text-on-surface-variant dark:text-on-surface-variant-mobile hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors duration-200 cursor-pointer" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+                        反馈统计
+                    </a>
+</li>
+</ul>
+</nav>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="ml-[240px] flex-1 flex flex-col min-h-screen w-[calc(100%-240px)]">
+<!-- TopNavBar -->
+<header class="h-[56px] fixed top-0 right-0 w-[calc(100%-240px)] border-b border-structural-border dark:border-outline-variant bg-paper-white dark:bg-inverse-surface z-40 flex justify-between items-center px-lg font-body text-body">
+<!-- Breadcrumb -->
+<div class="flex items-center gap-xs text-muted-text">
+<a class="hover:text-primary transition-colors cursor-pointer active:opacity-80" href="#">合同</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<span class="font-technical-data text-technical-data">HT-2025-001</span>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-primary dark:text-inverse-primary font-bold cursor-pointer active:opacity-80">创建审核</span>
+</div>
+<!-- Actions & Profile -->
+<div class="flex items-center gap-md">
+<button class="text-muted-text dark:text-on-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors cursor-pointer active:opacity-80 flex items-center justify-center w-8 h-8 rounded-full">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="flex items-center gap-sm cursor-pointer border-l border-structural-border pl-md">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">
+                        张
+                    </div>
+<span class="text-on-surface font-form-label text-form-label">张明</span>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 mt-[56px] p-margin-desktop md:p-margin-desktop max-w-5xl mx-auto w-full">
+<!-- Page Header -->
+<div class="mb-lg">
+<h2 class="font-page-title text-page-title text-on-surface mb-xs">创建审核</h2>
+<p class="font-body text-body text-muted-text">提交后将锁定本次审核输入版本</p>
+</div>
+<div class="bg-paper-white border border-structural-border rounded-lg shadow-sm">
+<!-- Section 1: Contract Summary -->
+<div class="p-lg border-b border-structural-border bg-surface-container-lowest rounded-t-lg">
+<h3 class="font-section-title text-section-title text-on-surface mb-md">合同摘要</h3>
+<div class="grid grid-cols-2 gap-y-sm gap-x-lg">
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">合同编号</span>
+<span class="font-technical-data text-technical-data text-on-surface">HT-2025-001</span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">合同名称</span>
+<span class="font-body text-body text-on-surface">华东区域采购框架协议</span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">当前文件版本</span>
+<span class="font-technical-data text-technical-data text-on-surface">v1.0.4</span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">验证状态</span>
+<div class="flex items-center gap-xs">
+<span class="flex items-center gap-xs bg-surface-container text-confirmed-green border border-confirmed-green/30 px-2 py-1 rounded font-metadata text-metadata">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                    扫描完成
+                                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Review Configuration Form -->
+<div class="p-lg">
+<h3 class="font-section-title text-section-title text-on-surface mb-md">审核配置</h3>
+<form class="flex flex-col gap-md max-w-2xl">
+<!-- Contract File Version (Required) -->
+<div class="flex flex-col gap-base">
+<label class="font-form-label text-form-label text-on-surface flex items-center gap-xs">
+                                合同文件版本
+                                <span class="text-critical-red">*</span>
+</label>
+<select class="w-full bg-paper-white border border-structural-border rounded focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface py-2 px-3 shadow-sm appearance-none cursor-pointer">
+<option selected="">v1.0.4 · 采购框架协议.pdf</option>
+</select>
+</div>
+<!-- Document Version (Optional) -->
+<div class="flex flex-col gap-base">
+<label class="font-form-label text-form-label text-on-surface">文档版本</label>
+<select class="w-full bg-paper-white border border-structural-border rounded focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface py-2 px-3 shadow-sm appearance-none cursor-pointer">
+<option selected="">v1.0 (解析完成)</option>
+</select>
+</div>
+<!-- Risk Rule Version (Optional) -->
+<div class="flex flex-col gap-base">
+<label class="font-form-label text-form-label text-on-surface">风险规则版本</label>
+<select class="w-full bg-paper-white border border-structural-border rounded focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface py-2 px-3 shadow-sm appearance-none cursor-pointer">
+<option selected="">2024Q4 标准规则集 (已发布)</option>
+</select>
+</div>
+<!-- Clause Template Version (Optional) -->
+<div class="flex flex-col gap-base">
+<label class="font-form-label text-form-label text-on-surface">条款模板版本</label>
+<select class="w-full bg-paper-white border border-structural-border rounded focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface py-2 px-3 shadow-sm appearance-none cursor-pointer">
+<option selected="">采购类标准模板 v2.1 (已发布)</option>
+</select>
+</div>
+<!-- Business Scenario (Optional) -->
+<div class="flex flex-col gap-base">
+<label class="font-form-label text-form-label text-on-surface">业务场景</label>
+<select class="w-full bg-paper-white border border-structural-border rounded focus:ring-1 focus:ring-primary focus:border-primary font-body text-body text-on-surface py-2 px-3 shadow-sm appearance-none cursor-pointer">
+<option selected="">通用采购场景</option>
+</select>
+</div>
+</form>
+</div>
+<!-- Section 3: Information Note -->
+<div class="px-lg pb-lg">
+<div class="bg-quiet-panel rounded p-sm flex gap-sm items-start border border-structural-border/50">
+<span class="material-symbols-outlined text-informational-cyan shrink-0" data-icon="info" style="font-variation-settings: 'FILL' 1;">info</span>
+<p class="font-metadata text-metadata text-on-surface-variant leading-relaxed">
+<strong class="font-medium text-on-surface">锁定说明：</strong> 组织 ID、模型密钥和提示词模板由系统配置全局锁定，不可在此修改。提交后当前版本配置将作为审核基准。
+                        </p>
+</div>
+</div>
+<!-- Actions -->
+<div class="p-lg border-t border-structural-border flex items-center justify-end gap-md bg-surface-container-lowest rounded-b-lg">
+<button class="px-xl py-2 bg-paper-white border border-structural-border text-on-surface font-form-label text-form-label rounded hover:bg-quiet-panel transition-colors">
+                        取消
+                    </button>
+<button class="px-xl py-2 bg-primary text-on-primary font-form-label text-form-label rounded hover:bg-primary-container transition-colors shadow-sm">
+                        创建审核
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

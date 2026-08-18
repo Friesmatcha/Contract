@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>平台审计 - States Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "workspace-mist": "#F5F7FA",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "secondary": "#016a61",
+                      "on-tertiary-fixed": "#311400",
+                      "primary-container": "#2457a6",
+                      "surface-bright": "#f9f9ff",
+                      "secondary-fixed-dim": "#84d5c9",
+                      "primary-fixed": "#d8e2ff",
+                      "inverse-on-surface": "#edf0ff",
+                      "paper-white": "#FFFFFF",
+                      "informational-cyan": "#1677A6",
+                      "confirmed-green": "#16805B",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "on-primary-fixed-variant": "#014493",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-highest": "#d9e2fc",
+                      "surface-variant": "#d9e2fc",
+                      "quiet-panel": "#EEF2F6",
+                      "on-primary-container": "#bcd0ff",
+                      "surface-container-low": "#f1f3ff",
+                      "primary": "#003f89",
+                      "on-secondary": "#ffffff",
+                      "surface-tint": "#2b5dac",
+                      "on-secondary-fixed-variant": "#005049",
+                      "on-error": "#ffffff",
+                      "inverse-surface": "#273044",
+                      "on-primary-fixed": "#001a41",
+                      "on-background": "#121b2e",
+                      "tertiary": "#6a3200",
+                      "surface-container": "#e9edff",
+                      "surface": "#f9f9ff",
+                      "critical-red": "#C43D3D",
+                      "background": "#f9f9ff",
+                      "on-secondary-fixed": "#00201c",
+                      "on-tertiary-container": "#ffc39d",
+                      "surface-container-high": "#e1e8ff",
+                      "on-surface-variant": "#434751",
+                      "on-surface": "#121b2e",
+                      "placeholder-gray": "#8A95A3",
+                      "surface-dim": "#d1daf4",
+                      "outline-variant": "#c3c6d3",
+                      "error-container": "#ffdad6",
+                      "secondary-container": "#a0f2e5",
+                      "primary-fixed-dim": "#adc7ff",
+                      "muted-text": "#5F6B7A",
+                      "tertiary-container": "#8d4500",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed": "#ffdcc6",
+                      "inverse-primary": "#adc7ff",
+                      "review-amber": "#B86A00",
+                      "outline": "#737782",
+                      "on-secondary-container": "#117167",
+                      "secondary-fixed": "#a0f2e5",
+                      "structural-border": "#D7DEE8",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "on-error-container": "#93000a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "margin-compact": "20px",
+                      "sm": "12px",
+                      "base": "4px",
+                      "xl": "32px",
+                      "header-height": "56px",
+                      "xs": "8px",
+                      "md": "16px",
+                      "margin-desktop": "24px",
+                      "sidebar-width": "240px"
+              },
+              "fontFamily": {
+                      "page-title": [
+                              "Noto Sans"
+                      ],
+                      "metadata": [
+                              "Noto Sans"
+                      ],
+                      "form-label": [
+                              "Noto Sans"
+                      ],
+                      "section-title": [
+                              "Noto Sans"
+                      ],
+                      "body": [
+                              "Noto Sans"
+                      ],
+                      "technical-data": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "page-title": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "metadata": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "form-label": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "section-title": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "technical-data": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .skeleton-shimmer {
+            background: linear-gradient(90deg, #EEF2F6 25%, #F5F7FA 50%, #EEF2F6 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body text-body antialiased min-h-screen">
+<!-- Shell: TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-header-height bg-paper-white border-b border-structural-border flex justify-end items-center px-margin-desktop gap-md z-50">
+<div class="flex items-center gap-md">
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors cursor-pointer active:opacity-80 rounded hover:bg-quiet-panel" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center overflow-hidden border border-structural-border cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="person">person</span>
+</div>
+</div>
+</header>
+<!-- Shell: SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-paper-white border-r border-structural-border flex flex-col z-50">
+<!-- Brand Header -->
+<div class="p-4 border-b border-structural-border flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-paper-white font-bold shrink-0">
+                合
+            </div>
+<div class="overflow-hidden">
+<h1 class="font-page-title text-[18px] leading-tight text-primary font-bold truncate">合同智审</h1>
+<p class="font-metadata text-metadata text-muted-text truncate">平台工作区 / 平台管理员</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 py-4 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-muted-text hover:bg-quiet-panel transition-colors transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+<span>组织</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-muted-text hover:bg-quiet-panel transition-colors transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span>模型配置</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-surface-container-high text-primary font-bold border-l-4 border-primary transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+<span>平台审计</span>
+</a>
+</div>
+</nav>
+<!-- Main Workspace -->
+<main class="pt-header-height pl-sidebar-width min-h-screen">
+<div class="p-margin-desktop space-y-lg max-w-[1600px] mx-auto">
+<!-- Page Header -->
+<div class="flex flex-col gap-1">
+<h1 class="font-page-title text-page-title text-on-surface">States Gallery: Platform Audit Log</h1>
+<p class="text-muted-text">A collection of possible states for the audit logging interface.</p>
+</div>
+<!-- Bento Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-lg">
+<!-- 1. Table Skeleton -->
+<section class="bg-paper-white border border-structural-border rounded-lg flex flex-col overflow-hidden h-[400px]">
+<div class="p-4 border-b border-structural-border flex justify-between items-center bg-surface-bright">
+<h2 class="font-section-title text-section-title text-on-surface">1. Loading State</h2>
+<span class="px-2 py-1 bg-surface-container-low border border-outline-variant rounded font-metadata text-metadata text-muted-text">Table Skeleton</span>
+</div>
+<div class="p-4 flex-1 flex flex-col gap-4 bg-paper-white">
+<!-- Filters Skeleton -->
+<div class="flex gap-4 mb-2">
+<div class="h-8 w-48 rounded skeleton-shimmer"></div>
+<div class="h-8 w-32 rounded skeleton-shimmer"></div>
+<div class="h-8 w-32 rounded skeleton-shimmer"></div>
+<div class="h-8 w-24 rounded skeleton-shimmer ml-auto"></div>
+</div>
+<!-- Table Skeleton -->
+<div class="border border-structural-border rounded overflow-hidden flex-1 flex flex-col">
+<!-- Header -->
+<div class="flex gap-4 p-3 bg-workspace-mist border-b border-structural-border">
+<div class="h-4 w-1/4 rounded bg-surface-dim"></div>
+<div class="h-4 w-1/4 rounded bg-surface-dim"></div>
+<div class="h-4 w-1/4 rounded bg-surface-dim"></div>
+<div class="h-4 w-1/4 rounded bg-surface-dim"></div>
+</div>
+<!-- Rows -->
+<div class="flex-1 flex flex-col">
+<div class="flex gap-4 p-4 border-b border-structural-border">
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+</div>
+<div class="flex gap-4 p-4 border-b border-structural-border">
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+</div>
+<div class="flex gap-4 p-4 border-b border-structural-border">
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+</div>
+<div class="flex gap-4 p-4">
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+<div class="h-4 w-1/4 rounded skeleton-shimmer"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Empty States -->
+<section class="bg-paper-white border border-structural-border rounded-lg flex flex-col overflow-hidden h-[400px]">
+<div class="p-4 border-b border-structural-border flex justify-between items-center bg-surface-bright">
+<h2 class="font-section-title text-section-title text-on-surface">2. Empty States</h2>
+<span class="px-2 py-1 bg-surface-container-low border border-outline-variant rounded font-metadata text-metadata text-muted-text">System vs Filter</span>
+</div>
+<div class="flex-1 flex bg-workspace-mist">
+<!-- System Empty -->
+<div class="flex-1 border-r border-structural-border flex flex-col items-center justify-center p-6 text-center bg-paper-white">
+<div class="w-16 h-16 rounded-full bg-quiet-panel flex items-center justify-center mb-4 text-outline">
+<span class="material-symbols-outlined text-[32px]" data-icon="inbox">inbox</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-2">No events registered</h3>
+<p class="text-muted-text text-sm max-w-[200px]">The platform audit log is currently empty. System events will appear here once generated.</p>
+</div>
+<!-- Filter Empty -->
+<div class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-paper-white">
+<div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center mb-4 text-outline">
+<span class="material-symbols-outlined text-[32px]" data-icon="search_off">search_off</span>
+</div>
+<h3 class="font-section-title text-section-title text-on-surface mb-2">No matches found</h3>
+<p class="text-muted-text text-sm max-w-[200px] mb-4">No audit events match your current filter criteria.</p>
+<button class="px-4 py-2 bg-paper-white border border-structural-border text-primary rounded font-form-label text-form-label hover:bg-quiet-panel transition-colors">
+                                Clear Filters
+                            </button>
+</div>
+</div>
+</section>
+<!-- 3. Access Denied -->
+<section class="bg-paper-white border border-structural-border rounded-lg flex flex-col overflow-hidden h-[400px]">
+<div class="p-4 border-b border-structural-border flex justify-between items-center bg-surface-bright">
+<h2 class="font-section-title text-section-title text-on-surface">3. Access Denied</h2>
+<span class="px-2 py-1 bg-surface-container-low border border-outline-variant rounded font-metadata text-metadata text-muted-text">Forbidden</span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-workspace-mist relative overflow-hidden">
+<!-- Decorative background element to break standard list feel -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center">
+<span class="material-symbols-outlined text-[300px]" data-icon="lock">lock</span>
+</div>
+<div class="relative z-10 bg-paper-white p-8 rounded-xl shadow-sm border border-structural-border max-w-sm w-full">
+<div class="w-12 h-12 rounded bg-error-container text-error flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<h3 class="font-page-title text-[20px] font-bold text-on-surface mb-2">Access Denied</h3>
+<p class="text-muted-text mb-6">You do not have the required permissions to view the Platform Audit Log.</p>
+<button class="w-full px-4 py-2 bg-paper-white border border-structural-border text-on-surface rounded font-form-label text-form-label hover:bg-quiet-panel transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="mail">mail</span>
+                                Contact Super Admin
+                            </button>
+</div>
+</div>
+</section>
+<!-- 4. Error & Validation -->
+<section class="bg-paper-white border border-structural-border rounded-lg flex flex-col overflow-hidden h-[400px]">
+<div class="p-4 border-b border-structural-border flex justify-between items-center bg-surface-bright">
+<h2 class="font-section-title text-section-title text-on-surface">4. Error &amp; Validation</h2>
+<span class="px-2 py-1 bg-surface-container-low border border-outline-variant rounded font-metadata text-metadata text-muted-text">Data &amp; Input</span>
+</div>
+<div class="flex-1 flex bg-workspace-mist">
+<!-- Fetch Error -->
+<div class="flex-1 border-r border-structural-border flex flex-col p-6 bg-paper-white">
+<h3 class="font-form-label text-form-label text-muted-text mb-4 uppercase tracking-wider">Data Fetch Error</h3>
+<div class="border border-error/30 bg-error-container/30 rounded p-4 flex gap-3 mt-auto mb-auto">
+<span class="material-symbols-outlined text-error shrink-0" data-icon="warning">warning</span>
+<div>
+<h4 class="font-section-title text-section-title text-on-error-container text-[14px]">Failed to load audit data</h4>
+<p class="text-on-surface-variant text-[13px] mt-1 mb-3">The server encountered an unexpected error while processing your request.</p>
+<button class="px-3 py-1.5 bg-paper-white border border-structural-border text-primary rounded font-form-label text-form-label hover:bg-quiet-panel transition-colors text-[13px]">
+                                        Retry Connection
+                                    </button>
+</div>
+</div>
+</div>
+<!-- Validation Error -->
+<div class="flex-1 flex flex-col p-6 bg-paper-white">
+<h3 class="font-form-label text-form-label text-muted-text mb-4 uppercase tracking-wider">Form Validation</h3>
+<div class="mt-4">
+<label class="font-form-label text-form-label text-on-surface block mb-1">Date Range Filter</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-error text-[18px]" data-icon="date_range">date_range</span>
+</div>
+<input class="w-full pl-10 pr-3 py-2 bg-paper-white border border-error rounded font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-error" readonly="" type="text" value="2023-12-01 to 2023-11-30"/>
+</div>
+<p class="text-error font-metadata text-metadata mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="error">error</span>
+                                    Invalid Date Range: End date must be after start date.
+                                </p>
+</div>
+<!-- Mock table below to show context -->
+<div class="mt-6 border border-structural-border rounded overflow-hidden opacity-50 pointer-events-none">
+<div class="p-2 bg-surface-dim border-b border-structural-border flex gap-2">
+<div class="h-3 w-16 bg-outline-variant rounded"></div>
+<div class="h-3 w-24 bg-outline-variant rounded"></div>
+</div>
+<div class="p-2 flex gap-2 border-b border-structural-border">
+<div class="h-3 w-16 bg-quiet-panel rounded"></div>
+<div class="h-3 w-32 bg-quiet-panel rounded"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>组织设置 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Noto+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "confirmed-green": "#16805B",
+                        "placeholder-gray": "#8A95A3",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "tertiary": "#6a3200",
+                        "surface-variant": "#d9e2fc",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#d9e2fc",
+                        "background": "#f9f9ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "surface-bright": "#f9f9ff",
+                        "informational-cyan": "#1677A6",
+                        "primary": "#003f89",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#00201c",
+                        "inverse-surface": "#273044",
+                        "on-secondary-fixed-variant": "#005049",
+                        "review-amber": "#B86A00",
+                        "surface-dim": "#d1daf4",
+                        "surface-container-high": "#e1e8ff",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary-fixed": "#ffdcc6",
+                        "surface-container": "#e9edff",
+                        "primary-fixed-dim": "#adc7ff",
+                        "surface-tint": "#2b5dac",
+                        "inverse-on-surface": "#edf0ff",
+                        "on-primary-fixed-variant": "#014493",
+                        "surface-container-low": "#f1f3ff",
+                        "on-tertiary-fixed": "#311400",
+                        "inverse-primary": "#adc7ff",
+                        "surface": "#f9f9ff",
+                        "secondary-fixed": "#a0f2e5",
+                        "workspace-mist": "#F5F7FA",
+                        "quiet-panel": "#EEF2F6",
+                        "secondary": "#016a61",
+                        "structural-border": "#D7DEE8",
+                        "on-surface-variant": "#434751",
+                        "on-primary-container": "#bcd0ff",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#8d4500",
+                        "primary-fixed": "#d8e2ff",
+                        "on-primary": "#ffffff",
+                        "paper-white": "#FFFFFF",
+                        "on-primary-fixed": "#001a41",
+                        "on-secondary-container": "#117167",
+                        "on-surface": "#121b2e",
+                        "outline-variant": "#c3c6d3",
+                        "error-container": "#ffdad6",
+                        "muted-text": "#5F6B7A",
+                        "on-background": "#121b2e",
+                        "primary-container": "#2457a6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "outline": "#737782",
+                        "on-tertiary-container": "#ffc39d",
+                        "secondary-container": "#a0f2e5",
+                        "critical-red": "#C43D3D"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "sidebar-width": "240px",
+                        "sm": "12px",
+                        "xl": "32px",
+                        "margin-compact": "20px",
+                        "header-height": "56px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "md": "16px",
+                        "margin-desktop": "24px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Noto Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                        "technical-data": ["JetBrains Mono", "monospace"],
+                        "page-title": ["Noto Sans", "sans-serif"],
+                        "form-label": ["Noto Sans", "sans-serif"],
+                        "metadata": ["Noto Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .switch-peer:checked ~ .switch-bg {
+            background-color: theme('colors.primary');
+        }
+        .switch-peer:checked ~ .switch-knob {
+            transform: translateX(100%);
+        }
+        .focus-ring:focus-within {
+            outline: 2px solid theme('colors.primary');
+            outline-offset: -1px;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body text-body m-0 p-0 overflow-x-hidden">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-paper-white dark:bg-inverse-surface w-[240px] h-screen fixed left-0 top-0 border-r border-structural-border dark:border-outline-variant flex flex-col z-40 transition-all duration-200 ease-in-out">
+<div class="p-lg border-b border-structural-border dark:border-outline-variant">
+<div class="flex items-center gap-xs mb-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" data-icon="description" style="font-variation-settings: 'FILL' 1;">description</span>
+<h1 class="font-page-title text-page-title text-primary dark:text-primary-fixed-dim m-0">合同智审</h1>
+</div>
+<p class="font-metadata text-metadata text-muted-text dark:text-surface-variant m-0">华东科技有限公司 / 组织管理员</p>
+</div>
+<div class="flex-1 overflow-y-auto py-sm">
+<ul class="list-none p-0 m-0 space-y-1 px-xs">
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>合同</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span>预警</span>
+</a>
+</li>
+<!-- Group: 知识配置 (Implicitly grouping) -->
+<li class="pt-sm pb-xs px-sm mt-sm border-t border-structural-border dark:border-outline-variant">
+<span class="font-metadata text-metadata text-placeholder-gray uppercase tracking-wider">知识配置</span>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span>风险规则</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+<span>条款模板</span>
+</a>
+</li>
+<!-- Group: 组织管理 -->
+<li class="pt-sm pb-xs px-sm mt-sm border-t border-structural-border dark:border-outline-variant">
+<span class="font-metadata text-metadata text-placeholder-gray uppercase tracking-wider">组织管理</span>
+</li>
+<li>
+<!-- Active State Nav Item -->
+<a class="flex items-center gap-sm px-sm py-xs rounded bg-surface-container dark:bg-primary-container text-primary dark:text-on-primary-container border-l-4 border-primary dark:border-primary-fixed-dim transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-medium">组织设置</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>成员管理</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>支持授权</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="policy">policy</span>
+<span>组织审计</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+<span>运营指标</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-sm px-sm py-xs rounded text-on-surface-variant dark:text-surface-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>反馈统计</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopNavBar (Shared Component) -->
+<header class="bg-paper-white dark:bg-inverse-surface h-[56px] w-[calc(100%-240px)] fixed top-0 right-0 border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg z-30 transition-all duration-200 ease-in-out">
+<div class="flex items-center gap-sm">
+<nav aria-label="Breadcrumb" class="flex items-center gap-xs text-muted-text dark:text-surface-variant">
+<a class="hover:text-primary dark:hover:text-primary-fixed-dim transition-colors" href="#">组织管理</a>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+<span class="font-medium text-on-surface">组织设置</span>
+</nav>
+</div>
+<div class="flex items-center gap-md">
+<button aria-label="Notifications" class="text-muted-text dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-opacity active:opacity-70 flex items-center justify-center p-xs rounded-full hover:bg-quiet-panel">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="User Profile" class="text-muted-text dark:text-surface-variant hover:text-primary dark:hover:text-primary-fixed-dim transition-opacity active:opacity-70 flex items-center justify-center p-xs rounded-full hover:bg-quiet-panel">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] pt-[56px] min-h-screen pb-[80px] flex justify-center">
+<div class="w-full max-w-[1000px] px-margin-compact xl:px-margin-desktop py-lg">
+<!-- Page Header -->
+<div class="mb-lg flex flex-col gap-sm">
+<h2 class="font-page-title text-page-title text-on-surface m-0">组织设置</h2>
+<div class="flex items-start gap-xs bg-surface-container-low border border-outline-variant rounded p-sm max-w-fit">
+<span class="material-symbols-outlined text-informational-cyan text-[18px]" data-icon="info">info</span>
+<p class="font-body text-body text-on-surface-variant m-0">
+                        系统提示：模型密钥及底层模型名称在全局控制台维护，此处仅供查看。
+                    </p>
+</div>
+</div>
+<!-- Settings Form Layout (Bento-style Grid) -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+<!-- Form Group 1: 文件与并发 -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-md flex flex-col gap-md">
+<div class="flex items-center gap-sm border-b border-structural-border pb-sm">
+<span class="material-symbols-outlined text-muted-text" data-icon="folder_zip">folder_zip</span>
+<h3 class="font-section-title text-section-title text-on-surface m-0">文件与并发</h3>
+</div>
+<div class="space-y-md">
+<!-- InputNumber: 最大并发解析数 -->
+<div class="flex flex-col gap-xs focus-ring rounded">
+<label class="font-form-label text-form-label text-on-surface-variant" for="max-concurrent">最大并发解析数</label>
+<input class="bg-paper-white border border-structural-border rounded px-sm py-xs font-technical-data text-technical-data text-on-surface w-full focus:outline-none focus:ring-0 focus:border-structural-border" id="max-concurrent" type="number" value="5"/>
+</div>
+<!-- InputNumber: 单文件大小上限 (MB) -->
+<div class="flex flex-col gap-xs focus-ring rounded">
+<label class="font-form-label text-form-label text-on-surface-variant" for="max-file-size">单文件大小上限 (MB)</label>
+<input class="bg-paper-white border border-structural-border rounded px-sm py-xs font-technical-data text-technical-data text-on-surface w-full focus:outline-none focus:ring-0 focus:border-structural-border" id="max-file-size" type="number" value="50"/>
+</div>
+<!-- Input: 允许的文件格式 -->
+<div class="flex flex-col gap-xs focus-ring rounded">
+<label class="font-form-label text-form-label text-on-surface-variant" for="allowed-formats">允许的文件格式</label>
+<input class="bg-paper-white border border-structural-border rounded px-sm py-xs font-body text-body text-on-surface w-full focus:outline-none focus:ring-0 focus:border-structural-border" id="allowed-formats" type="text" value=".pdf, .docx, .jpg, .png"/>
+</div>
+</div>
+</section>
+<!-- Form Group 2: 预警与 OCR -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-md flex flex-col gap-md">
+<div class="flex items-center gap-sm border-b border-structural-border pb-sm">
+<span class="material-symbols-outlined text-muted-text" data-icon="document_scanner">document_scanner</span>
+<h3 class="font-section-title text-section-title text-on-surface m-0">预警与 OCR</h3>
+</div>
+<div class="space-y-md">
+<!-- Switch: 启用 OCR 自动识别 -->
+<div class="flex items-center justify-between">
+<label class="font-form-label text-form-label text-on-surface-variant cursor-pointer" for="ocr-enabled">启用 OCR 自动识别</label>
+<div class="relative inline-block w-[36px] h-[20px]">
+<input checked="" class="switch-peer sr-only" id="ocr-enabled" type="checkbox"/>
+<div class="switch-bg block bg-outline-variant w-full h-full rounded-full transition-colors cursor-pointer border border-structural-border"></div>
+<div class="switch-knob absolute left-[2px] top-[2px] bg-paper-white w-[16px] h-[16px] rounded-full transition-transform cursor-pointer shadow-sm border border-outline-variant"></div>
+</div>
+</div>
+<!-- InputNumber: OCR 置信度阈值 (%) -->
+<div class="flex flex-col gap-xs focus-ring rounded">
+<label class="font-form-label text-form-label text-on-surface-variant" for="ocr-threshold">OCR 置信度阈值 (%)</label>
+<div class="relative">
+<input class="bg-paper-white border border-structural-border rounded px-sm py-xs font-technical-data text-technical-data text-on-surface w-full focus:outline-none focus:ring-0 focus:border-structural-border pr-8" id="ocr-threshold" type="number" value="85"/>
+<span class="absolute right-sm top-1/2 -translate-y-1/2 text-muted-text font-technical-data">%</span>
+</div>
+</div>
+<!-- Switch: 高风险实时推送 -->
+<div class="flex items-center justify-between">
+<label class="font-form-label text-form-label text-on-surface-variant cursor-pointer" for="high-risk-push">高风险实时推送</label>
+<div class="relative inline-block w-[36px] h-[20px]">
+<input checked="" class="switch-peer sr-only" id="high-risk-push" type="checkbox"/>
+<div class="switch-bg block bg-outline-variant w-full h-full rounded-full transition-colors cursor-pointer border border-structural-border"></div>
+<div class="switch-knob absolute left-[2px] top-[2px] bg-paper-white w-[16px] h-[16px] rounded-full transition-transform cursor-pointer shadow-sm border border-outline-variant"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Form Group 3: 保留与报告 -->
+<section class="bg-paper-white rounded-lg border border-structural-border p-md flex flex-col gap-md lg:col-span-2 xl:col-span-1">
+<div class="flex items-center gap-sm border-b border-structural-border pb-sm">
+<span class="material-symbols-outlined text-muted-text" data-icon="archive">archive</span>
+<h3 class="font-section-title text-section-title text-on-surface m-0">保留与报告</h3>
+</div>
+<div class="space-y-md">
+<!-- InputNumber: 数据保留周期 (天) -->
+<div class="flex flex-col gap-xs focus-ring rounded">
+<label class="font-form-label text-form-label text-on-surface-variant" for="retention-period">数据保留周期 (天)</label>
+<input class="bg-paper-white border border-structural-border rounded px-sm py-xs font-technical-data text-technical-data text-on-surface w-full focus:outline-none focus:ring-0 focus:border-structural-border" id="retention-period" type="number" value="365"/>
+</div>
+<!-- Switch: 自动生成风险报告 -->
+<div class="flex items-center justify-between">
+<label class="font-form-label text-form-label text-on-surface-variant cursor-pointer" for="auto-report">自动生成风险报告</label>
+<div class="relative inline-block w-[36px] h-[20px]">
+<input class="switch-peer sr-only" id="auto-report" type="checkbox"/>
+<div class="switch-bg block bg-outline-variant w-full h-full rounded-full transition-colors cursor-pointer border border-structural-border"></div>
+<div class="switch-knob absolute left-[2px] top-[2px] bg-paper-white w-[16px] h-[16px] rounded-full transition-transform cursor-pointer shadow-sm border border-outline-variant"></div>
+</div>
+</div>
+<!-- Input: 报告导出默认格式 -->
+<div class="flex flex-col gap-xs focus-ring rounded">
+<label class="font-form-label text-form-label text-on-surface-variant" for="export-format">报告导出默认格式</label>
+<select class="bg-paper-white border border-structural-border rounded px-sm py-xs font-body text-body text-on-surface w-full focus:outline-none focus:ring-0 focus:border-structural-border appearance-none cursor-pointer" id="export-format">
+<option selected="" value="PDF">PDF</option>
+<option value="DOCX">DOCX</option>
+<option value="HTML">HTML</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Secrets Note Panel (Decorative/Informational) -->
+<section class="bg-workspace-mist rounded-lg border border-dashed border-outline-variant p-md flex flex-col justify-center items-center text-center gap-sm lg:col-span-2 xl:col-span-1 opacity-70">
+<span class="material-symbols-outlined text-[32px] text-placeholder-gray" data-icon="lock">lock</span>
+<div>
+<h4 class="font-form-label text-form-label text-on-surface-variant mb-xs">模型密钥管理区域受限</h4>
+<p class="font-metadata text-metadata text-muted-text">全局控制台专属配置项，当前视角的权限仅限于只读查阅核心参数的状态。</p>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Bottom Fixed Action Bar -->
+<div class="fixed bottom-0 right-0 w-[calc(100%-240px)] bg-paper-white border-t border-structural-border p-sm px-lg flex justify-end gap-md z-30">
+<!-- Disabled state implied by generic secondary styling if needed, but primary active is requested -->
+<button class="px-md py-xs bg-paper-white border border-structural-border rounded text-on-surface-variant font-form-label text-form-label hover:bg-quiet-panel transition-colors">取消修改</button>
+<button class="px-md py-xs bg-primary text-on-primary rounded font-form-label text-form-label hover:bg-primary-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-xs" id="save-btn">
+<span class="material-symbols-outlined text-[18px] hidden" data-icon="sync" id="save-spinner">sync</span>
+<span id="save-text">保存设置</span>
+</button>
+</div>
+<script>
+        // Simple mock interaction for the submit state
+        document.getElementById('save-btn').addEventListener('click', function() {
+            const btn = this;
+            const spinner = document.getElementById('save-spinner');
+            const text = document.getElementById('save-text');
+            
+            btn.disabled = true;
+            spinner.classList.remove('hidden');
+            spinner.classList.add('animate-spin');
+            text.innerText = '保存中...';
+
+            setTimeout(() => {
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+                spinner.classList.remove('animate-spin');
+                text.innerText = '保存设置';
+                // Optional: Show a subtle toast or visual confirmation here
+            }, 1500);
+        });
+
+        // Toggle logic binding for visually matching switch to label
+        document.querySelectorAll('.switch-peer').forEach(switchInput => {
+            switchInput.addEventListener('change', function() {
+                // Logic can be extended here to trigger visual feedback if needed
+            });
+        });
+    </script>
+</body></html>

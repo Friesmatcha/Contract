@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>合同 - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#ffc39d",
+                        "on-secondary-fixed-variant": "#005049",
+                        "surface-container-high": "#e1e8ff",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2457a6",
+                        "surface-tint": "#2b5dac",
+                        "inverse-on-surface": "#edf0ff",
+                        "background": "#f9f9ff",
+                        "surface-container-low": "#f1f3ff",
+                        "surface": "#f9f9ff",
+                        "error-container": "#ffdad6",
+                        "informational-cyan": "#1677A6",
+                        "workspace-mist": "#F5F7FA",
+                        "inverse-surface": "#273044",
+                        "secondary-container": "#a0f2e5",
+                        "structural-border": "#D7DEE8",
+                        "error": "#ba1a1a",
+                        "critical-red": "#C43D3D",
+                        "review-amber": "#B86A00",
+                        "on-surface-variant": "#434751",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "on-primary-container": "#bcd0ff",
+                        "surface-bright": "#f9f9ff",
+                        "on-tertiary-fixed": "#311400",
+                        "on-surface": "#121b2e",
+                        "on-secondary-fixed": "#00201c",
+                        "primary": "#003f89",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#adc7ff",
+                        "tertiary-container": "#8d4500",
+                        "on-secondary-container": "#117167",
+                        "surface-variant": "#d9e2fc",
+                        "surface-container": "#e9edff",
+                        "tertiary": "#6a3200",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "secondary-fixed": "#a0f2e5",
+                        "primary-fixed-dim": "#adc7ff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "secondary": "#016a61",
+                        "surface-container-lowest": "#ffffff",
+                        "placeholder-gray": "#8A95A3",
+                        "on-primary-fixed-variant": "#014493",
+                        "paper-white": "#FFFFFF",
+                        "on-primary-fixed": "#001a41",
+                        "quiet-panel": "#EEF2F6",
+                        "surface-dim": "#d1daf4",
+                        "on-error-container": "#93000a",
+                        "muted-text": "#5F6B7A",
+                        "surface-container-highest": "#d9e2fc",
+                        "primary-fixed": "#d8e2ff",
+                        "outline-variant": "#c3c6d3",
+                        "on-error": "#ffffff",
+                        "outline": "#737782",
+                        "tertiary-fixed": "#ffdcc6",
+                        "confirmed-green": "#16805B",
+                        "on-background": "#121b2e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "header-height": "56px",
+                        "xl": "32px",
+                        "margin-desktop": "24px",
+                        "sm": "12px",
+                        "md": "16px",
+                        "margin-compact": "20px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "sidebar-width": "240px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Noto Sans"],
+                        "metadata": ["Noto Sans"],
+                        "body": ["Noto Sans"],
+                        "technical-data": ["JetBrains Mono"],
+                        "page-title": ["Noto Sans"],
+                        "form-label": ["Noto Sans"]
+                    },
+                    "fontSize": {
+                        "section-title": ["16px", {"lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "metadata": ["12px", {"lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "body": ["14px", {"lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "technical-data": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400"}],
+                        "page-title": ["24px", {"lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "form-label": ["13px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom scrollbar for tables */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #F5F7FA; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D7DEE8; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #8A95A3; 
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body min-h-screen">
+<!-- SideNavBar -->
+<nav class="bg-paper-white dark:bg-inverse-surface w-[240px] h-screen fixed left-0 top-0 border-r border-structural-border dark:border-outline-variant flex flex-col h-full py-lg z-20">
+<!-- Brand / Header -->
+<div class="px-lg pb-md mb-sm">
+<div class="flex items-center gap-sm mb-md">
+<span class="material-symbols-outlined text-primary text-[24px]">gavel</span>
+<span class="font-section-title text-section-title text-on-surface leading-tight font-black">合同智审</span>
+</div>
+<div class="flex flex-col">
+<span class="font-form-label text-form-label text-on-surface truncate">华东科技有限公司</span>
+<span class="font-metadata text-metadata text-muted-text">组织管理员</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto px-sm custom-scrollbar">
+<!-- Main Group -->
+<div class="mb-lg">
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md bg-surface-container-highest text-primary border-l-4 border-primary font-medium cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>合同</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span>预警</span>
+</a>
+</div>
+<!-- Knowledge Config Group -->
+<div class="mb-lg">
+<div class="px-md py-xs mb-xs">
+<span class="font-metadata text-metadata text-muted-text uppercase tracking-wider">知识配置</span>
+</div>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span>风险规则</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="extension">extension</span>
+<span>条款模板</span>
+</a>
+</div>
+<!-- Org Management Group -->
+<div class="mb-lg">
+<div class="px-md py-xs mb-xs">
+<span class="font-metadata text-metadata text-muted-text uppercase tracking-wider">组织管理</span>
+</div>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+<span>组织设置</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>成员管理</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>支持授权</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>组织审计</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
+<span>运营指标</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm mb-base rounded-md text-on-surface-variant hover:bg-quiet-panel transition-colors cursor-pointer duration-200 ml-[4px]" href="#">
+<span class="material-symbols-outlined" data-icon="feedback">feedback</span>
+<span>反馈统计</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="bg-paper-white dark:bg-inverse-surface h-[56px] fixed top-0 right-0 left-[240px] border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg z-10">
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-sm font-metadata text-metadata text-muted-text">
+<span class="hover:text-primary cursor-pointer transition-colors">合同</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-medium">合同列表</span>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="relative p-xs text-muted-text hover:text-primary transition-colors rounded-full hover:bg-quiet-panel">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-[4px] right-[4px] w-[14px] h-[14px] bg-critical-red text-white text-[10px] font-bold flex items-center justify-center rounded-full leading-none">3</span>
+</button>
+<div class="flex items-center gap-xs cursor-pointer hover:bg-quiet-panel p-xs rounded-md transition-colors">
+<div class="w-[28px] h-[28px] rounded-full bg-surface-container-high flex items-center justify-center text-primary font-medium border border-structural-border text-[12px]">
+                张
+            </div>
+<span class="text-on-surface font-body text-[13px]">张明</span>
+<span class="material-symbols-outlined text-muted-text text-[18px]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- Main Content Workspace -->
+<main class="ml-[240px] mt-[56px] p-margin-desktop min-h-[calc(100vh-56px)]">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-xl">
+<div>
+<h1 class="font-page-title text-page-title text-on-surface mb-xs">合同</h1>
+<p class="font-body text-body text-muted-text">管理合同文件、审核任务与结果</p>
+</div>
+<div>
+<button class="bg-primary text-on-primary px-lg py-sm rounded hover:bg-surface-tint transition-colors font-section-title text-section-title flex items-center gap-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    新建合同
+                </button>
+</div>
+</div>
+<!-- Content Area: Filter & Table -->
+<div class="bg-paper-white border border-structural-border rounded flex flex-col h-full">
+<!-- Filter Bar -->
+<div class="p-md border-b border-structural-border flex items-center justify-between gap-md bg-surface-bright rounded-t">
+<div class="flex items-center gap-md flex-1">
+<!-- Search Input -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-muted-text text-[20px]">search</span>
+<input class="w-full pl-xl pr-sm py-sm text-body border-structural-border rounded bg-paper-white focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-placeholder-gray transition-colors" placeholder="搜索合同名称或编号..." type="text"/>
+</div>
+<!-- Status Filter Dropdown (Simulated) -->
+<div class="relative w-40">
+<select class="w-full pl-sm pr-lg py-sm text-body border-structural-border rounded bg-paper-white focus:border-primary focus:ring-1 focus:ring-primary appearance-none text-on-surface">
+<option>所有状态</option>
+<option>待审核</option>
+<option>已通过</option>
+<option>处理中</option>
+<option>已归档</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+<!-- Date Range Input -->
+<div class="flex items-center gap-sm w-72 border border-structural-border rounded bg-paper-white px-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors">
+<span class="material-symbols-outlined text-muted-text text-[18px]">calendar_today</span>
+<input class="w-full py-sm text-body border-none focus:ring-0 px-0 placeholder:text-placeholder-gray bg-transparent text-center" placeholder="开始日期" type="text" value="2023-10-01"/>
+<span class="text-muted-text">-</span>
+<input class="w-full py-sm text-body border-none focus:ring-0 px-0 placeholder:text-placeholder-gray bg-transparent text-center" placeholder="结束日期" type="text" value="2023-10-31"/>
+</div>
+</div>
+<div class="flex gap-sm">
+<button class="px-md py-sm rounded border border-structural-border text-on-surface hover:bg-quiet-panel transition-colors font-body text-body flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        更多筛选
+                    </button>
+<button class="p-sm rounded border border-structural-border text-on-surface hover:bg-quiet-panel transition-colors" title="刷新">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto custom-scrollbar flex-1">
+<table class="w-full text-left border-collapse min-w-[900px]">
+<thead class="bg-surface-bright font-form-label text-form-label text-muted-text border-b border-structural-border">
+<tr>
+<th class="py-sm px-md font-medium whitespace-nowrap">合同编号</th>
+<th class="py-sm px-md font-medium min-w-[200px]">合同名称</th>
+<th class="py-sm px-md font-medium whitespace-nowrap">合同类型</th>
+<th class="py-sm px-md font-medium whitespace-nowrap">状态</th>
+<th class="py-sm px-md font-medium whitespace-nowrap">负责人</th>
+<th class="py-sm px-md font-medium whitespace-nowrap">更新时间</th>
+<th class="py-sm px-md font-medium text-right whitespace-nowrap">操作</th>
+</tr>
+</thead>
+<tbody class="font-body text-body text-on-surface divide-y divide-structural-border">
+<!-- Row 1 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">HT-2023-001</td>
+<td class="py-md px-md font-medium">华东采购协议-2023</td>
+<td class="py-md px-md text-muted-text">采购合同</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center gap-xs px-2 py-0.5 rounded-full bg-tertiary-fixed text-tertiary font-metadata text-metadata border border-review-amber/30">
+<span class="w-1.5 h-1.5 rounded-full bg-review-amber"></span>
+                                    待审核
+                                </span>
+</td>
+<td class="py-md px-md">张明</td>
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">2023-10-24 10:30</td>
+<td class="py-md px-md text-right text-primary">
+<button class="hover:underline px-xs">查看</button>
+<span class="text-structural-border">|</span>
+<button class="hover:underline px-xs">编辑</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">HT-2023-002</td>
+<td class="py-md px-md font-medium">年度服务框架</td>
+<td class="py-md px-md text-muted-text">服务合同</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center gap-xs px-2 py-0.5 rounded-full bg-secondary-fixed text-secondary font-metadata text-metadata border border-confirmed-green/30">
+<span class="w-1.5 h-1.5 rounded-full bg-confirmed-green"></span>
+                                    已通过
+                                </span>
+</td>
+<td class="py-md px-md">李华</td>
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">2023-10-23 15:45</td>
+<td class="py-md px-md text-right text-primary">
+<button class="hover:underline px-xs">查看</button>
+<span class="text-structural-border">|</span>
+<button class="hover:underline px-xs">编辑</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">HT-2023-003</td>
+<td class="py-md px-md font-medium">租赁协议-南京分部</td>
+<td class="py-md px-md text-muted-text">租赁合同</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center gap-xs px-2 py-0.5 rounded-full bg-surface-container-high text-informational-cyan font-metadata text-metadata border border-informational-cyan/30">
+<span class="material-symbols-outlined text-[12px] leading-none">sync</span>
+                                    处理中
+                                </span>
+</td>
+<td class="py-md px-md">王伟</td>
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">2023-10-22 09:15</td>
+<td class="py-md px-md text-right text-primary">
+<button class="hover:underline px-xs">查看</button>
+<span class="text-structural-border">|</span>
+<button class="hover:underline px-xs">编辑</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">HT-2023-004</td>
+<td class="py-md px-md font-medium text-muted-text">解约通知书</td>
+<td class="py-md px-md text-muted-text">其他</td>
+<td class="py-md px-md">
+<span class="inline-flex items-center gap-xs px-2 py-0.5 rounded-full bg-surface-variant text-on-surface-variant font-metadata text-metadata border border-outline/30">
+<span class="material-symbols-outlined text-[12px] leading-none">inventory_2</span>
+                                    已归档
+                                </span>
+</td>
+<td class="py-md px-md text-muted-text">赵敏</td>
+<td class="py-md px-md font-technical-data text-technical-data text-muted-text">2023-10-21 11:20</td>
+<td class="py-md px-md text-right text-primary">
+<button class="hover:underline px-xs">查看</button>
+<span class="text-structural-border">|</span>
+<button class="hover:underline px-xs text-muted-text opacity-50 cursor-not-allowed" disabled="">编辑</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="p-md border-t border-structural-border bg-paper-white flex items-center justify-between rounded-b">
+<div class="font-metadata text-metadata text-muted-text">
+                    共 124 条记录，当前显示 1-4 条
+                </div>
+<div class="flex items-center gap-sm">
+<button class="p-xs rounded border border-structural-border text-muted-text hover:bg-quiet-panel transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<div class="flex gap-xs font-technical-data text-technical-data">
+<button class="w-8 h-8 rounded bg-primary text-on-primary font-medium flex items-center justify-center">1</button>
+<button class="w-8 h-8 rounded hover:bg-quiet-panel text-on-surface transition-colors flex items-center justify-center border border-transparent hover:border-structural-border">2</button>
+<button class="w-8 h-8 rounded hover:bg-quiet-panel text-on-surface transition-colors flex items-center justify-center border border-transparent hover:border-structural-border">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-muted-text">...</span>
+<button class="w-8 h-8 rounded hover:bg-quiet-panel text-on-surface transition-colors flex items-center justify-center border border-transparent hover:border-structural-border">12</button>
+</div>
+<button class="p-xs rounded border border-structural-border text-on-surface hover:bg-quiet-panel transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+<div class="ml-md flex items-center gap-sm font-metadata text-metadata text-muted-text border-l border-structural-border pl-md">
+                        跳至
+                        <input class="w-12 py-xs px-sm text-center border-structural-border rounded focus:border-primary focus:ring-1 focus:ring-primary" type="text" value="1"/>
+                        页
+                    </div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

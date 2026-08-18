@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Member Management - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-primary": "#adc7ff",
+                        "primary-fixed-dim": "#adc7ff",
+                        "confirmed-green": "#16805B",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#d8e2ff",
+                        "tertiary": "#6a3200",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f1f3ff",
+                        "on-error": "#ffffff",
+                        "surface-container-high": "#e1e8ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-secondary-container": "#117167",
+                        "on-background": "#121b2e",
+                        "muted-text": "#5F6B7A",
+                        "on-primary-fixed-variant": "#014493",
+                        "workspace-mist": "#F5F7FA",
+                        "placeholder-gray": "#8A95A3",
+                        "inverse-surface": "#273044",
+                        "background": "#f9f9ff",
+                        "surface": "#f9f9ff",
+                        "surface-container-lowest": "#ffffff",
+                        "structural-border": "#D7DEE8",
+                        "on-primary-container": "#bcd0ff",
+                        "on-surface": "#121b2e",
+                        "on-primary-fixed": "#001a41",
+                        "primary-container": "#2457a6",
+                        "surface-dim": "#d1daf4",
+                        "review-amber": "#B86A00",
+                        "on-secondary-fixed": "#00201c",
+                        "surface-bright": "#f9f9ff",
+                        "on-tertiary-container": "#ffc39d",
+                        "on-surface-variant": "#434751",
+                        "secondary-fixed": "#a0f2e5",
+                        "paper-white": "#FFFFFF",
+                        "error-container": "#ffdad6",
+                        "quiet-panel": "#EEF2F6",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#311400",
+                        "primary": "#003f89",
+                        "on-secondary-fixed-variant": "#005049",
+                        "inverse-on-surface": "#edf0ff",
+                        "outline": "#737782",
+                        "surface-tint": "#2b5dac",
+                        "surface-container": "#e9edff",
+                        "critical-red": "#C43D3D",
+                        "secondary": "#016a61",
+                        "outline-variant": "#c3c6d3",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary-fixed": "#ffdcc6",
+                        "on-secondary": "#ffffff",
+                        "informational-cyan": "#1677A6",
+                        "surface-container-highest": "#d9e2fc",
+                        "surface-variant": "#d9e2fc",
+                        "tertiary-container": "#8d4500",
+                        "secondary-container": "#a0f2e5",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#84d5c9"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.125rem",
+                        lg: "0.25rem",
+                        xl: "0.5rem",
+                        full: "0.75rem"
+                    },
+                    spacing: {
+                        md: "16px",
+                        sm: "12px",
+                        "margin-compact": "20px",
+                        base: "4px",
+                        xl: "32px",
+                        "margin-desktop": "24px",
+                        xs: "8px",
+                        lg: "24px",
+                        "header-height": "56px",
+                        "sidebar-width": "240px"
+                    },
+                    fontFamily: {
+                        "section-title": ["Noto Sans"],
+                        metadata: ["Noto Sans"],
+                        "form-label": ["Noto Sans"],
+                        body: ["Noto Sans"],
+                        "technical-data": ["JetBrains Mono"],
+                        "page-title": ["Noto Sans"]
+                    },
+                    fontSize: {
+                        "section-title": ["16px", { lineHeight: "24px", letterSpacing: "0", fontWeight: "600" }],
+                        metadata: ["12px", { lineHeight: "18px", letterSpacing: "0", fontWeight: "400" }],
+                        "form-label": ["13px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "500" }],
+                        body: ["14px", { lineHeight: "22px", letterSpacing: "0", fontWeight: "400" }],
+                        "technical-data": ["13px", { lineHeight: "20px", letterSpacing: "0", fontWeight: "400" }],
+                        "page-title": ["24px", { lineHeight: "32px", letterSpacing: "0", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Noto Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-background font-body text-body antialiased flex">
+<!-- Shared Component: SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[240px] bg-surface-container-lowest dark:bg-inverse-surface border-r border-structural-border dark:border-outline-variant flex flex-col py-lg z-50">
+<div class="px-lg mb-8">
+<h1 class="font-page-title text-page-title text-primary dark:text-primary-fixed-dim">合同智审</h1>
+<p class="font-metadata text-metadata text-muted-text mt-1">华东科技有限公司 / 组织管理员</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<!-- Nav Items mapped from JSON strictly -->
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-form-label text-form-label">合同</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="font-form-label text-form-label">预警</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">gavel</span>
+<span class="font-form-label text-form-label">风险规则</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">view_stream</span>
+<span class="font-form-label text-form-label">条款模板</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-form-label text-form-label">组织设置</span>
+</a>
+<!-- Active State: Members -->
+<a class="flex items-center gap-3 px-4 py-2 border-l-4 border-primary text-primary font-bold bg-surface-container dark:bg-primary-container/20 cursor-pointer active:opacity-80 mt-2" href="#">
+<span class="material-symbols-outlined icon-fill">group</span>
+<span class="font-form-label text-form-label">成员管理</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-form-label text-form-label">支持授权</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-form-label text-form-label">组织审计</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="font-form-label text-form-label">Metrics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:bg-quiet-panel dark:hover:bg-surface-variant cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">rate_review</span>
+<span class="font-form-label text-form-label">Feedback</span>
+</a>
+</div>
+</nav>
+<!-- Shared Component: TopNavBar -->
+<header class="fixed top-0 right-0 h-header-height z-40 bg-paper-white dark:bg-surface-dim border-b border-structural-border dark:border-outline-variant flex justify-between items-center px-lg left-[240px]">
+<div class="flex items-center gap-2 font-form-label text-form-label text-muted-text">
+<span>华东科技有限公司</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">组织管理员</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="w-8 h-8 rounded hover:bg-quiet-panel flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-quiet-panel flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-6 w-px bg-structural-border mx-2"></div>
+<button class="flex items-center gap-2 hover:bg-quiet-panel px-2 py-1 rounded transition-colors cursor-pointer">
+<div class="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center overflow-hidden border border-structural-border">
+<span class="material-symbols-outlined text-muted-text">person</span>
+</div>
+<span class="font-form-label text-form-label text-on-surface">User Profile</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] mt-[56px] flex-1 p-margin-desktop xl:p-margin-desktop lg:p-margin-compact bg-workspace-mist min-h-[calc(100vh-56px)]">
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-lg">
+<h2 class="font-page-title text-page-title text-on-background">成员管理</h2>
+<button class="bg-primary text-paper-white rounded px-4 py-2 flex items-center gap-2 hover:bg-surface-tint transition-colors font-form-label text-form-label shadow-sm" onclick="toggleInvitePanel()">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                邀请成员
+            </button>
+</div>
+<!-- Filter Bar -->
+<div class="bg-paper-white border border-structural-border rounded-lg p-3 mb-4 flex items-center gap-3">
+<div class="relative flex-1 max-w-xs">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted-text text-[20px]">search</span>
+<input class="w-full pl-10 pr-3 py-1.5 bg-workspace-mist border border-structural-border rounded font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-shadow placeholder-gray" placeholder="搜索成员、邮箱..." type="text"/>
+</div>
+<div class="h-6 w-px bg-structural-border"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-paper-white border border-structural-border rounded hover:bg-quiet-panel transition-colors font-body text-body text-on-surface">
+<span>角色: 全部</span>
+<span class="material-symbols-outlined text-[18px] text-muted-text">arrow_drop_down</span>
+</button>
+<button class="flex items-center gap-2 px-3 py-1.5 bg-paper-white border border-structural-border rounded hover:bg-quiet-panel transition-colors font-body text-body text-on-surface">
+<span>状态: 全部</span>
+<span class="material-symbols-outlined text-[18px] text-muted-text">arrow_drop_down</span>
+</button>
+<div class="flex-1"></div>
+<button class="flex items-center gap-2 px-3 py-1.5 text-muted-text hover:text-on-surface transition-colors font-metadata text-metadata">
+<span class="material-symbols-outlined text-[18px]">sort</span>
+                加入时间排序
+            </button>
+</div>
+<!-- Data Table -->
+<div class="bg-paper-white border border-structural-border rounded-lg overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-workspace-mist border-b border-structural-border">
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-48">成员</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-64">邮箱</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-32">角色</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-24">状态</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-24">邀请投递</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-32">加入时间</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-32">最近活动</th>
+<th class="py-3 px-4 font-metadata text-metadata text-muted-text font-normal w-32 text-right">操作</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-structural-border">
+<!-- Row 1 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-3 px-4 font-body text-body text-on-surface flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary font-form-label font-bold">张</div>
+<span>张明 <span class="text-muted-text text-[12px]">(You)</span></span>
+</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">admin@company.com</td>
+<td class="py-3 px-4 font-body text-body text-on-surface">组织管理员</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-structural-border bg-surface-bright">
+<div class="w-2 h-2 rounded-full bg-confirmed-green"></div>
+<span class="font-metadata text-metadata text-on-surface">活跃</span>
+</div>
+</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">-</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">2023-01-05</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">刚刚</td>
+<td class="py-3 px-4 text-right">
+<button class="text-primary hover:text-surface-tint font-form-label text-form-label px-2 py-1 rounded hover:bg-surface-container-low transition-colors">编辑</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-3 px-4 font-body text-body text-on-surface flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-form-label font-bold">李</div>
+<span>李华</span>
+</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">reviewer@company.com</td>
+<td class="py-3 px-4 font-body text-body text-on-surface">审核员</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-structural-border bg-surface-bright">
+<div class="w-2 h-2 rounded-full bg-confirmed-green"></div>
+<span class="font-metadata text-metadata text-on-surface">活跃</span>
+</div>
+</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">-</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">2023-05-12</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">1小时前</td>
+<td class="py-3 px-4 text-right flex items-center justify-end gap-2">
+<button class="text-primary hover:text-surface-tint font-form-label text-form-label px-2 py-1 rounded hover:bg-surface-container-low transition-colors">编辑</button>
+<span class="text-structural-border">/</span>
+<button class="text-muted-text hover:text-critical-red font-form-label text-form-label px-2 py-1 rounded hover:bg-error-container/50 transition-colors">停用</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-3 px-4 font-body text-body text-on-surface flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-form-label font-bold">王</div>
+<span>王强</span>
+</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">viewer@company.com</td>
+<td class="py-3 px-4 font-body text-body text-on-surface">查看员</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-structural-border bg-surface-bright">
+<div class="w-2 h-2 rounded-full bg-confirmed-green"></div>
+<span class="font-metadata text-metadata text-on-surface">活跃</span>
+</div>
+</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">-</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">2023-10-20</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">昨天</td>
+<td class="py-3 px-4 text-right flex items-center justify-end gap-2">
+<button class="text-primary hover:text-surface-tint font-form-label text-form-label px-2 py-1 rounded hover:bg-surface-container-low transition-colors">编辑</button>
+<span class="text-structural-border">/</span>
+<button class="text-muted-text hover:text-critical-red font-form-label text-form-label px-2 py-1 rounded hover:bg-error-container/50 transition-colors">停用</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-quiet-panel transition-colors group bg-surface-container-low/30">
+<td class="py-3 px-4 font-body text-body text-muted-text flex items-center gap-3 italic">
+<div class="w-8 h-8 rounded-full border border-dashed border-placeholder-gray flex items-center justify-center text-placeholder-gray">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+</div>
+<span>(Pending)</span>
+</td>
+<td class="py-3 px-4 font-technical-data text-technical-data text-on-surface-variant">invited@partner.com</td>
+<td class="py-3 px-4 font-body text-body text-on-surface">审核员</td>
+<td class="py-3 px-4">
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-structural-border bg-surface-bright">
+<div class="w-2 h-2 rounded-full bg-review-amber"></div>
+<span class="font-metadata text-metadata text-review-amber">待加入</span>
+</div>
+</td>
+<td class="py-3 px-4">
+<span class="font-metadata text-metadata text-primary border-b border-dashed border-primary/30 pb-0.5 cursor-help" title="Invitation sent successfully">已发送</span>
+</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">-</td>
+<td class="py-3 px-4 font-body text-body text-muted-text">-</td>
+<td class="py-3 px-4 text-right flex items-center justify-end gap-2">
+<button class="text-primary hover:text-surface-tint font-form-label text-form-label px-2 py-1 rounded hover:bg-surface-container-low transition-colors">重发</button>
+<span class="text-structural-border">/</span>
+<button class="text-muted-text hover:text-on-surface font-form-label text-form-label px-2 py-1 rounded hover:bg-structural-border/30 transition-colors">取消</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</main>
+<!-- Side Panel Overlay: Invite Member -->
+<div class="fixed inset-0 bg-on-background/20 z-50 hidden opacity-0 transition-opacity duration-300 backdrop-blur-[1px]" id="inviteOverlay"></div>
+<aside class="fixed right-0 top-0 h-full w-[400px] bg-paper-white shadow-[-8px_0_24px_rgba(0,0,0,0.08)] border-l border-structural-border z-50 transform translate-x-full transition-transform duration-300 flex flex-col" id="invitePanel">
+<!-- Panel Header -->
+<div class="h-header-height border-b border-structural-border flex items-center justify-between px-lg bg-surface-bright">
+<h3 class="font-section-title text-section-title text-on-surface">邀请新成员</h3>
+<button class="w-8 h-8 rounded hover:bg-quiet-panel flex items-center justify-center text-muted-text hover:text-on-surface transition-colors" onclick="toggleInvitePanel()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Panel Body -->
+<div class="flex-1 p-lg overflow-y-auto">
+<div class="mb-6">
+<label class="block font-form-label text-form-label text-on-surface mb-2">邮箱地址 <span class="text-critical-red">*</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-placeholder-gray text-[18px]">mail</span>
+<input class="w-full pl-10 pr-3 py-2 bg-paper-white border border-structural-border rounded font-technical-data text-technical-data text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-shadow" placeholder="例如: name@company.com" type="email"/>
+</div>
+<p class="font-metadata text-metadata text-muted-text mt-2">系统将向该邮箱发送邀请链接及初始配置指南。</p>
+</div>
+<div class="mb-6">
+<label class="block font-form-label text-form-label text-on-surface mb-2">分配角色 <span class="text-critical-red">*</span></label>
+<div class="relative">
+<select class="w-full pl-3 pr-10 py-2 bg-paper-white border border-structural-border rounded font-body text-body text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
+<option value="admin">组织管理员 (Admin)</option>
+<option selected="" value="reviewer">审核员 (Reviewer)</option>
+<option value="viewer">查看员 (Viewer)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-muted-text pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<!-- Role Permissions Preview (Decorative Context) -->
+<div class="bg-workspace-mist border border-structural-border rounded p-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-informational-cyan text-[18px]">info</span>
+<h4 class="font-form-label text-form-label text-on-surface">审核员权限说明</h4>
+</div>
+<ul class="font-metadata text-metadata text-muted-text space-y-1.5 pl-6 list-disc">
+<li>可查看组织内所有共享合同。</li>
+<li>可对分配给自己的合同进行风险标注与审核意见编写。</li>
+<li>无权修改全局风险规则及条款模板。</li>
+</ul>
+</div>
+</div>
+<!-- Panel Footer -->
+<div class="p-lg border-t border-structural-border bg-surface-bright flex justify-end gap-3">
+<button class="px-4 py-2 bg-paper-white border border-structural-border text-on-surface rounded font-form-label text-form-label hover:bg-quiet-panel transition-colors" onclick="toggleInvitePanel()">
+                取消
+            </button>
+<button class="px-4 py-2 bg-primary text-paper-white rounded font-form-label text-form-label hover:bg-surface-tint transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">send</span>
+                发送邀请
+            </button>
+</div>
+</aside>
+<script>
+        function toggleInvitePanel() {
+            const panel = document.getElementById('invitePanel');
+            const overlay = document.getElementById('inviteOverlay');
+            
+            if (panel.classList.contains('translate-x-full')) {
+                // Open
+                overlay.classList.remove('hidden');
+                // slight delay to allow display:block to apply before opacity transition
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    panel.classList.remove('translate-x-full');
+                }, 10);
+            } else {
+                // Close
+                overlay.classList.add('opacity-0');
+                panel.classList.add('translate-x-full');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+        }
+    </script>
+</body></html>

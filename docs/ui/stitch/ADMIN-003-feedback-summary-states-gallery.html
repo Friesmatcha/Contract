@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ADMIN-003 / Feedback Summary / States Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#d8e2ff",
+                        "quiet-panel": "#EEF2F6",
+                        "on-tertiary-container": "#ffc39d",
+                        "workspace-mist": "#F5F7FA",
+                        "on-background": "#121b2e",
+                        "surface-container-high": "#e1e8ff",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#d9e2fc",
+                        "background": "#f9f9ff",
+                        "surface-variant": "#d9e2fc",
+                        "on-surface-variant": "#434751",
+                        "on-primary-fixed": "#001a41",
+                        "surface-tint": "#2b5dac",
+                        "secondary-fixed-dim": "#84d5c9",
+                        "placeholder-gray": "#8A95A3",
+                        "review-amber": "#B86A00",
+                        "confirmed-green": "#16805B",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#005049",
+                        "secondary-fixed": "#a0f2e5",
+                        "surface-bright": "#f9f9ff",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#d1daf4",
+                        "paper-white": "#FFFFFF",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#8d4500",
+                        "on-primary-fixed-variant": "#014493",
+                        "tertiary": "#6a3200",
+                        "on-tertiary-fixed": "#311400",
+                        "critical-red": "#C43D3D",
+                        "muted-text": "#5F6B7A",
+                        "surface-container": "#e9edff",
+                        "on-secondary-container": "#117167",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#016a61",
+                        "outline": "#737782",
+                        "surface": "#f9f9ff",
+                        "on-tertiary-fixed-variant": "#723600",
+                        "on-primary-container": "#bcd0ff",
+                        "primary": "#003f89",
+                        "inverse-on-surface": "#edf0ff",
+                        "inverse-primary": "#adc7ff",
+                        "structural-border": "#D7DEE8",
+                        "surface-container-low": "#f1f3ff",
+                        "on-surface": "#121b2e",
+                        "on-secondary-fixed": "#00201c",
+                        "primary-fixed-dim": "#adc7ff",
+                        "informational-cyan": "#1677A6",
+                        "tertiary-fixed-dim": "#ffb786",
+                        "tertiary-fixed": "#ffdcc6",
+                        "on-secondary": "#ffffff",
+                        "secondary-container": "#a0f2e5",
+                        "outline-variant": "#c3c6d3",
+                        "inverse-surface": "#273044",
+                        "primary-container": "#2457a6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "24px",
+                        "xs": "8px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "header-height": "56px",
+                        "md": "16px",
+                        "margin-compact": "20px",
+                        "sm": "12px",
+                        "sidebar-width": "240px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "section-title": ["Noto Sans", "sans-serif"],
+                        "technical-data": ["JetBrains Mono", "monospace"],
+                        "body": ["Noto Sans", "sans-serif"],
+                        "page-title": ["Noto Sans", "sans-serif"],
+                        "metadata": ["Noto Sans", "sans-serif"],
+                        "form-label": ["Noto Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                        "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }],
+                        "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        @keyframes skeleton-shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        .skeleton-anim {
+            animation: skeleton-shimmer 2s infinite linear;
+            background: linear-gradient(to right, #EEF2F6 4%, #D7DEE8 25%, #EEF2F6 36%);
+            background-size: 1000px 100%;
+        }
+    </style>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body min-h-screen flex text-body m-0 p-0 overflow-x-hidden">
+<!-- SideNavBar -->
+<nav class="w-sidebar-width h-full fixed left-0 top-0 border-r border-structural-border bg-paper-white flex flex-col py-lg z-20">
+<div class="px-lg mb-8">
+<h1 class="text-section-title font-section-title text-primary">华东科技有限公司</h1>
+<p class="text-metadata font-metadata text-muted-text mt-1">组织管理员</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">description</span>
+<span>合同</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">warning</span>
+<span>预警</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">rule</span>
+<span>风险规则</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">content_paste</span>
+<span>条款模板</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">settings</span>
+<span>组织设置</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">group</span>
+<span>成员管理</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">verified_user</span>
+<span>支持授权</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">analytics</span>
+<span>组织审计</span>
+</a>
+<a class="flex items-center text-on-surface-variant px-4 py-3 hover:bg-quiet-panel transition-colors" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px]">trending_up</span>
+<span>运营指标</span>
+</a>
+<a class="flex items-center text-primary font-bold border-l-4 border-primary bg-primary-fixed px-4 py-3 hover:bg-quiet-panel transition-colors opacity-90 transition-all duration-200" href="#">
+<span aria-hidden="true" class="material-symbols-outlined mr-3 text-[20px] fill">insert_chart</span>
+<span>反馈统计</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-240px)] h-header-height border-b border-structural-border bg-paper-white flex justify-between items-center px-margin-desktop z-10">
+<div class="flex items-center h-full">
+<span class="text-page-title font-page-title text-primary font-bold mr-8">合同智审</span>
+<nav class="hidden md:flex space-x-6 h-full items-center">
+<a class="text-primary font-bold hover:text-primary transition-colors flex items-center h-full border-b-2 border-primary" href="#">反馈统计</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-muted-text hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded hover:bg-quiet-panel focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+<button class="text-muted-text hover:text-primary transition-colors flex items-center justify-center w-8 h-8 rounded hover:bg-quiet-panel focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1">
+<span class="material-symbols-outlined text-[24px]">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="ml-sidebar-width mt-header-height flex-1 p-margin-desktop bg-workspace-mist min-h-[calc(100vh-56px)]">
+<div class="mb-8">
+<h2 class="text-page-title font-page-title text-on-surface mb-2">反馈统计 (States Gallery)</h2>
+<p class="text-muted-text text-body font-body">UI components demonstrating various system states for the Feedback Summary view.</p>
+</div>
+<div class="space-y-12">
+<!-- State A: Skeleton Loader -->
+<section class="bg-paper-white border border-structural-border rounded p-lg">
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-structural-border">
+<h3 class="text-section-title font-section-title text-on-surface">State A: Skeleton Loader</h3>
+<span class="text-metadata font-metadata text-muted-text bg-quiet-panel px-2 py-1 rounded">Loading Data</span>
+</div>
+<!-- Skeleton Filters -->
+<div class="flex gap-4 mb-6">
+<div class="h-10 w-48 skeleton-anim rounded"></div>
+<div class="h-10 w-48 skeleton-anim rounded"></div>
+<div class="h-10 w-24 skeleton-anim rounded ml-auto"></div>
+</div>
+<!-- Skeleton Stat Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+<div class="bg-paper-white border border-structural-border rounded p-md h-24 flex flex-col justify-between">
+<div class="h-4 w-20 skeleton-anim rounded"></div>
+<div class="h-8 w-16 skeleton-anim rounded mt-2"></div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded p-md h-24 flex flex-col justify-between">
+<div class="h-4 w-24 skeleton-anim rounded"></div>
+<div class="h-8 w-12 skeleton-anim rounded mt-2"></div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded p-md h-24 flex flex-col justify-between">
+<div class="h-4 w-16 skeleton-anim rounded"></div>
+<div class="h-8 w-14 skeleton-anim rounded mt-2"></div>
+</div>
+<div class="bg-paper-white border border-structural-border rounded p-md h-24 flex flex-col justify-between">
+<div class="h-4 w-28 skeleton-anim rounded"></div>
+<div class="h-8 w-20 skeleton-anim rounded mt-2"></div>
+</div>
+</div>
+<!-- Skeleton Table -->
+<div class="border border-structural-border rounded overflow-hidden">
+<div class="bg-quiet-panel border-b border-structural-border flex h-12 items-center px-4">
+<div class="h-4 w-24 skeleton-anim rounded mr-auto"></div>
+<div class="h-4 w-16 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-20 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-12 skeleton-anim rounded ml-4"></div>
+</div>
+<div class="bg-paper-white flex flex-col">
+<div class="h-12 border-b border-structural-border flex items-center px-4">
+<div class="h-4 w-32 skeleton-anim rounded mr-auto"></div>
+<div class="h-4 w-12 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-16 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-8 skeleton-anim rounded ml-4"></div>
+</div>
+<div class="h-12 border-b border-structural-border flex items-center px-4">
+<div class="h-4 w-40 skeleton-anim rounded mr-auto"></div>
+<div class="h-4 w-14 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-12 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-10 skeleton-anim rounded ml-4"></div>
+</div>
+<div class="h-12 flex items-center px-4">
+<div class="h-4 w-28 skeleton-anim rounded mr-auto"></div>
+<div class="h-4 w-10 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-14 skeleton-anim rounded mx-4"></div>
+<div class="h-4 w-12 skeleton-anim rounded ml-4"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- State B: Empty State (No Feedback) -->
+<section class="bg-paper-white border border-structural-border rounded p-lg">
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-structural-border">
+<h3 class="text-section-title font-section-title text-on-surface">State B: Empty State</h3>
+<span class="text-metadata font-metadata text-muted-text bg-quiet-panel px-2 py-1 rounded">No Data</span>
+</div>
+<div class="flex flex-col items-center justify-center py-16 px-4">
+<span class="material-symbols-outlined text-[64px] text-placeholder-gray mb-4 font-light">inbox</span>
+<h4 class="text-section-title font-section-title text-on-surface mb-2">暂无反馈数据</h4>
+<p class="text-body font-body text-muted-text mb-6 text-center max-w-sm">当前日期范围内未收到用户反馈</p>
+<button class="bg-paper-white border border-structural-border text-on-surface px-4 py-2 rounded text-body font-body hover:bg-quiet-panel transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">清除筛选</button>
+</div>
+</section>
+<!-- State C: Error State (Forbidden) -->
+<section class="bg-paper-white border border-structural-border rounded p-lg">
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-structural-border">
+<h3 class="text-section-title font-section-title text-on-surface">State C: Forbidden</h3>
+<span class="text-metadata font-metadata text-muted-text bg-error-container text-on-error-container px-2 py-1 rounded">Access Denied</span>
+</div>
+<div class="flex flex-col items-center justify-center py-16 px-4">
+<span class="material-symbols-outlined text-[64px] text-error mb-4 font-light">lock</span>
+<h4 class="text-section-title font-section-title text-on-surface mb-2">无权限查看</h4>
+<p class="text-body font-body text-muted-text mb-0 text-center max-w-sm">您没有查看反馈统计数据的权限，请联系超级管理员。</p>
+</div>
+</section>
+<!-- State D: Error State (Safe Retry) -->
+<section class="bg-paper-white border border-structural-border rounded p-lg">
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-structural-border">
+<h3 class="text-section-title font-section-title text-on-surface">State D: Error / Retry</h3>
+<span class="text-metadata font-metadata text-muted-text bg-error-container text-on-error-container px-2 py-1 rounded">Network Error</span>
+</div>
+<div class="flex flex-col items-center justify-center py-16 px-4">
+<span class="material-symbols-outlined text-[64px] text-review-amber mb-4 font-light">wifi_off</span>
+<h4 class="text-section-title font-section-title text-on-surface mb-2">加载失败</h4>
+<p class="text-body font-body text-muted-text mb-6 text-center max-w-sm">请检查网络连接后重试</p>
+<button class="bg-primary text-on-primary px-4 py-2 rounded text-body font-body hover:bg-primary-container hover:text-on-primary-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 flex items-center">
+<span class="material-symbols-outlined text-[18px] mr-2">refresh</span>
+                        重试
+                    </button>
+</div>
+</section>
+<!-- State E: Form State (Invalid Date) -->
+<section class="bg-paper-white border border-structural-border rounded p-lg">
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-structural-border">
+<h3 class="text-section-title font-section-title text-on-surface">State E: Form Validation</h3>
+<span class="text-metadata font-metadata text-muted-text bg-error-container text-on-error-container px-2 py-1 rounded">Invalid Input</span>
+</div>
+<div class="flex items-end gap-4 p-4 border border-error-container bg-surface-bright rounded relative">
+<div class="flex-1 max-w-[200px]">
+<label class="block text-form-label font-form-label text-on-surface mb-1">开始日期</label>
+<div class="relative">
+<input class="w-full bg-paper-white border border-structural-border rounded px-3 py-2 text-body font-body text-on-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" type="date" value="2023-10-15"/>
+</div>
+</div>
+<span class="text-muted-text mb-2">-</span>
+<div class="flex-1 max-w-[200px] relative group">
+<label class="block text-form-label font-form-label text-error mb-1">结束日期</label>
+<div class="relative">
+<input class="w-full bg-error-container border border-error rounded px-3 py-2 text-body font-body text-error focus:outline-none focus:ring-2 focus:ring-error focus:border-transparent" type="date" value="2023-10-01"/>
+<span class="material-symbols-outlined text-[18px] text-error absolute right-3 top-1/2 -translate-y-1/2">error</span>
+</div>
+<!-- Tooltip -->
+<div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-inverse-surface text-inverse-on-surface text-metadata font-metadata px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                            结束日期不能早于开始日期
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-inverse-surface"></div>
+</div>
+</div>
+<button class="bg-quiet-panel text-placeholder-gray border border-structural-border px-4 py-2 rounded text-body font-body cursor-not-allowed ml-auto" disabled="">
+                        查询
+                    </button>
+</div>
+</section>
+</div>
+</main>
+</body></html>

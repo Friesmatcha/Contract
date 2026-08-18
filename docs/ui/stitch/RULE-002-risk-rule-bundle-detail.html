@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RULE-002 / Risk Rule Bundle Detail - 合同智审</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-container": "#bcd0ff",
+                      "surface-dim": "#d1daf4",
+                      "surface": "#f9f9ff",
+                      "tertiary": "#6a3200",
+                      "on-surface-variant": "#434751",
+                      "on-secondary-fixed-variant": "#005049",
+                      "on-secondary-container": "#117167",
+                      "on-secondary-fixed": "#00201c",
+                      "primary": "#003f89",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#ffc39d",
+                      "confirmed-green": "#16805B",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed": "#311400",
+                      "muted-text": "#5F6B7A",
+                      "outline": "#737782",
+                      "paper-white": "#FFFFFF",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#d9e2fc",
+                      "surface-container": "#e9edff",
+                      "secondary-container": "#a0f2e5",
+                      "placeholder-gray": "#8A95A3",
+                      "surface-tint": "#2b5dac",
+                      "on-error": "#ffffff",
+                      "on-background": "#121b2e",
+                      "structural-border": "#D7DEE8",
+                      "error": "#ba1a1a",
+                      "surface-container-high": "#e1e8ff",
+                      "on-primary-fixed-variant": "#014493",
+                      "surface-container-low": "#f1f3ff",
+                      "on-primary-fixed": "#001a41",
+                      "background": "#f9f9ff",
+                      "inverse-on-surface": "#edf0ff",
+                      "tertiary-fixed-dim": "#ffb786",
+                      "primary-container": "#2457a6",
+                      "on-surface": "#121b2e",
+                      "secondary-fixed": "#a0f2e5",
+                      "workspace-mist": "#F5F7FA",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#d9e2fc",
+                      "inverse-surface": "#273044",
+                      "review-amber": "#B86A00",
+                      "surface-bright": "#f9f9ff",
+                      "outline-variant": "#c3c6d3",
+                      "critical-red": "#C43D3D",
+                      "secondary": "#016a61",
+                      "secondary-fixed-dim": "#84d5c9",
+                      "error-container": "#ffdad6",
+                      "quiet-panel": "#EEF2F6",
+                      "primary-fixed": "#d8e2ff",
+                      "on-tertiary-fixed-variant": "#723600",
+                      "primary-fixed-dim": "#adc7ff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed": "#ffdcc6",
+                      "inverse-primary": "#adc7ff",
+                      "tertiary-container": "#8d4500",
+                      "informational-cyan": "#1677A6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "md": "16px",
+                      "xs": "8px",
+                      "lg": "24px",
+                      "base": "4px",
+                      "header-height": "56px",
+                      "sidebar-width": "240px",
+                      "margin-desktop": "24px",
+                      "sm": "12px",
+                      "margin-compact": "20px"
+              },
+              "fontFamily": {
+                      "technical-data": [
+                              "JetBrains Mono"
+                      ],
+                      "page-title": [
+                              "Noto Sans"
+                      ],
+                      "form-label": [
+                              "Noto Sans"
+                      ],
+                      "metadata": [
+                              "Noto Sans"
+                      ],
+                      "body": [
+                              "Noto Sans"
+                      ],
+                      "section-title": [
+                              "Noto Sans"
+                      ]
+              },
+              "fontSize": {
+                      "technical-data": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "page-title": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "form-label": [
+                              "13px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "metadata": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body": [
+                              "14px",
+                              {
+                                      "lineHeight": "22px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "section-title": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "letterSpacing": "0",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body font-sans text-body min-h-screen">
+<!-- TopNavBar -->
+<nav class="fixed top-0 right-0 h-[header-height] w-[calc(100%-240px)] bg-paper-white border-b border-structural-border flex justify-between items-center px-lg z-50">
+<div class="flex items-center gap-sm font-metadata text-metadata text-muted-text">
+<span>风险规则</span>
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+<span class="text-primary font-medium">合同付款风险</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="account_circle">account_circle</span>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[sidebar-width] bg-surface-container-lowest border-r border-structural-border flex flex-col z-50">
+<div class="p-lg flex flex-col gap-xs border-b border-structural-border">
+<h1 class="font-page-title text-page-title font-bold text-primary tracking-tight">合同智审</h1>
+<div class="flex items-center gap-xs mt-sm">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center text-primary font-bold overflow-hidden">
+<img alt="华东科技有限公司" class="object-cover w-full h-full" data-alt="A clean, modern corporate avatar representing '华东科技有限公司' in a minimal data-driven application. Professional, subtle lighting, muted corporate colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaqTan3oTCzTy6ksIZL-ftfGcdPBmShXpc5rggv9KizC7JghA5YEsg1alKJ8fgmEOj3DnLozpNhy2gSg3gnplZjngYPtmQTFirE34c03iq8W3ChRSVHZOI6HYvXKSppa42dVFy-Z9YjhCbHQHmlreiHsuzYt5wL1pqKQBbxioJf3JSw4aIvdyQ4IKrLfpsWSUVWx8-ChfSnYVJT9vd0dtnIccUxZun25xqaq_OXc2z-tJmjADeozP1eacsjS5GeCi_jQxhN13jHjk"/>
+</div>
+<div class="flex flex-col">
+<span class="font-form-label text-form-label text-on-surface line-clamp-1">华东科技有限公司</span>
+<span class="font-metadata text-metadata text-muted-text">组织管理员</span>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto py-md">
+<!-- Nav Group: Core -->
+<div class="mb-lg">
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>概览</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span>合同审查</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="menu_book">menu_book</span>
+<span>法律库</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="security_update_warning">security_update_warning</span>
+<span>风险监测</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>档案管理</span>
+</a>
+</div>
+<!-- Nav Group: 知识配置 -->
+<div class="mb-lg">
+<div class="px-md py-xs font-metadata text-metadata text-muted-text mb-xs">知识配置</div>
+<a class="flex items-center gap-xs px-md py-sm bg-surface-container text-primary border-l-4 border-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="rule" style="font-variation-settings: 'FILL' 1;">rule</span>
+<span class="font-medium">风险规则</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>条款模板</span>
+</a>
+</div>
+<!-- Nav Group: 组织管理 -->
+<div class="mb-lg">
+<div class="px-md py-xs font-metadata text-metadata text-muted-text mb-xs">组织管理</div>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>组织设置</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>成员管理</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+<span>支持授权</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span>组织审计</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>运营指标</span>
+</a>
+<a class="flex items-center gap-xs px-md py-sm text-on-surface-variant hover:bg-quiet-panel transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="feedback">feedback</span>
+<span>反馈统计</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-[sidebar-width] mt-[header-height] p-margin-compact xl:p-margin-desktop min-h-[calc(100vh-56px)] flex flex-col gap-lg">
+<!-- Page Header -->
+<header class="flex justify-between items-start w-full">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-sm">
+<h2 class="font-page-title text-page-title font-bold text-on-surface">合同付款风险</h2>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-confirmed-green/10 text-confirmed-green font-metadata text-metadata border border-confirmed-green/20">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                        已发布
+                    </span>
+<span class="font-technical-data text-technical-data text-muted-text px-2 py-1 rounded bg-quiet-panel border border-structural-border">
+                        v2.1.0
+                    </span>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="px-md py-2 rounded font-form-label text-form-label bg-paper-white text-on-surface border border-structural-border hover:bg-quiet-panel transition-colors">停用</button>
+<button class="px-md py-2 rounded font-form-label text-form-label bg-primary text-on-primary border border-primary hover:bg-primary-container transition-colors">创建草稿</button>
+</div>
+</header>
+<!-- Content Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg w-full">
+<!-- Left Column: Identity & Metadata -->
+<div class="lg:col-span-4 flex flex-col gap-lg">
+<section class="bg-paper-white rounded-lg border border-structural-border p-md flex flex-col gap-md">
+<h3 class="font-section-title text-section-title text-on-surface border-b border-structural-border pb-xs">基本信息</h3>
+<div class="flex flex-col gap-sm">
+<div>
+<span class="font-metadata text-metadata text-muted-text block mb-1">规则包ID</span>
+<span class="font-technical-data text-technical-data text-on-surface">RB-PAY-2023-01</span>
+</div>
+<div>
+<span class="font-metadata text-metadata text-muted-text block mb-1">描述</span>
+<p class="font-body text-body text-on-surface">监控合同中与付款条件、比例、时间及违约金相关的风险点。</p>
+</div>
+<div>
+<span class="font-metadata text-metadata text-muted-text block mb-1">适用范围</span>
+<span class="inline-flex px-2 py-1 bg-surface-container-high rounded text-on-surface-variant font-metadata text-metadata">采购及外包类合同</span>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div>
+<span class="font-metadata text-metadata text-muted-text block mb-1">创建人</span>
+<span class="font-body text-body text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-muted-text">person</span>
+                                    系统管理员
+                                </span>
+</div>
+<div>
+<span class="font-metadata text-metadata text-muted-text block mb-1">创建时间</span>
+<span class="font-technical-data text-technical-data text-on-surface">2023-10-12</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Version & Rules -->
+<div class="lg:col-span-8 flex flex-col gap-lg">
+<!-- Included Rules Section -->
+<section class="bg-paper-white rounded-lg border border-structural-border flex flex-col">
+<div class="p-md border-b border-structural-border flex justify-between items-center bg-surface-bright rounded-t-lg">
+<h3 class="font-section-title text-section-title text-on-surface">包含规则 (3)</h3>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left font-body text-body">
+<thead>
+<tr class="border-b border-structural-border bg-quiet-panel font-form-label text-form-label text-muted-text">
+<th class="py-sm px-md font-medium">规则ID</th>
+<th class="py-sm px-md font-medium">规则名称</th>
+<th class="py-sm px-md font-medium">风险等级</th>
+<th class="py-sm px-md font-medium text-right">状态</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors group">
+<td class="py-sm px-md font-technical-data text-technical-data text-on-surface">R-PAY-01</td>
+<td class="py-sm px-md text-on-surface">预付款比例超限</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error-container text-on-error-container font-metadata text-metadata border border-error-container">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                                            高风险
+                                        </span>
+</td>
+<td class="py-sm px-md text-right">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-outline rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</td>
+</tr>
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors group">
+<td class="py-sm px-md font-technical-data text-technical-data text-on-surface">R-PAY-02</td>
+<td class="py-sm px-md text-on-surface">付款周期模糊</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-review-amber/10 text-review-amber font-metadata text-metadata border border-review-amber/20">
+<span class="material-symbols-outlined text-[14px]">error_outline</span>
+                                            中风险
+                                        </span>
+</td>
+<td class="py-sm px-md text-right">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-outline rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</td>
+</tr>
+<tr class="hover:bg-quiet-panel transition-colors group">
+<td class="py-sm px-md font-technical-data text-technical-data text-on-surface">R-PAY-03</td>
+<td class="py-sm px-md text-on-surface">违约金比例不足</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-review-amber/10 text-review-amber font-metadata text-metadata border border-review-amber/20">
+<span class="material-symbols-outlined text-[14px]">error_outline</span>
+                                            中风险
+                                        </span>
+</td>
+<td class="py-sm px-md text-right">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-9 h-5 bg-outline rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Version History Section -->
+<section class="bg-paper-white rounded-lg border border-structural-border flex flex-col">
+<div class="p-md border-b border-structural-border bg-surface-bright rounded-t-lg">
+<h3 class="font-section-title text-section-title text-on-surface">版本历史</h3>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left font-body text-body">
+<thead>
+<tr class="border-b border-structural-border bg-quiet-panel font-form-label text-form-label text-muted-text">
+<th class="py-sm px-md font-medium">版本</th>
+<th class="py-sm px-md font-medium">状态</th>
+<th class="py-sm px-md font-medium">变更说明</th>
+<th class="py-sm px-md font-medium">创建人</th>
+<th class="py-sm px-md font-medium">创建时间</th>
+<th class="py-sm px-md font-medium text-right">操作</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors bg-surface-container-low/30">
+<td class="py-sm px-md font-technical-data text-technical-data text-primary font-medium">v2.1.0</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-confirmed-green/10 text-confirmed-green font-metadata text-metadata border border-confirmed-green/20">已发布</span>
+</td>
+<td class="py-sm px-md text-on-surface max-w-[200px] truncate">更新违约金比例阈值</td>
+<td class="py-sm px-md text-on-surface">李审查</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2023-11-05</td>
+<td class="py-sm px-md text-right">
+<button class="text-primary hover:text-primary-container font-form-label text-form-label transition-colors">查看</button>
+</td>
+</tr>
+<tr class="border-b border-structural-border hover:bg-quiet-panel transition-colors">
+<td class="py-sm px-md font-technical-data text-technical-data text-on-surface">v2.0.0</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-variant text-on-surface-variant font-metadata text-metadata border border-structural-border">历史版本</span>
+</td>
+<td class="py-sm px-md text-muted-text max-w-[200px] truncate">增加付款周期模糊检测规则</td>
+<td class="py-sm px-md text-on-surface">系统管理员</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2023-10-20</td>
+<td class="py-sm px-md text-right">
+<button class="text-primary hover:text-primary-container font-form-label text-form-label transition-colors">查看</button>
+</td>
+</tr>
+<tr class="hover:bg-quiet-panel transition-colors">
+<td class="py-sm px-md font-technical-data text-technical-data text-on-surface">v1.0.0</td>
+<td class="py-sm px-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-variant text-on-surface-variant font-metadata text-metadata border border-structural-border">历史版本</span>
+</td>
+<td class="py-sm px-md text-muted-text max-w-[200px] truncate">初始版本创建</td>
+<td class="py-sm px-md text-on-surface">系统管理员</td>
+<td class="py-sm px-md font-technical-data text-technical-data text-muted-text">2023-10-12</td>
+<td class="py-sm px-md text-right">
+<button class="text-primary hover:text-primary-container font-form-label text-form-label transition-colors">查看</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

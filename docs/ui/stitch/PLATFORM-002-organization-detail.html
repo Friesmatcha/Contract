@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PLATFORM-002 / Organization Detail</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        .icon-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom Scrollbar for operational density */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D7DEE8;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8A95A3;
+        }
+    </style>
+<!-- Tailwind CSS & Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline": "#737782",
+                    "on-secondary-fixed": "#00201c",
+                    "surface-dim": "#d1daf4",
+                    "critical-red": "#C43D3D",
+                    "surface-container-highest": "#d9e2fc",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "primary-container": "#2457a6",
+                    "on-background": "#121b2e",
+                    "informational-cyan": "#1677A6",
+                    "secondary": "#016a61",
+                    "tertiary-container": "#8d4500",
+                    "quiet-panel": "#EEF2F6",
+                    "error-container": "#ffdad6",
+                    "tertiary": "#6a3200",
+                    "on-tertiary-fixed": "#311400",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#edf0ff",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#d9e2fc",
+                    "on-surface": "#121b2e",
+                    "inverse-primary": "#adc7ff",
+                    "tertiary-fixed": "#ffdcc6",
+                    "surface-container-lowest": "#ffffff",
+                    "review-amber": "#B86A00",
+                    "on-primary-fixed-variant": "#014493",
+                    "surface-container": "#e9edff",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#a0f2e5",
+                    "inverse-surface": "#273044",
+                    "on-secondary-container": "#117167",
+                    "surface-tint": "#2b5dac",
+                    "paper-white": "#FFFFFF",
+                    "outline-variant": "#c3c6d3",
+                    "on-secondary": "#ffffff",
+                    "muted-text": "#5F6B7A",
+                    "on-error": "#ffffff",
+                    "surface": "#f9f9ff",
+                    "secondary-fixed-dim": "#84d5c9",
+                    "surface-container-low": "#f1f3ff",
+                    "on-tertiary-container": "#ffc39d",
+                    "background": "#f9f9ff",
+                    "confirmed-green": "#16805B",
+                    "surface-container-high": "#e1e8ff",
+                    "placeholder-gray": "#8A95A3",
+                    "secondary-container": "#a0f2e5",
+                    "on-primary-container": "#bcd0ff",
+                    "on-primary-fixed": "#001a41",
+                    "structural-border": "#D7DEE8",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "on-surface-variant": "#434751",
+                    "primary-fixed-dim": "#adc7ff",
+                    "primary": "#003f89",
+                    "surface-bright": "#f9f9ff",
+                    "on-primary": "#ffffff",
+                    "primary-fixed": "#d8e2ff",
+                    "on-secondary-fixed-variant": "#005049",
+                    "workspace-mist": "#F5F7FA"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "sm": "12px",
+                    "xs": "8px",
+                    "lg": "24px",
+                    "sidebar-width": "240px",
+                    "margin-desktop": "24px",
+                    "xl": "32px",
+                    "base": "4px",
+                    "margin-compact": "20px",
+                    "md": "16px",
+                    "header-height": "56px"
+            },
+            "fontFamily": {
+                    "technical-data": ["JetBrains Mono"],
+                    "page-title": ["Noto Sans"],
+                    "form-label": ["Noto Sans"],
+                    "metadata": ["Noto Sans"],
+                    "section-title": ["Noto Sans"],
+                    "body": ["Noto Sans"]
+            },
+            "fontSize": {
+                    "technical-data": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "400" }],
+                    "page-title": ["24px", { "lineHeight": "32px", "letterSpacing": "0", "fontWeight": "600" }],
+                    "form-label": ["13px", { "lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500" }],
+                    "metadata": ["12px", { "lineHeight": "18px", "letterSpacing": "0", "fontWeight": "400" }],
+                    "section-title": ["16px", { "lineHeight": "24px", "letterSpacing": "0", "fontWeight": "600" }],
+                    "body": ["14px", { "lineHeight": "22px", "letterSpacing": "0", "fontWeight": "400" }]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-workspace-mist text-on-surface font-body overflow-hidden h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface dark:bg-inverse-surface fixed left-0 top-0 h-full w-sidebar-width border-r border-structural-border dark:border-outline flat no shadows flex flex-col z-20">
+<!-- Brand Header -->
+<div class="px-md py-lg border-b border-structural-border flex flex-col gap-xs">
+<div class="flex items-center gap-xs">
+<div class="w-8 h-8 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined icon-fill">gavel</span>
+</div>
+<h1 class="font-page-title text-page-title font-bold text-primary dark:text-primary-fixed-dim">合同智审</h1>
+</div>
+<p class="font-metadata text-metadata text-muted-text">平台工作区 / 平台管理员</p>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto py-sm">
+<ul class="flex flex-col">
+<!-- Active Tab -->
+<li>
+<a class="flex items-center gap-md px-md py-sm bg-surface-container-high dark:bg-on-surface-variant border-l-4 border-primary text-primary dark:text-primary-fixed-dim font-bold hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-form-label text-form-label">组织</span>
+</a>
+</li>
+<!-- Inactive Tab -->
+<li>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-outline-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-form-label text-form-label">模型配置</span>
+</a>
+</li>
+<!-- Inactive Tab -->
+<li>
+<a class="flex items-center gap-md px-md py-sm text-on-surface-variant dark:text-outline-variant hover:bg-quiet-panel dark:hover:bg-on-surface-variant transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-form-label text-form-label">平台审计</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-paper-white dark:bg-surface-container-low fixed top-0 right-0 h-header-height z-10 border-b border-structural-border dark:border-outline flat no shadows flex justify-between items-center px-margin-desktop w-[calc(100%-240px)] ml-sidebar-width">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-xs font-metadata text-metadata text-muted-text dark:text-outline">
+<a class="hover:text-primary dark:hover:text-primary-fixed-dim cursor-pointer transition-colors" href="#">平台组织</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary dark:text-primary-fixed-dim font-medium">华东科技有限公司</span>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-sm">
+<button aria-label="Notifications" class="w-8 h-8 flex items-center justify-center rounded text-muted-text hover:bg-quiet-panel hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-dim overflow-hidden cursor-pointer border border-structural-border">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional corporate headshot of an administrator in a minimalist office setting, soft overhead lighting, muted color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx-8IhC2wSMnWiTH0s9oGbpB7WBxI-NzizbCROsxNqcRQ0jPD77RDfPf46u644GMesIRoaKFyaf9LQ1AQChMMFUC5hGHiBTreLtXGbH6NR_2xawUqnwBR33ELgIUQeYaI53tmI_1lvDAgipc-A52koWnVTklKXvM_TtILpwBCMGCoa0DKenVtkmBXa4mp3E-HiG8cZbAteNCmttKSEsuel7iVkrNtPy427Nx1R1m0NqCqIiJ8BtgJ9EWDvePmpyv4YxZnRaefEXuY"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace Canvas -->
+<main class="ml-sidebar-width mt-header-height w-[calc(100%-240px)] h-[calc(100vh-56px)] overflow-y-auto relative">
+<div class="max-w-5xl mx-auto px-margin-desktop py-lg flex flex-col gap-lg">
+<!-- Context Header -->
+<div class="flex items-center justify-between border-b border-structural-border pb-md">
+<div class="flex items-center gap-md">
+<h2 class="font-page-title text-page-title text-on-surface">华东科技有限公司</h2>
+<!-- Status & Version Tags -->
+<div class="flex items-center gap-xs">
+<div class="flex items-center gap-base px-xs py-[2px] bg-secondary-fixed text-on-secondary-fixed rounded border border-secondary-fixed-dim">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-metadata text-metadata font-medium">Active</span>
+</div>
+<div class="flex items-center gap-base px-xs py-[2px] bg-quiet-panel text-on-surface-variant rounded border border-structural-border">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span class="font-metadata text-metadata font-medium">v2.1.0</span>
+</div>
+</div>
+</div>
+<!-- Top Actions -->
+<div class="flex items-center gap-sm">
+<button class="px-md py-xs rounded-lg border border-structural-border bg-paper-white text-on-surface hover:bg-quiet-panel font-form-label text-form-label transition-colors">
+                        Cancel
+                    </button>
+<button class="px-md py-xs rounded-lg border border-primary bg-primary text-on-primary hover:bg-surface-tint font-form-label text-form-label transition-colors">
+                        Save Changes
+                    </button>
+</div>
+</div>
+<!-- Content Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-lg items-start">
+<!-- Left Column: Basic Information (Read-only) -->
+<div class="bg-paper-white border border-structural-border rounded-lg flex flex-col">
+<div class="px-md py-sm border-b border-structural-border bg-quiet-panel/50">
+<h3 class="font-section-title text-section-title text-on-surface">Basic Information</h3>
+</div>
+<div class="p-md flex flex-col gap-md">
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">Organization ID</span>
+<span class="font-technical-data text-technical-data text-on-surface bg-workspace-mist px-xs py-[2px] rounded border border-structural-border w-fit">ORG-9921</span>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">Member Count</span>
+<div class="flex items-center gap-base text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-primary">group</span>
+<span class="font-technical-data text-technical-data">124</span>
+</div>
+</div>
+<div class="flex flex-col gap-base">
+<span class="font-metadata text-metadata text-muted-text">Last Updated</span>
+<div class="flex items-center gap-base text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-muted-text">calendar_today</span>
+<span class="font-technical-data text-technical-data">2023-10-24</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Operational Settings (Editable Form) -->
+<div class="flex flex-col gap-lg">
+<div class="bg-paper-white border border-structural-border rounded-lg flex flex-col">
+<div class="px-md py-sm border-b border-structural-border bg-quiet-panel/50">
+<h3 class="font-section-title text-section-title text-on-surface">Operational Settings</h3>
+</div>
+<div class="p-md grid grid-cols-1 md:grid-cols-2 gap-lg">
+<!-- Organization Name Input -->
+<div class="flex flex-col gap-xs md:col-span-2">
+<label class="font-form-label text-form-label text-on-surface" for="orgName">Organization Name</label>
+<input class="w-full px-sm py-xs bg-paper-white border border-structural-border rounded-lg font-body text-body text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="orgName" type="text" value="华东科技有限公司"/>
+</div>
+<!-- Status Toggle -->
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface">Operational Status</label>
+<div class="flex items-center gap-sm mt-xs">
+<!-- Custom Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-paper-white after:border-structural-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-confirmed-green"></div>
+<span class="ml-sm font-body text-body text-on-surface">Active</span>
+</label>
+</div>
+<p class="font-metadata text-metadata text-muted-text mt-base">Disabling will prevent all members from accessing the workspace.</p>
+</div>
+<!-- Data Retention Input -->
+<div class="flex flex-col gap-xs">
+<label class="font-form-label text-form-label text-on-surface" for="retention">Data Retention Period</label>
+<div class="relative">
+<input class="w-full pl-sm pr-lg py-xs bg-paper-white border border-structural-border rounded-lg font-technical-data text-technical-data text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" id="retention" type="number" value="365"/>
+<span class="absolute right-sm top-1/2 -translate-y-1/2 font-metadata text-metadata text-muted-text">days</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Danger Zone Section -->
+<div class="border border-error-container bg-error-container/10 rounded-lg overflow-hidden">
+<div class="px-md py-sm border-b border-error-container bg-error-container/30 flex items-center gap-xs">
+<span class="material-symbols-outlined text-on-error-container">warning</span>
+<h3 class="font-section-title text-section-title text-on-error-container">Danger Zone</h3>
+</div>
+<div class="p-md flex items-center justify-between">
+<div class="flex flex-col gap-base">
+<span class="font-form-label text-form-label text-on-surface">Disable Organization</span>
+<span class="font-metadata text-metadata text-muted-text">Immediately suspend all active sessions and lock out all users associated with this organization.</span>
+</div>
+<button class="px-md py-xs rounded-lg border border-critical-red bg-paper-white text-critical-red hover:bg-error-container font-form-label text-form-label transition-colors whitespace-nowrap">
+                                Disable Organization
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
