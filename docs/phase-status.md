@@ -16,8 +16,9 @@
 
 - Last updated: `2026-08-18`
 - Branch: `main`
-- Recorded HEAD before this documentation update: `f06a4a2`
-- Working tree: documentation updates are uncommitted; no application code, migration or secret was changed by this task.
+- Current HEAD: `468903a`
+- Documentation baseline before this update: `f06a4a2`
+- Working tree: clean after the documentation commit and push; no application code, migration or secret was changed by this task.
 - Current boundary: 仓库已有 Phase 0 工程骨架、Phase 1 共享持久化/API 基础和 Phase 2 认证实现快照；历史 Phase 的完整验收证据尚未在本文件归档，因此 Phase 0-2 暂记为 `Verification Pending`。
 - Next allowed work: 先补齐 Phase 0-2 的实际测试/Review/回归记录并关闭 Phase 2 阻塞项，再决定是否把相应 Phase 标记为 `Completed` 和进入 Phase 3。
 - Prototype/design documentation does not advance the implementation Phase by itself.
