@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     smtp_from: str | None = None
     frontend_base_url: str | None = None
     trusted_proxy_hops: int = Field(default=0, ge=0, le=5)
+    model_provider: str = Field(default="qwen", min_length=1, max_length=64)
+    model_name: str | None = Field(default=None, max_length=255)
+    model_api_key: SecretStr | None = None
 
     @field_validator("database_url", "redis_url")
     @classmethod
@@ -50,6 +53,14 @@ class Settings(BaseSettings):
         if "*" in value:
             raise ValueError("wildcard origins are not allowed")
         return value
+
+    @field_validator("model_name")
+    @classmethod
+    def normalize_optional_model_name(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        return normalized or None
 
     @property
     def session_cookie_secure(self) -> bool:

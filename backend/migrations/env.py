@@ -10,6 +10,7 @@ from backend.app.modules.identity.models import (
     AuthSession,
     Organization,
     OrganizationMembership,
+    PlatformModelConfiguration,
     User,
 )
 from backend.app.shared.audit import AuditLog
@@ -26,6 +27,7 @@ target_metadata = Base.metadata
 _registered_models = (
     Organization,
     OrganizationMembership,
+    PlatformModelConfiguration,
     User,
     AuthSession,
     AuthOneTimeToken,

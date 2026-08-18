@@ -36,6 +36,8 @@ def auth_client(database_engine: Engine, fake_mailer: FakeMailer) -> Iterator[Te
         smtp_host="localhost",
         smtp_from="contract-review@example.test",
         frontend_base_url="http://localhost:5173",
+        model_name="qwen-test-model",
+        model_api_key=SecretStr("test-model-api-key"),
     )
     app = create_app(settings=settings, database_check=lambda: None)
     app.state.mailer = fake_mailer

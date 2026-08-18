@@ -66,7 +66,7 @@ def _login(client: TestClient) -> dict[str, object]:
 
 
 def _seed_pending_invitation(session_factory: sessionmaker[Session]) -> OrganizationMembership:
-    organization = Organization(id=uuid4(), name="受邀企业")
+    organization = Organization(id=uuid4(), name=f"受邀企业-{uuid4().hex[:8]}")
     membership = OrganizationMembership(
         id=uuid4(),
         organization_id=organization.id,

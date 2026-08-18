@@ -24,6 +24,9 @@ services:
       REDIS_URL: redis://redis:6379/0
       ALLOWED_ORIGINS: '["http://localhost:${HTTP_PORT:-8081}"]'
       TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-qwen}
+      MODEL_NAME: ${MODEL_NAME:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

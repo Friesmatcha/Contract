@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { toSafeDisplayError } from '@/api/client'
-import { login } from '@/features/auth/session'
+import { defaultLandingPath, login } from '@/features/auth/session'
 
 const router = useRouter()
 const route = useRoute()
@@ -18,8 +18,8 @@ async function submit(): Promise<void> {
   submitting.value = true
   errorMessage.value = ''
   try {
-    await login(email.value, password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
+    const session = await login(email.value, password.value)
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : defaultLandingPath(session)
     await router.replace(redirect.startsWith('/') ? redirect : '/')
   } catch (error) {
     errorMessage.value = toSafeDisplayError(error).message

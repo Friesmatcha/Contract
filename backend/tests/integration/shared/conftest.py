@@ -57,7 +57,20 @@ def clean_database(database_engine: Engine) -> Iterator[None]:
         connection.execute(
             text(
                 "TRUNCATE TABLE auth_rate_limits, audit_logs, idempotency_records, "
-                "organization_memberships, users, organizations CASCADE"
+                "organization_memberships, users, organizations, "
+                "platform_model_configurations CASCADE"
+            )
+        )
+        connection.execute(
+            text(
+                """
+                INSERT INTO platform_model_configurations (
+                    id, singleton_key, timeout_seconds, max_retries,
+                    usage_tracking_enabled, status, version
+                ) VALUES (
+                    '00000000-0000-0000-0000-000000000004', 1, 60, 3, true, 'active', 1
+                )
+                """
             )
         )
         connection.execute(text("ALTER TABLE audit_logs ENABLE TRIGGER audit_logs_no_truncate"))

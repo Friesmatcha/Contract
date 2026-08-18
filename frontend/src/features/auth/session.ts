@@ -9,6 +9,14 @@ export const sessionState = reactive<{
   loaded: boolean
 }>({ current: null, loaded: false })
 
+export function defaultLandingPath(session: AuthSession): string {
+  if (session.user.is_platform_admin) return '/platform/organizations'
+  const organizationAdmin = session.memberships.find(
+    (membership) => membership.status === 'active' && membership.role === 'org_admin',
+  )
+  return organizationAdmin ? `/organizations/${organizationAdmin.organization_id}/settings` : '/'
+}
+
 function applySession(session: AuthSession | null): void {
   sessionState.current = session
   sessionState.loaded = true

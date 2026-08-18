@@ -1,4 +1,10 @@
-import { ApiClientError, ApiError, apiFetch, toSafeDisplayError } from '@/api/client'
+import {
+  ApiClientError,
+  ApiError,
+  apiFetch,
+  isApiErrorCode,
+  toSafeDisplayError,
+} from '@/api/client'
 import type { CursorPage } from '@/api/types'
 import { setCsrfToken } from '@/features/auth/csrf'
 import { expect, test, vi } from 'vitest'
@@ -61,6 +67,28 @@ test('parses the shared API error shape', async () => {
     code: 'SERVICE_NOT_READY',
     requestId: 'req_header',
   } satisfies Partial<ApiError>)
+})
+
+test('matches API errors by their stable machine-readable code', async () => {
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        error: {
+          code: 'RESOURCE_VERSION_CONFLICT',
+          message: '资源已被更新，请刷新后重试。',
+          request_id: 'req_test',
+        },
+      }),
+      { status: 409 },
+    ),
+  )
+
+  try {
+    await apiFetch('/api/v1/platform/model-configuration')
+  } catch (error) {
+    expect(isApiErrorCode(error, 'RESOURCE_VERSION_CONFLICT')).toBe(true)
+    expect(isApiErrorCode(error, 'VALIDATION_ERROR')).toBe(false)
+  }
 })
 
 test('replaces non-JSON gateway errors with a safe message', async () => {

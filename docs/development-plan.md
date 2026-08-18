@@ -1960,7 +1960,7 @@ Stable Baseline
 | P-07 | review `archived` 如何进入/恢复？合同归档是否级联；架构提到 cancel 但无 API | Phase 9A，部分阻塞 | 明确合同归档对完成任务的只读影响；未新增契约前不实现 cancel |
 | P-08（已关闭） | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，已决策 | 采用 API Contract 3.1：密码 12-128 字符、不强制字符类别；密码重置 Token 30 分钟、邀请 Token 7 天；Token 至少 256 位随机值且数据库只保存哈希。历史密码限制首期不做。 |
 | P-09（已关闭） | SMTP 发件人、公开前端基址、投递失败可观测性和重试上限未完整冻结 | Phase 2/4，已决策 | 采用 API Contract 3.5：配置由环境注入；缺配置时在账号查询前统一返回 `503 SMTP_NOT_CONFIGURED`；首期后台投递只尝试 1 次且自动重试上限为 0，失败写不含邮箱/Token/完整 URL 的安全结构化日志/指标。当前实现仍须补失败捕获和测试，P-09 关闭不等于 Phase 2 完成。 |
-| P-10 | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；同步架构说明 |
+| P-10（已关闭） | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B，已决策 | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；架构说明已同步 |
 | P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
 
@@ -1995,11 +1995,18 @@ Stable Baseline
 - **Observability and safety**：投递失败必须捕获并写安全结构化日志/指标，只允许 `request_id`、错误类别和投递阶段；禁止记录邮箱、Token 或完整链接。当前代码尚未满足此项，属于 Phase 2 implementation blocker，不再属于 Pending Decision。
 - **Future extension**：Phase 4 如增加持久化 delivery 状态/重试，必须先扩展契约、数据模型、幂等和失败恢复测试。
 
+### Decision Record: P-10 Model Configuration Boundary（2026-08-18）
+
+- **Status**：Closed。规范来源为 API Contract 8.8、8.9 和第 20 节。
+- **Decision**：模型 provider、模型名和密钥均为平台/部署环境配置；Phase 3 仅持久化可由平台管理员更新的非秘密运行参数。组织不能通过任何 API、设置或数据模型覆盖模型配置。
+- **Prompt boundary**：提示词仅允许平台基线版本；本 Phase 不增加 prompt 管理 API，也不在创建组织时复制组织级 prompt 版本。Phase 9B 读取冻结的平台基线并将其写入审核任务快照。
+- **Safety**：模型密钥和 `secret_ref` 不写入普通配置表、响应、审计摘要或日志。环境配置缺失时按 API Contract 返回 `503 MODEL_ENVIRONMENT_NOT_CONFIGURED`。
+
 ### Just-in-Time Closing Order
 
 - Phase 1 前：关闭 P-02；P-11 只需确认当前 Phase 使用的最小数据字段，不要求一次性解决全部后续模型缺口。
 - Phase 2 前：P-01、P-08、P-09 已关闭；Phase 2 仍须实现并测试这些决策，关闭 Pending Decision 不替代完成验收。
-- Phase 3 前：处理 P-10 的平台模型配置/架构同步边界，但不因此恢复组织级模型覆盖。
+- Phase 3 前：P-10 已关闭；使用平台模型配置/架构同步边界，但不恢复组织级模型覆盖。
 - Phase 8A/8B 与 9A 前：关闭 P-04、P-05；9A 同时关闭 P-07。
 - Phase 9B 前：冻结 P-09、P-10 对模型 Secret、prompt 和供应商配置的影响；Phase 9C 前关闭 P-03。
 - Phase 13 前关闭 P-06；Phase 14B 前完成 P-11 涉及的清理引用字段 Review；P-12 保持 Future Work，不阻塞当前 Release。

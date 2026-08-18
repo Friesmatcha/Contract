@@ -38,6 +38,13 @@ export class ApiClientError extends Error {
   }
 }
 
+export function isApiErrorCode<Code extends string>(
+  error: unknown,
+  code: Code,
+): error is ApiError & { readonly code: Code } {
+  return error instanceof ApiError && error.code === code
+}
+
 function isApiErrorPayload(value: unknown): value is ApiErrorPayload {
   if (typeof value !== 'object' || value === null || !('error' in value)) return false
   const error = value.error

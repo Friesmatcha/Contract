@@ -495,7 +495,9 @@ Success `200 OK`：返回更新后的 `Organization`。
 { "id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "name": "示例企业", "status": "disabled", "retention_days": 180, "version": 4 }
 ```
 
-主要错误：`403 PLATFORM_ADMIN_REQUIRED`、`404 ORGANIZATION_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`。
+主要错误：`403 PLATFORM_ADMIN_REQUIRED`、`404 ORGANIZATION_NOT_FOUND`、`409 ORGANIZATION_NAME_CONFLICT`、`409 RESOURCE_VERSION_CONFLICT`。
+
+组织名称按 `lower(trim(name))` 做规范化并在平台范围内唯一；首尾空白和大小写差异视为同名。
 
 ### 8.5 获取当前组织资料
 

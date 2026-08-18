@@ -13,7 +13,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from backend.app.shared.db import (
     Base,
@@ -27,10 +27,17 @@ def normalize_email(email: str) -> str:
     return email.strip().lower()
 
 
+def normalize_organization_name(name: str) -> str:
+    return name.strip().lower()
+
+
 class Organization(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
     __tablename__ = "organizations"
     __table_args__ = (
         CheckConstraint("btrim(name) <> ''", name="name_not_blank"),
+        CheckConstraint(
+            "normalized_name = lower(btrim(name))", name="normalized_name_canonical"
+        ),
         CheckConstraint("status IN ('active', 'disabled')", name="status_valid"),
         CheckConstraint("retention_days >= 0", name="retention_days_nonnegative"),
         CheckConstraint("version > 0", name="version_positive"),
@@ -38,6 +45,7 @@ class Organization(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
     )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
+    normalized_name: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[str] = mapped_column(
         String(32), nullable=False, default="active", server_default="active"
     )
@@ -48,6 +56,34 @@ class Organization(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
         server_default=text("'{}'::jsonb"),
     )
     retention_days: Mapped[int] = mapped_column(nullable=False, default=180, server_default="180")
+
+    @validates("name")
+    def normalize_name(self, _key: str, value: str) -> str:
+        normalized = value.strip()
+        self.normalized_name = normalize_organization_name(normalized)
+        return normalized
+
+
+class PlatformModelConfiguration(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
+    __tablename__ = "platform_model_configurations"
+    __table_args__ = (
+        UniqueConstraint("singleton_key", name="uq_platform_model_configurations_singleton"),
+        CheckConstraint("singleton_key = 1", name="singleton_key_valid"),
+        CheckConstraint("timeout_seconds > 0", name="timeout_seconds_positive"),
+        CheckConstraint("max_retries >= 0", name="max_retries_nonnegative"),
+        CheckConstraint("status IN ('active', 'disabled')", name="status_valid"),
+        CheckConstraint("version > 0", name="version_positive"),
+    )
+
+    singleton_key: Mapped[int] = mapped_column(nullable=False, default=1, server_default="1")
+    timeout_seconds: Mapped[int] = mapped_column(nullable=False, default=60, server_default="60")
+    max_retries: Mapped[int] = mapped_column(nullable=False, default=3, server_default="3")
+    usage_tracking_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="active", server_default="active"
+    )
 
 
 class User(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):

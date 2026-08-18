@@ -157,7 +157,7 @@ sequenceDiagram
 
 ### 6.1 通用约定
 
-- 所有组织业务表包含 `organization_id`、`created_at`、`updated_at`；可删除资源增加 `deleted_at`，历史事实表只追加不软删。
+- 所有组织业务表包含 `organization_id`、`created_at`、`updated_at`；可删除资源增加 `deleted_at`，历史事实表只追加不软删。平台/部署级模型与提示词基线配置是明确例外，不允许组织覆盖。
 - 同一组织内使用 `(organization_id, id)` 唯一约束，并为跨表关系建立包含 `organization_id` 的复合外键，阻止跨组织错误关联。
 - 所有时间由数据库或服务端写入 UTC。金额使用 `numeric(20, 4)`，置信度使用 `numeric(5, 4)` 并限制在 0 到 1。
 - 枚举在数据库使用受约束的短字符串，便于迁移；高频过滤列使用普通 B-tree 索引。
@@ -196,8 +196,8 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 | --- | --- | --- |
 | `review_tasks` | `organization_id`, `contract_id`, `contract_file_id`, `document_version_id`, `status`, `progress`, `rule_bundle_version_id`, `clause_template_version_id`, `prompt_bundle_version`, `model_config_json`, `error_code`, `error_message`, `started_at`, `finished_at` | 创建时锁定所有输入版本；`progress` 仅用于展示，状态为事实 |
 | `review_stage_runs` | `organization_id`, `review_task_id`, `stage`, `attempt_no`, `status`, `input_fingerprint`, `lease_owner`, `lease_expires_at`, `heartbeat_at`, `started_at`, `finished_at`, `error_class` | `(review_task_id, stage, attempt_no)` 唯一；租约用于回收崩溃 Worker 的任务 |
-| `model_configurations` | `organization_id`, `provider`, `model`, `timeout_seconds`, `max_retries`, `budget_json`, `secret_ref`, `status` | 可为平台默认或组织覆盖；`secret_ref` 只指向部署密钥名称，不保存密钥值 |
-| `prompt_bundle_versions` | `organization_id`, `version_no`, `status`, `classification_prompt`, `extraction_prompt`, `risk_prompt`, `comparison_prompt`, `schema_versions_json`, `change_note`, `published_by` | 发布后不可变；系统基线在创建组织时复制为组织版本 |
+| `model_configurations` | `id`, `timeout_seconds`, `max_retries`, `usage_tracking_enabled`, `status`, `version` | 平台单例，只保存可通过 API 修改的非秘密运行参数；provider、model 和密钥只从部署环境读取，组织不能覆盖 |
+| `prompt_bundle_versions` | `id`, `version_no`, `status`, `classification_prompt`, `extraction_prompt`, `risk_prompt`, `comparison_prompt`, `schema_versions_json`, `change_note`, `published_by` | 平台基线提示词版本，发布后不可变；组织不复制或覆盖提示词版本 |
 | `model_calls` | `organization_id`, `review_task_id`, `stage_run_id`, `provider`, `model`, `prompt_version`, `request_fingerprint`, `provider_request_id`, `status`, `token_input`, `token_output`, `latency_ms`, `error_code`, `response_schema_version` | 不默认保存完整正文；必要快照加密且受保留策略控制 |
 | `contract_classifications` | `organization_id`, `review_task_id`, `model_value`, `current_value`, `confidence`, `status`, `evidence_span_id`, `edited_by` | 原始模型值和人工当前值并存；每任务一条当前分类 |
 | `extracted_fields` | `organization_id`, `review_task_id`, `field_key`, `model_value_json`, `current_value_json`, `raw_text`, `confidence`, `status`, `evidence_span_id`, `edited_by` | `(review_task_id, field_key)` 唯一；缺失值为 JSON `null` 并保存状态 |
