@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { apiFetch, toSafeDisplayError } from '@/api/client'
 
 const email = ref('')
+const router = useRouter()
 const submitting = ref(false)
 const errorMessage = ref('')
 const accepted = ref(false)
+const canSubmit = computed(() => email.value.trim().length > 0)
 
 async function submit(): Promise<void> {
   if (submitting.value) return
@@ -33,7 +36,7 @@ async function submit(): Promise<void> {
       aria-labelledby="reset-title"
     >
       <p class="auth-kicker">
-        CONTRACT REVIEW
+        合同智审
       </p>
       <h1 id="reset-title">
         重置密码
@@ -41,13 +44,21 @@ async function submit(): Promise<void> {
       <p class="auth-copy">
         输入工作邮箱后，系统会继续处理重置请求。
       </p>
-      <ElAlert
+      <ElResult
         v-if="accepted"
-        title="如果账号存在，系统将继续处理密码重置请求。"
-        type="success"
-        :closable="false"
-        show-icon
-      />
+        icon="success"
+        title="请求已受理"
+        sub-title="如果账号存在，系统将继续处理密码重置请求。"
+      >
+        <template #extra>
+          <ElButton
+            type="primary"
+            @click="router.replace('/login')"
+          >
+            返回登录
+          </ElButton>
+        </template>
+      </ElResult>
       <ElAlert
         v-else-if="errorMessage"
         :title="errorMessage"
@@ -73,16 +84,11 @@ async function submit(): Promise<void> {
           native-type="submit"
           type="primary"
           :loading="submitting"
+          :disabled="!canSubmit || submitting"
         >
           发送请求
         </ElButton>
       </form>
-      <RouterLink
-        class="auth-link"
-        to="/login"
-      >
-        返回登录
-      </RouterLink>
     </section>
   </main>
 </template>

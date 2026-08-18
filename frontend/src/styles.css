@@ -1,8 +1,8 @@
 :root {
-  color: #202124;
-  background: #f4f5f7;
+  color: #172033;
+  background: #f5f7fa;
   font-family:
-    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -44,29 +44,42 @@ select {
 .session-panel {
   display: grid;
   width: min(100%, 400px);
-  gap: 18px;
+  gap: 16px;
+}
+
+.auth-panel {
+  padding: 32px;
+  border: 1px solid #d7dee8;
+  border-radius: 6px;
+  background: #ffffff;
 }
 
 .auth-kicker {
   margin: 0;
-  color: #6b7078;
-  font-size: 12px;
-  font-weight: 700;
+  color: #2457a6;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
   letter-spacing: 0;
+  text-align: center;
 }
 
 .auth-panel h1,
 .session-panel h1 {
   margin: 0;
-  font-size: 28px;
-  font-weight: 650;
+  color: #172033;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  text-align: center;
 }
 
 .auth-copy {
-  margin: -8px 0 0;
-  color: #535860;
+  margin: -4px 0 4px;
+  color: #5f6b7a;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 22px;
+  text-align: center;
 }
 
 .auth-form {
@@ -76,10 +89,11 @@ select {
 
 .auth-form label {
   display: grid;
-  gap: 7px;
-  color: #353a40;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 4px;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
 }
 
 .auth-form .el-button {
@@ -87,13 +101,48 @@ select {
 }
 
 .auth-link {
-  color: #3765a3;
+  color: #2457a6;
   font-size: 14px;
   text-decoration: none;
 }
 
 .auth-link:hover {
   text-decoration: underline;
+}
+
+.auth-panel .el-input__wrapper {
+  min-height: 40px;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px #d7dee8 inset;
+}
+
+.auth-panel .el-input__wrapper.is-focus {
+  box-shadow: 0 0 0 1px #2457a6 inset;
+}
+
+.auth-panel .el-button {
+  min-height: 40px;
+  border-radius: 4px;
+}
+
+.auth-panel .el-button--primary {
+  background: #2457a6;
+  border-color: #2457a6;
+}
+
+.auth-panel .el-result {
+  padding: 8px 0;
+}
+
+@media (max-width: 480px) {
+  .auth-page,
+  .session-page {
+    padding: 16px;
+  }
+
+  .auth-panel {
+    padding: 24px;
+  }
 }
 
 .bootstrap-panel {

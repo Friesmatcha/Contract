@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     smtp_port: int = Field(default=587, ge=1, le=65535)
     smtp_from: str | None = None
     frontend_base_url: str | None = None
+    trusted_proxy_hops: int = Field(default=0, ge=0, le=5)
 
     @field_validator("database_url", "redis_url")
     @classmethod

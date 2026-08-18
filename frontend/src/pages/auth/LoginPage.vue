@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { toSafeDisplayError } from '@/api/client'
@@ -11,6 +11,7 @@ const email = ref('')
 const password = ref('')
 const submitting = ref(false)
 const errorMessage = ref('')
+const canSubmit = computed(() => email.value.trim().length > 0 && password.value.length > 0)
 
 async function submit(): Promise<void> {
   if (submitting.value) return
@@ -35,7 +36,7 @@ async function submit(): Promise<void> {
       aria-labelledby="login-title"
     >
       <p class="auth-kicker">
-        CONTRACT REVIEW
+        合同智审
       </p>
       <h1 id="login-title">
         登录
@@ -83,6 +84,7 @@ async function submit(): Promise<void> {
           native-type="submit"
           type="primary"
           :loading="submitting"
+          :disabled="!canSubmit || submitting"
         >
           登录
         </ElButton>

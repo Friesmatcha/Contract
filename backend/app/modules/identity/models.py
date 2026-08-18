@@ -5,6 +5,7 @@ from uuid import UUID
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    DateTime,
     ForeignKey,
     Index,
     String,
@@ -132,6 +133,10 @@ class AuthSession(UuidPrimaryKeyMixin, TimestampMixin, Base):
         UniqueConstraint("token_hash", name="uq_auth_sessions_token_hash"),
         CheckConstraint("char_length(token_hash) = 64", name="token_hash_valid"),
         CheckConstraint("char_length(csrf_hash) = 64", name="csrf_hash_valid"),
+        CheckConstraint(
+            "csrf_previous_hash IS NULL OR char_length(csrf_previous_hash) = 64",
+            name="csrf_previous_hash_valid",
+        ),
         Index("ix_auth_sessions_user_active", "user_id", "revoked_at"),
         Index("ix_auth_sessions_expires_at", "idle_expires_at", "absolute_expires_at"),
     )
@@ -141,6 +146,8 @@ class AuthSession(UuidPrimaryKeyMixin, TimestampMixin, Base):
     )
     token_hash: Mapped[str] = mapped_column(String(64), nullable=False)
     csrf_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    csrf_previous_hash: Mapped[str | None] = mapped_column(String(64))
+    csrf_previous_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     idle_expires_at: Mapped[datetime] = mapped_column(nullable=False)
     absolute_expires_at: Mapped[datetime] = mapped_column(nullable=False)
     revoked_at: Mapped[datetime | None]

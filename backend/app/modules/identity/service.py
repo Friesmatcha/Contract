@@ -32,6 +32,7 @@ PASSWORD_RESET_TTL = timedelta(minutes=30)
 INVITATION_TTL = timedelta(days=7)
 PASSWORD_MIN_LENGTH = 12
 PASSWORD_MAX_LENGTH = 128
+CSRF_PREVIOUS_TTL = timedelta(minutes=5)
 _PASSWORD_HASHER = PasswordHasher()
 _DUMMY_HASH = _PASSWORD_HASHER.hash("not-a-real-password")
 
@@ -160,24 +161,46 @@ def login(
     user_agent: str | None,
 ) -> tuple[AuthenticatedSession, SessionToken]:
     if not _is_valid_email(email):
+        _record_failed_login(
+            session,
+            reason="invalid_credentials",
+            request_id=request_id,
+            ip=ip,
+            user_agent=user_agent,
+        )
         raise ApplicationError(
             status_code=400,
             code="INVALID_CREDENTIALS",
             message="邮箱或密码格式无效。",
         )
     normalized_email = normalize_email(email)
+    user = session.scalar(select(User).where(User.normalized_email == normalized_email))
+    session.commit()
+    if user is None or not verify_password(password, user.password_hash):
+        _record_failed_login(
+            session,
+            actor=user.id if user is not None else None,
+            reason="invalid_credentials",
+            request_id=request_id,
+            ip=ip,
+            user_agent=user_agent,
+        )
+        raise ApplicationError(
+            status_code=401,
+            code="AUTHENTICATION_FAILED",
+            message="邮箱或密码错误。",
+        )
+    if user.status != "active":
+        _record_failed_login(
+            session,
+            actor=user.id,
+            reason="user_disabled",
+            request_id=request_id,
+            ip=ip,
+            user_agent=user_agent,
+        )
+        raise ApplicationError(status_code=403, code="USER_DISABLED", message="该账号已被停用。")
     with UnitOfWork(session) as unit_of_work:
-        user = session.scalar(select(User).where(User.normalized_email == normalized_email))
-        if user is None or not verify_password(password, user.password_hash):
-            raise ApplicationError(
-                status_code=401,
-                code="AUTHENTICATION_FAILED",
-                message="邮箱或密码错误。",
-            )
-        if user.status != "active":
-            raise ApplicationError(
-                status_code=403, code="USER_DISABLED", message="该账号已被停用。"
-            )
         token = _create_session(session, user=user, ip=ip, user_agent=user_agent)
         append_audit_log(
             session,
@@ -191,6 +214,29 @@ def login(
         )
         unit_of_work.commit()
     return AuthenticatedSession(token.session, user), token
+
+
+def _record_failed_login(
+    session: Session,
+    *,
+    reason: str,
+    request_id: str,
+    ip: str | None,
+    user_agent: str | None,
+    actor: UUID | None = None,
+) -> None:
+    with UnitOfWork(session) as unit_of_work:
+        append_audit_log(
+            session,
+            actor=PlatformContext(actor) if actor is not None else None,
+            action="auth.login_failed",
+            resource_type="auth_attempt",
+            request_id=request_id,
+            after={"reason": reason},
+            ip=ip,
+            user_agent=user_agent,
+        )
+        unit_of_work.commit()
 
 
 def load_authenticated_session(session: Session, raw_token: str | None) -> AuthenticatedSession:
@@ -227,19 +273,35 @@ def load_authenticated_session(session: Session, raw_token: str | None) -> Authe
 
 def rotate_csrf(session: Session, authenticated: AuthenticatedSession) -> str:
     csrf_token = _new_token("csrf")
-    session.execute(
-        update(AuthSession)
-        .where(AuthSession.id == authenticated.session.id, AuthSession.revoked_at.is_(None))
-        .values(csrf_hash=_hash(csrf_token))
-    )
-    session.commit()
+    now = _now()
+    with UnitOfWork(session) as unit_of_work:
+        auth_session = session.scalar(
+            select(AuthSession)
+            .where(AuthSession.id == authenticated.session.id, AuthSession.revoked_at.is_(None))
+            .execution_options(populate_existing=True)
+            .with_for_update()
+        )
+        if auth_session is None:
+            raise AuthenticationError("SESSION_EXPIRED", "会话已过期，请重新登录。")
+        auth_session.csrf_previous_hash = auth_session.csrf_hash
+        auth_session.csrf_previous_expires_at = now + CSRF_PREVIOUS_TTL
+        auth_session.csrf_hash = _hash(csrf_token)
+        unit_of_work.commit()
     return csrf_token
 
 
 def require_csrf(authenticated: AuthenticatedSession, csrf_token: str | None) -> None:
-    if not csrf_token or not hmac.compare_digest(
-        _hash(csrf_token), authenticated.session.csrf_hash
-    ):
+    if not csrf_token:
+        raise ApplicationError(status_code=403, code="CSRF_INVALID", message="CSRF 校验失败。")
+    candidate = _hash(csrf_token)
+    current_valid = hmac.compare_digest(candidate, authenticated.session.csrf_hash)
+    previous_valid = (
+        authenticated.session.csrf_previous_hash is not None
+        and authenticated.session.csrf_previous_expires_at is not None
+        and authenticated.session.csrf_previous_expires_at > _now()
+        and hmac.compare_digest(candidate, authenticated.session.csrf_previous_hash)
+    )
+    if not current_valid and not previous_valid:
         raise ApplicationError(status_code=403, code="CSRF_INVALID", message="CSRF 校验失败。")
 
 

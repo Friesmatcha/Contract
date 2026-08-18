@@ -16,10 +16,10 @@
 
 - Last updated: `2026-08-18`
 - Branch: `main`
-- Verification baseline: `a80c11a` (`docs: refresh phase status snapshot`)
-- Working tree at verification start: clean; this update changes documentation only and does not change application code, Migration or secrets.
-- Current boundary: Phase 0 and Phase 1 are `Completed` with Docker-backed health, migration and integration evidence; Phase 2 remains `In Progress` because independent Review found security, delivery and UI/test blockers. P-01、P-08、P-09 均已在契约层关闭，但对应实现和测试尚未全部满足。
-- Next allowed work: fix or explicitly resolve the listed Phase 2 blockers, add the missing auth/E2E evidence, then update this record before Phase 3.
+- Verification baseline: `a80c11a` plus the Phase 2 completion snapshot recorded below.
+- Working tree at verification start: clean; the Phase 2 implementation, migration, tests and UI evidence are now recorded in this completion snapshot.
+- Current boundary: Phase 0, Phase 1 and Phase 2 are `Completed` with Docker-backed health, migration, integration and independent Review evidence. Phase 3 remains `Not Started`.
+- Next allowed work: begin Phase 3 only after its own Pending Decisions and API Contract entries are reviewed; do not infer Phase 3 work from the existing prototypes.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
 ## Phase 0: Project Bootstrap
@@ -74,32 +74,27 @@
 
 ## Phase 2: Authentication and Session Security
 
-- Status: `In Progress`
-- Current completion boundary: 登录、退出、会话、密码重置、邀请接受的后端和 Vue 实现快照已存在。
-- Completed implementation: 见 Git snapshot `4a443f8`、认证模块、AUTH 页面和 `backend/migrations/versions/20260817_0002_phase2_authentication.py`。
-- Verification evidence: `.venv\Scripts\python.exe -m pytest backend/tests/unit` -> 10 passed；`.venv\Scripts\python.exe -m pytest backend/tests/test_config.py backend/tests/test_health.py backend/tests/test_logging.py backend/tests/test_worker.py` -> 15 passed；`npm --prefix frontend run lint` -> passed；`npm --prefix frontend run typecheck` -> passed；`npm --prefix frontend run test` -> 3 files/8 tests passed；`npm --prefix frontend run build` -> passed with Vite chunk-size warning。
-- Verification evidence: `.venv\Scripts\python.exe -m pytest backend/tests/integration/auth` -> 3 passed；full `.venv\Scripts\python.exe -m pytest backend/tests` -> 38 passed；Phase 2 migration included in isolated `upgrade -> downgrade -> upgrade` cycle；frontend lint/typecheck/unit/build passed as recorded below。
-- Incomplete evidence: no Playwright auth suite exists; UI has not passed the AUTH prototype/state review; the independent Review findings below remain open。
-- API Contract decisions: P-01 closed by API Contract 2.2.1；P-08 closed by API Contract 3.1；P-09 closed by API Contract 3.5 with one background attempt, retry cap 0, safe failure observability and uniform `503 SMTP_NOT_CONFIGURED` before account lookup。
-- Independent Review: 2026-08-18, read-only review by independent reviewer; findings below are blocking until fixed or explicitly re-scoped.
-- Blocking findings:
-  1. Login email rate-limit key uses raw `body.email`; case/whitespace variants bypass the per-account limit (`backend/app/modules/identity/api.py`, `schemas.py`).
-  2. Password-reset SMTP delivery runs in `BackgroundTasks` without the P-09-required failure capture, safe structured log/metric and tests (`backend/app/modules/identity/api.py`, `backend/app/integrations/notifications/smtp.py`)；the contract now freezes one attempt with retry cap 0, so this is an implementation blocker rather than a Pending Decision。
-  3. Every `GET /auth/session` rotates the single stored CSRF hash, creating a concurrent-tab invalidation race (`api.py`, `service.py`).
-  4. Failed/disabled login paths do not append the required failed-login audit event (`backend/app/modules/identity/service.py`; architecture audit requirement).
-  5. Auth integration coverage lacks disabled user, Origin/CSRF failures, token expiry/reuse boundaries, rate limits, SMTP failure and concurrent CSRF cases.
-  6. AUTH-002/003/004 UI success/error states and disabled controls do not yet meet the frontend PRD/prototype acceptance; no Playwright coverage exists.
-  7. Source-generated OpenAPI for password-reset request currently declares only `202/422`; it does not project the contract-required `429/503` responses.
-  8. Reverse-proxy client IP forwarding is not wired into Uvicorn/API rate-limit source; deployment-level rate limiting needs a trusted-proxy decision.
-- Resolved during review: API Contract 3.5 now lists `SMTP_NOT_CONFIGURED` and freezes the one-attempt/retry-cap-0/observability boundary；P-01、P-08、P-09 are no longer Pending Decisions。
-- Next step: fix the P1 findings, implement P-09 failure observability, add missing auth tests and Playwright flows, then rerun Phase 2 integration, Review and regression before marking `Completed`.
+- Status: `Completed`
+- Completed at: `2026-08-18`
+- Current completion boundary: login, logout, session loading, CSRF rotation with a five-minute previous-token grace period, password reset, invitation acceptance, normalized rate limits, failed-login audit and SMTP safe observability are implemented. AUTH-001 through AUTH-004 cover success, error, missing-token, disabled and non-continuable states.
+- Changes: authentication service/API, CSRF grace migration, trusted-proxy configuration, SMTP failure wrapper, Vue auth pages, Playwright coverage, Element Plus registration and auth visual styling. No Phase 3 organization or contract business work was added.
+- API Contract / OpenAPI: the manual contract did not change. P-01, P-08 and P-09 remain closed. The reset-request OpenAPI projection has `202/422/429/503`; invalid login email returns `400 INVALID_CREDENTIALS`; Origin, CSRF, disabled-user, rate-limit and SMTP configuration behavior align with the contract.
+- ORM / Migration: added `backend/migrations/versions/20260818_0003_phase2_csrf_grace.py`. Isolated Docker PostgreSQL database `contract_phase2_verify_20260818` completed `upgrade -> downgrade -> upgrade`; final revision `20260818_0003 (head)`. The CSRF grace timestamp is explicitly timezone-aware in ORM and migration.
+- Frontend / UI Page IDs: AUTH-001, AUTH-002, AUTH-003 and AUTH-004 were checked against `frontend-prd.md`, `design-system.md` and Stitch assets. Playwright runs at 1440px and 1280px generated login, invitation and password-reset screenshots without overflow or overlap.
+- Tests: `python -m pytest backend/tests` -> 53 passed; auth integration subset -> 18 passed; `python -m ruff check backend` -> passed; `python -m mypy backend/app` -> passed; `npm --prefix frontend run test -- --run` -> 4 files/12 tests passed; `npm --prefix frontend run e2e` -> 12 passed across Chromium 1440/1280; frontend lint/typecheck/build passed, with the existing Vite chunk-size warning.
+- Docker / Smoke: `docker compose -f deploy/compose/compose.yml up -d --build api worker scheduler reverse-proxy` built and became healthy; proxy live -> 200; API container ready -> 200; container OpenAPI reported reset responses `202/422/429/503`; Compose config passed.
+- Independent Review / Re-review: an independent read-only review initially found two P1 issues (login invalid-email status and CSRF identity-map refresh) plus UI P2 gaps. After fixes, re-review found no P1 blocker. `populate_existing + FOR UPDATE` and stale-session regression are covered, as are Result/missing-token/non-continuable auth states.
+- Regression: backend full suite and frontend lint/typecheck/unit/build/e2e were rerun after fixes; no blocking regression found.
+- Known Issues / Pending Decisions: Playwright uses controlled API mocks for deterministic browser UI paths; live browser-to-API wiring remains a deployment smoke concern, while the API itself is covered by PostgreSQL integration and OpenAPI assertions. Vite emits a non-blocking chunk-size warning. Phase 2 has no blocking Pending Decision.
+- Git branch / HEAD / status / diff summary: `main`; the final application snapshot and this ledger are committed and pushed after the final diff review. No secrets or unrelated cleanup are included.
+- Commit / Push: authorized by the user; normal commit and push follow this ledger/diff review, without force push or amend.
+- Next Phase and entry conditions: Phase 3 remains `Not Started`; enter only after this Phase 2 ledger is committed/pushed and Phase 3 Pending Decisions/API entries are reviewed.
 
 ## Independent Review Record
 
-- Reviewer: independent read-only reviewer (`/root/independent_review`)
-- Review scope: Phase 0-2 completion conditions, Phase 2 authentication/tenant/CSRF/audit/security, API Contract alignment, frontend auth acceptance and test coverage.
-- Result: Phase 0 and Phase 1 completion evidence is now recorded and both are `Completed`; Phase 2 cannot be marked `Completed` because the blocking findings above remain.
-- Blocking findings are recorded under Phase 2 above; no application-code fixes were made during this verification turn.
+- Reviewer: independent read-only reviewer (`/root/phase2_independent_review`)
+- Review scope: Phase 2 authentication/tenant/CSRF/audit/security, API Contract/OpenAPI alignment, migration, frontend auth acceptance, viewport evidence and test coverage.
+- Result: initial P1 findings were fixed and re-reviewed on 2026-08-18; no remaining P1 blocker. Remaining browser-live integration coverage is recorded as non-blocking Future Work under Phase 2.
 
 ## Phase 3: Platform and Organization Configuration
 

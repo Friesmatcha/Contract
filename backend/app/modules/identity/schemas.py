@@ -1,8 +1,12 @@
 from pydantic import BaseModel, Field, field_validator
 
 
+def _normalize_email(value: str) -> str:
+    return value.strip().lower()
+
+
 def _valid_email(value: str) -> str:
-    normalized = value.strip().lower()
+    normalized = _normalize_email(value)
     if len(normalized) > 320 or "@" not in normalized or normalized.startswith("@"):
         raise ValueError("invalid email")
     return normalized
@@ -11,6 +15,8 @@ def _valid_email(value: str) -> str:
 class LoginRequest(BaseModel):
     email: str
     password: str = Field(min_length=1, max_length=128)
+
+    _normalize_email = field_validator("email")(_normalize_email)
 
 
 class PasswordResetRequest(BaseModel):

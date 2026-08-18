@@ -1,4 +1,4 @@
-import ElementPlus, { ElConfigProvider } from 'element-plus'
+import ElementPlus from 'element-plus'
 import 'element-plus/theme-chalk/base.css'
 import 'element-plus/theme-chalk/el-config-provider.css'
 import { createApp } from 'vue'
@@ -9,6 +9,5 @@ import './styles.css'
 
 createApp(App)
   .use(ElementPlus)
-  .component('ElConfigProvider', ElConfigProvider)
   .use(router)
   .mount('#app')

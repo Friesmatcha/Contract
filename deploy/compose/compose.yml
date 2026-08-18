@@ -23,6 +23,7 @@ services:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-contract}:${POSTGRES_PASSWORD:-replace-me}@postgres:5432/${POSTGRES_DB:-contract}
       REDIS_URL: redis://redis:6379/0
       ALLOWED_ORIGINS: '["http://localhost:${HTTP_PORT:-8081}"]'
+      TRUSTED_PROXY_HOPS: ${TRUSTED_PROXY_HOPS:-1}
     depends_on:
       postgres:
         condition: service_healthy
