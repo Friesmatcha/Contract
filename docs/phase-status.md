@@ -16,7 +16,7 @@
 
 - Last updated: `2026-08-18`
 - Branch: `main`
-- Verification baseline: `a80c11a` plus the Phase 2 completion snapshot recorded below.
+- Verification baseline: `c3b46ba` (`feat(auth): complete phase 2 security and ui flows`).
 - Working tree at verification start: clean; the Phase 2 implementation, migration, tests and UI evidence are now recorded in this completion snapshot.
 - Current boundary: Phase 0, Phase 1 and Phase 2 are `Completed` with Docker-backed health, migration, integration and independent Review evidence. Phase 3 remains `Not Started`.
 - Next allowed work: begin Phase 3 only after its own Pending Decisions and API Contract entries are reviewed; do not infer Phase 3 work from the existing prototypes.
@@ -86,7 +86,7 @@
 - Independent Review / Re-review: an independent read-only review initially found two P1 issues (login invalid-email status and CSRF identity-map refresh) plus UI P2 gaps. After fixes, re-review found no P1 blocker. `populate_existing + FOR UPDATE` and stale-session regression are covered, as are Result/missing-token/non-continuable auth states.
 - Regression: backend full suite and frontend lint/typecheck/unit/build/e2e were rerun after fixes; no blocking regression found.
 - Known Issues / Pending Decisions: Playwright uses controlled API mocks for deterministic browser UI paths; live browser-to-API wiring remains a deployment smoke concern, while the API itself is covered by PostgreSQL integration and OpenAPI assertions. Vite emits a non-blocking chunk-size warning. Phase 2 has no blocking Pending Decision.
-- Git branch / HEAD / status / diff summary: `main`; the final application snapshot and this ledger are committed and pushed after the final diff review. No secrets or unrelated cleanup are included.
+- Git branch / HEAD / status / diff summary: `main` / `c3b46ba`; application and ledger snapshot committed with 24 files changed, then pushed after final diff review. No secrets or unrelated cleanup are included.
 - Commit / Push: authorized by the user; normal commit and push follow this ledger/diff review, without force push or amend.
 - Next Phase and entry conditions: Phase 3 remains `Not Started`; enter only after this Phase 2 ledger is committed/pushed and Phase 3 Pending Decisions/API entries are reviewed.
 
