@@ -143,6 +143,11 @@ class OrganizationMembership(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, 
             "status IN ('pending_invitation', 'active', 'disabled')",
             name="status_valid",
         ),
+        CheckConstraint(
+            "email_delivery_status IS NULL OR "
+            "email_delivery_status IN ('queued', 'sent', 'failed')",
+            name="email_delivery_status_valid",
+        ),
         CheckConstraint("version > 0", name="version_positive"),
         Index("ix_memberships_organization_created_at_id", "organization_id", "created_at", "id"),
     )
@@ -161,6 +166,53 @@ class OrganizationMembership(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, 
         default="pending_invitation",
         server_default="pending_invitation",
     )
+    invited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    email_delivery_status: Mapped[str | None] = mapped_column(String(32))
+
+
+class SupportAccessGrant(UuidPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "support_access_grants"
+    __table_args__ = (
+        UniqueConstraint(
+            "organization_id",
+            "id",
+            name="uq_support_access_grants_organization_id_id",
+        ),
+        CheckConstraint("btrim(reason) <> ''", name="reason_not_blank"),
+        CheckConstraint("status IN ('active', 'expired', 'revoked')", name="status_valid"),
+        CheckConstraint("expires_at > created_at", name="expires_after_creation"),
+        Index(
+            "uq_support_access_grants_active_target",
+            "organization_id",
+            "platform_admin_user_id",
+            unique=True,
+            postgresql_where=text("status = 'active'"),
+        ),
+        Index(
+            "ix_support_access_grants_organization_created_at_id",
+            "organization_id",
+            "created_at",
+            "id",
+        ),
+        Index("ix_support_access_grants_organization_expires_at", "organization_id", "expires_at"),
+    )
+
+    organization_id: Mapped[UUID] = mapped_column(
+        ForeignKey("organizations.id", ondelete="RESTRICT"), nullable=False
+    )
+    platform_admin_user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    reason: Mapped[str] = mapped_column(String(2000), nullable=False)
+    status: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="active", server_default="active"
+    )
+    granted_by: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
 
 
 class AuthSession(UuidPrimaryKeyMixin, TimestampMixin, Base):

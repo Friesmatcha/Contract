@@ -14,11 +14,11 @@
 
 ## Current Position
 
-- Last updated: `2026-08-18`
+- Last updated: `2026-08-19`
 - Branch: `main`
-- Verification baseline: `c3b46ba` (`feat(auth): complete phase 2 security and ui flows`).
+- Verification baseline: `8cd238c` (`feat(organizations): add platform and tenant configuration`).
 - Working tree at verification start: clean; the Phase 2 implementation, migration, tests and UI evidence are now recorded in this completion snapshot.
-- Current boundary: Phase 0, Phase 1, Phase 2 and Phase 3 are `Completed` with Docker-backed health, migration, integration and independent Review evidence. Phase 3 completion is recorded below; Phase 4 remains `Not Started`.
+- Current boundary: Phase 0 through Phase 4 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 5 remains `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -115,13 +115,37 @@
 - Review / Re-review: 独立后端 Review 初始发现的名称冲突契约和停用组织错误码阻塞已由契约修订、实现和回归测试关闭；独立前端 Review 未发现 P1/P2 阻塞；完成相关回归后无剩余当前 Phase 阻塞项。一次审查期间提出的停用组织重新登录/会话语义扩展未纳入本 Phase，已撤回并记录为待后续决策。
 - Regression: 后端全量、组织授权/事务/冲突测试和前端全量 Unit/E2E/lint/typecheck/build 均在最终范围下重跑通过；未修改 Phase 4 或后续业务。
 - Known Issues / Pending Decisions: Playwright 使用受控 API mock，真实浏览器到部署 API 的联调仍属于部署 smoke；Vite chunk-size warning 非阻塞。停用组织后的新登录及 `/auth/session` 组织列表语义未在本 Phase 擅自改变，需产品/安全确认后另行同步契约；当前已保证停用后现有会话撤销及组织资料/设置 404 隐藏。API 尚未为可调数值设置定义平台最大值，当前仅执行契约已有的最小/范围校验。
-- Git branch / HEAD / status / diff summary: `main` / `c72d8bd`；工作区保留本 Phase 及此前未提交的实现/文档改动，已执行 diff review，无 Secret 或生成报告纳入；未覆盖用户修改。
-- Commit / Push: 未执行 Commit、Push、amend 或 force push；等待用户明确授权 Git Snapshot。
+- Git branch / HEAD / status / diff summary: `main` / `8cd238c`；Phase 3 实现与文档快照已提交，工作区在 Phase 4 开始前干净，无 Secret 或生成报告纳入。
+- Commit / Push: `8cd238c` 已正常提交并推送；本次 Phase 4 开始后不自动 Commit/Push。
 - Next Phase and entry conditions: Phase 4 保持 `Not Started`；进入前须由用户确认 Phase 4 的 Pending Decisions/API/UI 映射，并按同一 Plan -> Implement -> Test -> Review -> Fix -> Regression 流程开始。
+
+## Phase 4: Membership, Invitation and Support Access
+
+- Status: `Completed`
+- Started at: `2026-08-19`
+- Scope: API Contract 8.10-8.13、8.16-8.18；成员邀请/重发及 `queued/sent/failed` 投递状态；最后组织管理员保护；会话撤销；最长 4 小时的只读支持授权及逐次访问审计；ORG-002、ORG-003。
+- Explicitly out of scope: 合同 viewer 授权、平台管理员业务下载、支持授权写操作、自动 SMTP 重试。
+- Entry review: Phase 3 baseline、API Contract、Phase 4 development plan、ORG-002/ORG-003 UI PRD、design-system 和 Stitch 原型已核对；P-01、P-02、P-08、P-09、P-10 已关闭。邀请投递状态扩展已先同步 API Contract 和 architecture。
+
+### Phase 4 Completion Record（2026-08-19）
+
+- Status: `Completed`。
+- Current completion boundary: 组织管理员可分页筛选成员、发送和重发邀请、查看 `queued/sent/failed` 投递状态、修改角色/状态；重发作废旧令牌；最后一个有效组织管理员受保护；角色/状态变化撤销相关会话。组织管理员可查询、创建和撤销最长 4 小时的临时平台支持授权；活跃目标唯一、过期状态按有效时间判断、创建/撤销/逐次使用写审计。
+- Changes: 新增成员与支持授权 Service/API、Pydantic Schema、ORM Model、Alembic revision、SMTP 投递状态后台更新和重发速率限制；新增 ORG-002 成员管理、ORG-003 支持授权页面、API Client、类型、路由和应用壳导航；邀请接受后清空仅适用于待邀请成员的投递状态；补充状态机和幂等边界回归。
+- API Contract / OpenAPI: 8.10-8.13、8.16-8.18 已按 `docs/api-contract.md` 实现；字段、状态码、权限、幂等键和错误码与人工契约一致。运行时 OpenAPI 路径断言确认 Phase 4 的 5 个唯一路径均存在。支持授权校验器为后续业务 JSON GET 接口提供 `X-Support-Access-Grant` 访问审计边界；当前 Phase 不实现合同业务接口、下载或写操作。
+- ORM / Migration: `backend/migrations/versions/20260819_0005_phase4_membership_support_access.py` 扩展成员邀请字段并新增 `support_access_grants`、活动授权部分唯一索引、过期/分页索引和完整性约束。独立 PostgreSQL 数据库 `contract_phase4_migration` 已完成 `upgrade -> downgrade -> upgrade`，最终 revision `20260819_0005 (head)`；集成测试使用专用 `contract_phase4_test`，未继续使用被旧草稿迁移污染的默认 `contract_test`。
+- Frontend / UI Page IDs: ORG-002、ORG-003 已按 UI PRD、design-system 和 Stitch 原型实现，覆盖 loading、empty、error、forbidden、conflict、disabled、processing、retry、确认和危险操作状态；Playwright 在 Chromium 1440px/1280px 通过。
+- Tests: `$env:TEST_DATABASE_URL=...contract_phase4_test; .venv\Scripts\python.exe -m pytest backend/tests/integration/organizations -q` -> 14 passed；同库 `pytest backend/tests -q` -> 67 passed，均有 pytest 缓存目录权限 warning；`python -m ruff check backend` -> passed；`python -m mypy backend/app` -> passed；`npm --prefix frontend run test -- --run` -> 7 files/24 tests passed；`npm --prefix frontend run lint`、`typecheck`、`build` -> passed；build 保留既有 Vite chunk-size warning；独立 Vite 服务复用下 `npx playwright test phase4.spec.ts --workers=1` -> 4 passed（1440px/1280px）。
+- Review / Re-review: 第二遍 read-only diff/security review 检查了 tenant/RBAC、越权隐藏、状态迁移、最后管理员并发锁、幂等重放、令牌失效、审计摘要、SMTP 错误边界、迁移和前后端契约；发现并修复激活无用户成员、动态授权幂等重放、邀请接受投递状态和 SMTP 配置检查顺序问题，修复后相关回归通过。
+- Regression: 后端全量与认证/组织集成回归、前端全量 Unit/质量门禁和 Phase 4 E2E 已在最终代码上重跑；未修改 Phase 5 或后续业务。
+- Known Issues / Pending Decisions: Playwright 由独立 Vite 服务复用运行可正常退出，Playwright 自己管理 Vite 时在当前 Windows 环境下测试断言通过但子进程不收尾；真实浏览器到部署 API 的联调仍属于部署 smoke。pytest 缓存目录权限 warning 和 Vite chunk-size warning 非阻塞。默认 `contract_test` 仍保留旧草稿迁移状态，后续验证应使用干净专用 PostgreSQL 库或先修复该环境；未修改默认库。
+- Git branch / HEAD / status / diff summary: `main` / `8cd238c`；工作区保留 Phase 4 未提交实现和文档变更，未包含 Secret、`.env`、原始合同、上传文件或生成报告；`git diff --check` 通过。
+- Commit / Push: 未执行 Commit 或 Push，等待用户明确授权；未 amend、force push 或修改历史。
+- Next Phase and entry conditions: Phase 5 保持 `Not Started`；进入前核对合同目录、viewer 授权和归档语义的 API Contract 与 P-07，关闭其当前 Phase 决策后再开始。
 
 ## Remaining Phases
 
-Phase 4-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 5-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

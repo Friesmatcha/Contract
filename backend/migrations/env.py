@@ -11,6 +11,7 @@ from backend.app.modules.identity.models import (
     Organization,
     OrganizationMembership,
     PlatformModelConfiguration,
+    SupportAccessGrant,
     User,
 )
 from backend.app.shared.audit import AuditLog
@@ -28,6 +29,7 @@ _registered_models = (
     Organization,
     OrganizationMembership,
     PlatformModelConfiguration,
+    SupportAccessGrant,
     User,
     AuthSession,
     AuthOneTimeToken,

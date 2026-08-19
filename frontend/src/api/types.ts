@@ -40,6 +40,12 @@ export type OrganizationStatus = 'active' | 'disabled'
 
 export type OrganizationRole = 'org_admin' | 'reviewer' | 'viewer'
 
+export type MembershipRole = OrganizationRole
+
+export type MembershipStatus = 'pending_invitation' | 'active' | 'disabled'
+
+export type InvitationDeliveryStatus = 'queued' | 'sent' | 'failed'
+
 export interface OrganizationSettings {
   file_size_limit_bytes: number
   page_limit: number
@@ -109,6 +115,69 @@ export interface UpdateOrganizationSettingsRequest {
   retention_days?: number
   report_watermark?: string
   version: number
+}
+
+export interface Membership {
+  id: string
+  user_id: string | null
+  email: string
+  display_name: string | null
+  role: MembershipRole
+  status: MembershipStatus
+  invited_at: string | null
+  email_delivery_status: InvitationDeliveryStatus | null
+  version: number
+  created_at: string
+  updated_at: string
+}
+
+export interface OrganizationMemberListQuery {
+  q?: string
+  role?: MembershipRole
+  status?: MembershipStatus
+  sort?: 'created_at' | 'display_name'
+  direction?: 'asc' | 'desc'
+  limit?: number
+  cursor?: string
+}
+
+export interface InviteMemberRequest {
+  email: string
+  role: MembershipRole
+}
+
+export interface UpdateMemberRequest {
+  role?: MembershipRole
+  status?: 'active' | 'disabled'
+  version: number
+}
+
+export type SupportAccessGrantStatus = 'active' | 'expired' | 'revoked'
+
+export interface SupportAccessGrant {
+  id: string
+  organization_id: string
+  platform_admin_user_id: string
+  reason: string
+  status: SupportAccessGrantStatus
+  granted_by: string
+  created_at: string
+  expires_at: string
+}
+
+export interface SupportAccessGrantListQuery {
+  status?: SupportAccessGrantStatus
+  platform_admin_user_id?: string
+  sort?: 'created_at' | 'expires_at'
+  direction?: 'asc' | 'desc'
+  limit?: number
+  cursor?: string
+}
+
+export interface CreateSupportAccessGrantRequest {
+  platform_admin_user_id: string
+  reason: string
+  expires_at: string
 }
 
 export interface PlatformModelConfiguration {

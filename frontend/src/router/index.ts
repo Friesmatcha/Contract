@@ -7,6 +7,8 @@ import PasswordResetRequestPage from '@/pages/auth/PasswordResetRequestPage.vue'
 import SessionPage from '@/pages/SessionPage.vue'
 import AppShell from '@/components/AppShell.vue'
 import OrganizationSettingsPage from '@/pages/organization/OrganizationSettingsPage.vue'
+import OrganizationMembersPage from '@/pages/organization/OrganizationMembersPage.vue'
+import SupportAccessPage from '@/pages/organization/SupportAccessPage.vue'
 import PlatformModelConfigurationPage from '@/pages/platform/PlatformModelConfigurationPage.vue'
 import PlatformOrganizationDetailPage from '@/pages/platform/PlatformOrganizationDetailPage.vue'
 import PlatformOrganizationsPage from '@/pages/platform/PlatformOrganizationsPage.vue'
@@ -47,6 +49,18 @@ export const routes: RouteRecordRaw[] = [
         name: 'organization-settings',
         component: OrganizationSettingsPage,
         meta: { title: '组织设置' },
+      },
+      {
+        path: 'organizations/:organizationId/members',
+        name: 'organization-members',
+        component: OrganizationMembersPage,
+        meta: { title: '成员管理' },
+      },
+      {
+        path: 'organizations/:organizationId/support-access-grants',
+        name: 'support-access-grants',
+        component: SupportAccessPage,
+        meta: { title: '支持授权' },
       },
     ],
   },

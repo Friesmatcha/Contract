@@ -1,13 +1,20 @@
 import { setCsrfToken } from '@/features/auth/csrf'
 import {
   createPlatformOrganization,
+  createSupportAccessGrant,
   getOrganizationProfile,
   getOrganizationSettings,
   getPlatformModelConfiguration,
   getPlatformOrganization,
   isOrganizationApiError,
+  inviteOrganizationMember,
+  listOrganizationMembers,
   listPlatformOrganizations,
+  listSupportAccessGrants,
+  resendOrganizationInvitation,
+  revokeSupportAccessGrant,
   updateOrganizationSettings,
+  updateOrganizationMember,
   updatePlatformModelConfiguration,
   updatePlatformOrganization,
 } from '@/api/organizations'
@@ -156,4 +163,59 @@ test('uses the platform model configuration route and exposes documented error c
   )
   expect(isOrganizationApiError(error, 'MODEL_ENVIRONMENT_NOT_CONFIGURED')).toBe(true)
   expect(isOrganizationApiError(error, 'RESOURCE_VERSION_CONFLICT')).toBe(false)
+})
+
+test('uses Phase 4 member and support access contract routes', async () => {
+  setCsrfToken('csrf-phase4')
+  const fetchMock = vi
+    .spyOn(globalThis, 'fetch')
+    .mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ items: [], next_cursor: null, has_more: false }))),
+    )
+
+  await listOrganizationMembers('org/1', {
+    q: 'legal team',
+    role: 'reviewer',
+    status: 'active',
+    sort: 'display_name',
+    direction: 'asc',
+    limit: 20,
+    cursor: 'next cursor',
+  })
+  await inviteOrganizationMember('org/1', { email: 'member@example.com', role: 'viewer' }, 'invite-1')
+  await resendOrganizationInvitation('member/1', 'resend-1')
+  await updateOrganizationMember('member/1', { status: 'disabled', version: 3 })
+  await listSupportAccessGrants('org/1', { status: 'active', limit: 20 })
+  await createSupportAccessGrant(
+    'org/1',
+    {
+      platform_admin_user_id: 'platform-1',
+      reason: '排查问题',
+      expires_at: '2026-08-19T10:00:00Z',
+    },
+    'grant-1',
+  )
+  await revokeSupportAccessGrant('org/1', 'grant/1')
+
+  expect(fetchMock.mock.calls.map(([path]) => path)).toEqual([
+    '/api/v1/organizations/org%2F1/members?q=legal+team&role=reviewer&status=active&sort=display_name&direction=asc&limit=20&cursor=next+cursor',
+    '/api/v1/organizations/org%2F1/members',
+    '/api/v1/members/member%2F1/resend-invitation',
+    '/api/v1/members/member%2F1',
+    '/api/v1/organizations/org%2F1/support-access-grants?status=active&limit=20',
+    '/api/v1/organizations/org%2F1/support-access-grants',
+    '/api/v1/organizations/org%2F1/support-access-grants/grant%2F1',
+  ])
+  expect(fetchMock.mock.calls[1]?.[1]?.body).toBe(
+    JSON.stringify({ email: 'member@example.com', role: 'viewer' }),
+  )
+  expect(fetchMock.mock.calls[5]?.[1]?.body).toBe(
+    JSON.stringify({
+      platform_admin_user_id: 'platform-1',
+      reason: '排查问题',
+      expires_at: '2026-08-19T10:00:00Z',
+    }),
+  )
+  expect(new Headers(fetchMock.mock.calls[5]?.[1]?.headers).get('Idempotency-Key')).toBe('grant-1')
+  expect(new Headers(fetchMock.mock.calls[2]?.[1]?.headers).get('X-CSRF-Token')).toBe('csrf-phase4')
 })

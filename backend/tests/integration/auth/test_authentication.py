@@ -75,6 +75,8 @@ def _seed_pending_invitation(session_factory: sessionmaker[Session]) -> Organiza
         display_name="受邀审核员",
         role="reviewer",
         status="pending_invitation",
+        invited_at=datetime.now(UTC),
+        email_delivery_status="sent",
     )
     with session_factory() as session, UnitOfWork(session) as unit_of_work:
         session.add_all([organization, membership])
@@ -488,6 +490,10 @@ def test_invitation_acceptance_handles_success_and_expiry(
     )
     assert accepted.status_code == 200
     assert accepted.json()["status"] == "active"
+    with session_factory() as session:
+        accepted_membership = session.get(OrganizationMembership, membership.id)
+        assert accepted_membership is not None
+        assert accepted_membership.email_delivery_status is None
 
     expired_membership = _seed_pending_invitation(session_factory)
     with session_factory() as session:

@@ -13,12 +13,13 @@ from backend.app.main import create_app
 @dataclass
 class FakeMailer:
     password_resets: list[tuple[str, str]] = field(default_factory=list)
+    invitations: list[tuple[str, str]] = field(default_factory=list)
 
     def send_password_reset(self, *, recipient: str, reset_url: str) -> None:
         self.password_resets.append((recipient, reset_url))
 
     def send_invitation(self, *, recipient: str, invitation_url: str) -> None:
-        pass
+        self.invitations.append((recipient, invitation_url))
 
 
 @pytest.fixture

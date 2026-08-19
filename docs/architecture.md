@@ -171,7 +171,7 @@ sequenceDiagram
 | --- | --- | --- |
 | `organizations` | `id`, `name`, `status`, `settings_json`, `retention_days` | 组织隔离根实体；限额配置经 Pydantic Schema 校验 |
 | `users` | `id`, `email`, `display_name`, `password_hash`, `status`, `is_platform_admin` | `email` 规范化后全局唯一；平台管理员不由组织角色隐式产生 |
-| `organization_memberships` | `organization_id`, `user_id`, `role`, `status` | `(organization_id, user_id)` 唯一；角色为 `org_admin/reviewer/viewer` |
+| `organization_memberships` | `organization_id`, `user_id`, `role`, `status`, `invited_at`, `email_delivery_status`, `version` | `(organization_id, user_id)` 唯一；角色为 `org_admin/reviewer/viewer`；待邀请投递状态为 `queued/sent/failed`，不自动重试 |
 | `contract_access_grants` | `organization_id`, `contract_id`, `user_id`, `access_level` | 业务查看者仅可见显式授权合同；管理员和审核员按角色策略访问 |
 | `auth_sessions` | `id`, `user_id`, `token_hash`, `csrf_hash`, `idle_expires_at`, `absolute_expires_at`, `revoked_at` | 只保存随机令牌哈希；停用用户时批量撤销 |
 | `auth_one_time_tokens` | `user_id`, `purpose`, `token_hash`, `expires_at`, `used_at` | 用于邀请和密码重置；一次性消费 |
@@ -225,6 +225,7 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 | `warnings` | `organization_id`, `review_task_id`, `contract_id`, `risk_finding_id`, `clause_comparison_id`, `extracted_field_id`, `classification_id`, `trigger_type`, `dedupe_key`, `priority`, `status`, `assignee_id`, `due_at`, `resolution`, `closed_at` | 风险、条款、字段或分类至少关联一个；活动状态下 `dedupe_key` 部分唯一 |
 | `warning_events` | `organization_id`, `warning_id`, `event_type`, `from_status`, `to_status`, `actor_id`, `note`, `metadata_json`, `created_at` | 追加写时间线；首个事件保存触发条件和规则版本 |
 | `notifications` | `organization_id`, `user_id`, `warning_id`, `channel`, `status`, `attempts`, `next_attempt_at`, `read_at`, `error_code` | 站内通知首期必做；外部投递失败不回滚预警 |
+| `support_access_grants` | `organization_id`, `platform_admin_user_id`, `reason`, `status`, `granted_by`, `expires_at`, `revoked_at`, `revoked_by` | 最长 4 小时；`active` 目标部分唯一；过期转为 `expired`；平台管理员仅可通过有效授权读取业务 JSON，不能写入或下载 |
 | `reports` | `organization_id`, `review_task_id`, `display_no`, `format`, `status`, `snapshot_json`, `template_version`, `file_object_id`, `generated_at`, `error_code` | 报告使用不可变快照；重新生成创建新记录，不覆盖旧文件 |
 | `feedback` | `organization_id`, `review_task_id`, `subject_type`, `subject_id`, `label`, `original_json`, `corrected_json`, `note`, `created_by` | 标签为 `correct/incorrect/modified/ignored`；不自动用于线上训练 |
 | `idempotency_records` | `scope`, `operation_key`, `idempotency_key`, `request_fingerprint`, `response_status`, `resource_type`, `resource_id`, `expires_at` | `scope` 仅由服务端生成，格式为 `organization:<organization_id>` 或 `platform:<authenticated_user_id>`；`(scope, idempotency_key)` 唯一；相同键不同 fingerprint 返回冲突 |

@@ -464,33 +464,38 @@ def confirm_password_reset(
 
 
 def issue_invitation_token(session: Session, *, membership_id: UUID) -> str:
-    raw_token = _new_token("invite")
     with UnitOfWork(session) as unit_of_work:
-        membership = session.scalar(
-            select(OrganizationMembership)
-            .where(OrganizationMembership.id == membership_id)
-            .with_for_update()
-        )
-        if membership is None or membership.status != "pending_invitation":
-            raise ValueError("membership must be pending invitation")
-        session.execute(
-            update(AuthOneTimeToken)
-            .where(
-                AuthOneTimeToken.membership_id == membership_id,
-                AuthOneTimeToken.purpose == "invitation",
-                AuthOneTimeToken.used_at.is_(None),
-            )
-            .values(used_at=_now())
-        )
-        session.add(
-            AuthOneTimeToken(
-                membership_id=membership.id,
-                purpose="invitation",
-                token_hash=_hash(raw_token),
-                expires_at=_now() + INVITATION_TTL,
-            )
-        )
+        raw_token = issue_invitation_token_in_transaction(session, membership_id=membership_id)
         unit_of_work.commit()
+    return raw_token
+
+
+def issue_invitation_token_in_transaction(session: Session, *, membership_id: UUID) -> str:
+    raw_token = _new_token("invite")
+    membership = session.scalar(
+        select(OrganizationMembership)
+        .where(OrganizationMembership.id == membership_id)
+        .with_for_update()
+    )
+    if membership is None or membership.status != "pending_invitation":
+        raise ValueError("membership must be pending invitation")
+    session.execute(
+        update(AuthOneTimeToken)
+        .where(
+            AuthOneTimeToken.membership_id == membership_id,
+            AuthOneTimeToken.purpose == "invitation",
+            AuthOneTimeToken.used_at.is_(None),
+        )
+        .values(used_at=_now())
+    )
+    session.add(
+        AuthOneTimeToken(
+            membership_id=membership.id,
+            purpose="invitation",
+            token_hash=_hash(raw_token),
+            expires_at=_now() + INVITATION_TTL,
+        )
+    )
     return raw_token
 
 
@@ -538,6 +543,7 @@ def accept_invitation(
             )
         membership.user_id = user.id
         membership.status = "active"
+        membership.email_delivery_status = None
         if display_name and user.display_name != display_name.strip() and not user.password_hash:
             user.display_name = display_name.strip()
         one_time_token.used_at = _now()

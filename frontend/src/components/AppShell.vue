@@ -2,11 +2,13 @@
 import {
   ArrowDown,
   FolderOpened,
+  Key,
   OfficeBuilding,
   Operation,
   Setting,
   SwitchButton,
   UserFilled,
+  User,
 } from '@element-plus/icons-vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -126,6 +128,20 @@ async function signOut(): Promise<void> {
             >
               <ElIcon><Setting /></ElIcon>
               <span>组织设置</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="currentMembership.role === 'org_admin'"
+              :index="`/organizations/${currentMembership.organization_id}/members`"
+            >
+              <ElIcon><User /></ElIcon>
+              <span>成员管理</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="currentMembership.role === 'org_admin'"
+              :index="`/organizations/${currentMembership.organization_id}/support-access-grants`"
+            >
+              <ElIcon><Key /></ElIcon>
+              <span>支持授权</span>
             </ElMenuItem>
             <ElMenuItem
               index="/"

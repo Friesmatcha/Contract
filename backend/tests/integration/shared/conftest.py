@@ -57,7 +57,7 @@ def clean_database(database_engine: Engine) -> Iterator[None]:
         connection.execute(
             text(
                 "TRUNCATE TABLE auth_rate_limits, audit_logs, idempotency_records, "
-                "organization_memberships, users, organizations, "
+                "organization_memberships, support_access_grants, users, organizations, "
                 "platform_model_configurations CASCADE"
             )
         )

@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Any, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -233,3 +234,84 @@ class UpdateModelConfigurationRequest(StrictRequest):
         ):
             raise ValueError("at least one field must be updated")
         return self
+
+
+class MembershipResponse(BaseModel):
+    id: str
+    user_id: str | None
+    email: str
+    display_name: str | None
+    role: Literal["org_admin", "reviewer", "viewer"]
+    status: Literal["pending_invitation", "active", "disabled"]
+    invited_at: datetime | None
+    email_delivery_status: Literal["queued", "sent", "failed"] | None
+    version: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class MembershipPage(BaseModel):
+    items: list[MembershipResponse]
+    next_cursor: str | None
+    has_more: bool
+
+
+class InviteMemberRequest(StrictRequest):
+    email: str = Field(min_length=3, max_length=320)
+    role: Literal["org_admin", "reviewer", "viewer"]
+
+    _normalize_email = field_validator("email")(_valid_email)
+
+
+class UpdateMemberRequest(StrictRequest):
+    role: Literal["org_admin", "reviewer", "viewer"] | None = None
+    status: Literal["active", "disabled"] | None = None
+    version: int = Field(ge=1)
+
+    @model_validator(mode="after")
+    def require_update(self) -> "UpdateMemberRequest":
+        if self.role is None and self.status is None:
+            raise ValueError("at least one field must be updated")
+        return self
+
+
+class ResendInvitationResponse(MembershipResponse):
+    pass
+
+
+class SupportAccessGrantResponse(BaseModel):
+    id: str
+    organization_id: str
+    platform_admin_user_id: str
+    reason: str
+    status: Literal["active", "expired", "revoked"]
+    granted_by: str
+    created_at: datetime
+    expires_at: datetime
+
+
+class SupportAccessGrantPage(BaseModel):
+    items: list[SupportAccessGrantResponse]
+    next_cursor: str | None
+    has_more: bool
+
+
+class CreateSupportAccessGrantRequest(StrictRequest):
+    platform_admin_user_id: UUID
+    reason: str = Field(min_length=1, max_length=2000)
+    expires_at: datetime
+
+    @field_validator("reason")
+    @classmethod
+    def normalize_reason(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("reason is required")
+        return normalized
+
+    @field_validator("expires_at")
+    @classmethod
+    def require_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("expires_at must include a timezone")
+        return value

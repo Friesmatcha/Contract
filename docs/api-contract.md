@@ -299,7 +299,9 @@ Success `200 OK`：
 
 `Organization`：`id`, `name`, `status`, `retention_days`, `settings`（不含秘密）。
 
-`Membership`：`id`, `organization_id`, `user_id`, `email`, `display_name`, `role`, `status`, `created_at`, `updated_at`。
+`Membership`：`id`, `organization_id`, `user_id`, `email`, `display_name`, `role`, `status`, `invited_at`, `email_delivery_status`, `version`, `created_at`, `updated_at`。
+
+`email_delivery_status` 仅用于待邀请成员，可为 `queued | sent | failed`；已激活或未发送邀请的成员返回 `null`。后台投递失败不改变已经返回的创建/重发成功状态，也不自动重试；组织管理员通过成员列表看到 `failed` 并可显式重发。
 
 平台管理员标记、密码哈希、会话令牌、CSRF 哈希、模型密钥和 `secret_ref` 不在普通业务响应中返回。
 
@@ -585,7 +587,7 @@ Request Query：通用分页，加 `q`, `role`, `status`；排序允许 `created
 
 Request Example：`GET /api/v1/organizations/{organization_id}/members?role=reviewer&status=active`
 
-Success `200 OK`：`CursorPage<Membership>`。
+Success `200 OK`：`CursorPage<Membership>`。成员项包含 `id`, `user_id`, `email`, `display_name`, `role`, `status`, `invited_at`, `email_delivery_status`, `version`, `created_at`, `updated_at`；未发送邀请的 `invited_at` 和 `email_delivery_status` 为 `null`。
 
 ```json
 { "items": [{ "id": "6a33fe0b-c292-4e0a-886c-9b767496527f", "user_id": "8b2f8a68-5e4a-4b0a-b6a2-6dce4e0f5a11", "email": "legal@example.com", "display_name": "李法务", "role": "reviewer", "status": "active" }], "next_cursor": null, "has_more": false }
@@ -601,7 +603,7 @@ Request Body：`email: string`（必填）、`role: org_admin|reviewer|viewer`�
 
 Request Example：`{ "email": "reviewer@example.com", "role": "reviewer" }`
 
-Success `201 Created`：
+Success `201 Created`：创建 `pending_invitation` 成员，响应中的 `email_delivery_status` 为 `queued`；SMTP 后台投递成功后变为 `sent`，运行时失败后变为 `failed`。后台失败不改变已返回的 `201`，不自动重试。
 
 ```json
 { "id": "2f69c1a8-7302-4f97-8f81-c9adc2774ed8", "email": "reviewer@example.com", "role": "reviewer", "status": "pending_invitation", "invited_at": "2026-08-17T04:00:00Z", "email_delivery_status": "queued" }
@@ -617,7 +619,7 @@ Request Body：`{}`。
 
 Request Example：`POST /api/v1/members/{member_id}/resend-invitation` with body `{}`
 
-Success `202 Accepted`：作废旧邀请令牌，生成新的单次令牌并通过 SMTP 异步发送。
+Success `202 Accepted`：作废旧邀请令牌，生成新的单次令牌并通过 SMTP 异步发送；响应中的 `email_delivery_status` 为 `queued`，后台完成后按 `sent` 或 `failed` 更新。后台失败不改变已返回的 `202`，不自动重试。
 
 ```json
 { "member_id": "2f69c1a8-7302-4f97-8f81-c9adc2774ed8", "status": "pending_invitation", "email_delivery_status": "queued", "invited_at": "2026-08-17T04:30:00Z" }
