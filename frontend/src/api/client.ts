@@ -60,6 +60,15 @@ function isApiErrorPayload(value: unknown): value is ApiErrorPayload {
   )
 }
 
+export function apiErrorFromResponse(
+  status: number,
+  body: unknown,
+  requestId?: string,
+): ApiError | ApiClientError {
+  if (isApiErrorPayload(body)) return new ApiError(status, body, requestId)
+  return new ApiClientError(status, '服务返回了无法识别的错误。', requestId)
+}
+
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   const method = (init.method || 'GET').toUpperCase()
@@ -87,8 +96,7 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     throw new ApiClientError(response.status, '服务返回了无法识别的响应。', responseRequestId)
   }
   if (!response.ok) {
-    if (isApiErrorPayload(body)) throw new ApiError(response.status, body, responseRequestId)
-    throw new ApiClientError(response.status, '服务返回了无法识别的错误。', responseRequestId)
+    throw apiErrorFromResponse(response.status, body, responseRequestId)
   }
   return body as T
 }

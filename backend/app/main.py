@@ -12,9 +12,12 @@ from backend.app.api.health import router as health_router
 from backend.app.config import Settings, SettingsConfigurationError, get_settings
 from backend.app.db import check_database, create_database_engine, create_session_factory
 from backend.app.errors import error_response
+from backend.app.integrations.antivirus.clamav import ClamAVScanner
 from backend.app.integrations.notifications.smtp import create_mailer
+from backend.app.integrations.storage.local import LocalFileStore
 from backend.app.logging import configure_logging
 from backend.app.middleware import request_context_middleware
+from backend.app.modules.contracts.api import file_router
 from backend.app.modules.contracts.api import router as contracts_router
 from backend.app.modules.identity.api import router as identity_router
 from backend.app.modules.identity.organization_api import router as organization_router
@@ -26,6 +29,8 @@ logger = logging.getLogger(__name__)
 def create_app(
     settings: Settings | None = None,
     database_check: Callable[[], None] | None = None,
+    file_store: LocalFileStore | None = None,
+    antivirus_scanner: ClamAVScanner | None = None,
 ) -> FastAPI:
     configuration_error: SettingsConfigurationError | None = None
     if settings is None:
@@ -41,6 +46,12 @@ def create_app(
             app.state.db_engine = engine
             app.state.session_factory = create_session_factory(engine)
             app.state.database_check = database_check or (lambda: check_database(engine))
+            app.state.file_store = file_store or LocalFileStore(settings.file_storage_root)
+            app.state.antivirus_scanner = antivirus_scanner or ClamAVScanner(
+                host=settings.clamav_host,
+                port=settings.clamav_port,
+                timeout_seconds=settings.clamav_timeout_seconds,
+            )
         try:
             yield
         finally:
@@ -79,6 +90,7 @@ def create_app(
         app.include_router(identity_router, prefix="/api/v1")
         app.include_router(organization_router, prefix="/api/v1")
         app.include_router(contracts_router, prefix="/api/v1")
+        app.include_router(file_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:

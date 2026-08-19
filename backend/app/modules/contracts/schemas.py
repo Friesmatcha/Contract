@@ -51,6 +51,32 @@ class ContractFileSummary(BaseModel):
     id: UUID
     version_no: int
     is_current: bool
+    original_name: str | None = None
+    media_type: str | None = None
+    size_bytes: int | None = None
+    scan_status: Literal["pending", "clean", "infected", "failed"] | None = None
+    storage_status: Literal["quarantine", "stored", "failed"] | None = None
+    created_at: datetime | None = None
+    external_model_notice_acknowledged_at: datetime | None = None
+
+
+class FileObjectResponse(BaseModel):
+    id: UUID
+    original_name: str
+    media_type: str
+    size_bytes: int
+    sha256: str
+    scan_status: Literal["pending", "clean", "infected", "failed"]
+    storage_status: Literal["quarantine", "stored", "failed"]
+    created_at: datetime
+
+
+class ContractFileUploadResponse(BaseModel):
+    file: FileObjectResponse
+    contract_file_id: UUID
+    version_no: int
+    is_current: bool
+    external_model_notice_acknowledged_at: datetime
 
 
 class LatestReviewSummary(BaseModel):

@@ -15,6 +15,7 @@ import PlatformOrganizationsPage from '@/pages/platform/PlatformOrganizationsPag
 import ContractListPage from '@/pages/contracts/ContractListPage.vue'
 import CreateContractPage from '@/pages/contracts/CreateContractPage.vue'
 import ContractDetailPage from '@/pages/contracts/ContractDetailPage.vue'
+import ContractFilesPage from '@/pages/contracts/ContractFilesPage.vue'
 import { defaultLandingPath, loadSession, sessionState } from '@/features/auth/session'
 
 export const routes: RouteRecordRaw[] = [
@@ -64,6 +65,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'contract-detail',
         component: ContractDetailPage,
         meta: { title: '合同详情' },
+      },
+      {
+        path: 'contracts/:contractId/files',
+        name: 'contract-files',
+        component: ContractFilesPage,
+        meta: { title: '文件版本' },
       },
       {
         path: 'organizations/:organizationId/settings',

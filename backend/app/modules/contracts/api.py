@@ -1,14 +1,23 @@
-from typing import Annotated, Literal
+from collections.abc import Iterator
+from typing import Annotated, BinaryIO, Literal
+from urllib.parse import quote
 from uuid import UUID
 
-from fastapi import APIRouter, Header, Query, Request, Response, status
+from fastapi import APIRouter, File, Form, Header, Query, Request, Response, UploadFile, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 
 from backend.app.db import DatabaseSession
 from backend.app.errors import ErrorResponse
+from backend.app.modules.contracts.files.service import (
+    authorize_file_download,
+    upload_contract_file,
+)
+from backend.app.modules.contracts.models import FileObject
 from backend.app.modules.contracts.schemas import (
     ContractAccessGrantRequest,
     ContractAccessGrantResponse,
+    ContractFileUploadResponse,
     ContractPage,
     ContractResponse,
     ContractStatusResponse,
@@ -37,10 +46,11 @@ from backend.app.modules.identity.organization import (
 )
 from backend.app.modules.identity.service import AuthenticatedSession
 from backend.app.modules.identity.support_access import authorize_support_access
-from backend.app.shared.errors import ApplicationError, ForbiddenError
+from backend.app.shared.errors import ApplicationError, ForbiddenError, RateLimitedError
 from backend.app.shared.tenant import TenantContext
 
 router = APIRouter(prefix="/contracts", tags=["contract catalog and viewer access"])
+file_router = APIRouter(prefix="/files", tags=["secure contract files"])
 
 
 def _current_organization(
@@ -206,7 +216,7 @@ def post_contract(
         idempotency_key=idempotency_key,
         request_id=request.state.request_id,
     )
-    return ContractResponse.model_validate(contract_payload(contract))
+    return ContractResponse.model_validate(contract_payload(database, contract))
 
 
 @router.get(
@@ -292,7 +302,7 @@ def get_contract_detail(
         contract_id=contract_id,
         viewer_user_id=authenticated.user.id if role == "viewer" else None,
     )
-    return ContractResponse.model_validate(contract_payload(contract))
+    return ContractResponse.model_validate(contract_payload(database, contract))
 
 
 @router.patch(
@@ -325,7 +335,7 @@ def patch_contract(
         body=body,
         request_id=request.state.request_id,
     )
-    return ContractResponse.model_validate(contract_payload(contract))
+    return ContractResponse.model_validate(contract_payload(database, contract))
 
 
 @router.post(
@@ -456,3 +466,145 @@ def delete_contract_access_grant(
         request_id=request.state.request_id,
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post(
+    "/{contract_id}/files",
+    response_model=ContractFileUploadResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+        413: {"model": ErrorResponse},
+        415: {"model": ErrorResponse},
+        422: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
+    },
+)
+def post_contract_file(
+    contract_id: UUID,
+    request: Request,
+    database: DatabaseSession,
+    authenticated: CsrfProtected,
+    file: Annotated[UploadFile, File(...)],
+    external_model_notice_acknowledged: Annotated[bool, Form(...)],
+    idempotency_key: Annotated[
+        str, Header(alias="Idempotency-Key", min_length=1, max_length=255)
+    ],
+    make_current: Annotated[bool, Form()] = True,
+) -> ContractFileUploadResponse:
+    tenant = _write_context(
+        database,
+        contract_id=contract_id,
+        user_id=authenticated.user.id,
+    )
+    result = upload_contract_file(
+        database,
+        actor=tenant,
+        contract_id=contract_id,
+        source=file.file,
+        original_name=file.filename,
+        media_type=file.content_type,
+        make_current=make_current,
+        external_model_notice_acknowledged=external_model_notice_acknowledged,
+        idempotency_key=idempotency_key,
+        request_id=request.state.request_id,
+        file_store=request.app.state.file_store,
+        antivirus_scanner=request.app.state.antivirus_scanner,
+    )
+    return ContractFileUploadResponse.model_validate(result)
+
+
+def _stream_file(file_handle: BinaryIO, *, chunk_size: int = 1024 * 1024) -> Iterator[bytes]:
+    try:
+        while chunk := file_handle.read(chunk_size):
+            yield chunk
+    finally:
+        file_handle.close()
+
+
+def _download_not_found() -> ApplicationError:
+    return ApplicationError(
+        status_code=404,
+        code="FILE_NOT_FOUND",
+        message="文件不存在。",
+    )
+
+
+@file_router.get(
+    "/{file_id}/download",
+    responses={
+        401: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+        429: {"model": ErrorResponse},
+    },
+)
+def get_contract_file_download(
+    file_id: UUID,
+    request: Request,
+    database: DatabaseSession,
+    authenticated: Authenticated,
+    disposition: Annotated[Literal["attachment", "inline"], Query()] = "attachment",
+    support_grant_id: Annotated[
+        UUID | None, Header(alias="X-Support-Access-Grant")
+    ] = None,
+) -> StreamingResponse:
+    if support_grant_id is not None:
+        raise _download_not_found()
+    organization_id = database.scalar(
+        select(FileObject.organization_id).where(FileObject.id == file_id)
+    )
+    if organization_id is None:
+        raise _download_not_found()
+    database.commit()
+    try:
+        _, tenant, role = require_organization_member(
+            database,
+            organization_id=organization_id,
+            user_id=authenticated.user.id,
+        )
+    except ApplicationError as exc:
+        if exc.status_code == 404:
+            raise _download_not_found() from exc
+        raise
+    try:
+        from backend.app.modules.identity.service import consume_rate_limit
+
+        consume_rate_limit(
+            database,
+            action="file:download",
+            key=f"{tenant.organization_id}:{tenant.user_id}",
+            limit=120,
+        )
+    except RateLimitedError as exc:
+        raise ApplicationError(
+            status_code=429,
+            code="DOWNLOAD_RATE_LIMITED",
+            message="文件下载请求过于频繁，请稍后重试。",
+        ) from exc
+    file_object = authorize_file_download(
+        database,
+        actor=tenant,
+        file_id=file_id,
+        viewer_user_id=authenticated.user.id if role == "viewer" else None,
+        request_id=request.state.request_id,
+        disposition=disposition,
+        file_store=request.app.state.file_store,
+    )
+    handle = request.app.state.file_store.open(file_object.storage_key)
+    encoded_name = quote(file_object.original_name.replace("\r", "").replace("\n", ""))
+    content_disposition = f"{disposition}; filename=\"download\"; filename*=UTF-8''{encoded_name}"
+    return StreamingResponse(
+        _stream_file(handle),
+        media_type=file_object.media_type,
+        headers={
+            "Content-Length": str(file_object.size_bytes),
+            "Content-Disposition": content_disposition,
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "default-src 'none'",
+        },
+    )

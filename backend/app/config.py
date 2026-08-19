@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     model_provider: str = Field(default="qwen", min_length=1, max_length=64)
     model_name: str | None = Field(default=None, max_length=255)
     model_api_key: SecretStr | None = None
+    file_storage_root: str = "/var/lib/contract-review/files"
+    clamav_host: str = "clamav"
+    clamav_port: int = Field(default=3310, ge=1, le=65535)
+    clamav_timeout_seconds: float = Field(default=10, gt=0, le=60)
 
     @field_validator("database_url", "redis_url")
     @classmethod

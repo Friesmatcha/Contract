@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-19`
 - Branch: `main`
-- Verification baseline: `8cd238c` (`feat(organizations): add platform and tenant configuration`).
-- Working tree at verification start: clean; the Phase 2 implementation, migration, tests and UI evidence are now recorded in this completion snapshot.
-- Current boundary: Phase 0 through Phase 4 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 5 remains `Not Started`.
+- Verification baseline: `d9e4415` (`feat(contracts): add contract catalog and viewer access`).
+- Working tree at verification start: clean; Phase 5 was already published at this baseline and Phase 6 verification started with only the new Phase 6 implementation changes afterward.
+- Current boundary: Phase 0 through Phase 6 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 7 remains `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -162,9 +162,28 @@
 - Commit / Push: 未执行 Commit、Push、amend 或 force push，遵守用户约束。
 - Next Phase and entry conditions: Phase 6 进入前需重新核对 Secure File Lifecycle 范围和 API 9.7-9.8；本 Phase 不提供上传、下载或解析接口。
 
+## Phase 6: Secure File Lifecycle
+
+- Status: `Completed`。
+- Completed at: `2026-08-19`。
+- Current completion boundary: 组织管理员和审核员可按契约上传单个合同文件；服务端执行告知确认、扩展名/MIME/签名/基础结构/大小校验、流式 SHA-256、ClamAV 扫描和隔离区到随机存储键的原子移动。合同文件版本支持当前版本切换、幂等重放和审计；组织成员及授权 viewer 可安全下载，支持授权明确禁止下载；归档合同、跨组织和未授权文件均不泄露资源存在性。
+- Explicitly out of scope: 文档解析、OCR、审核任务、ModelGateway、风险/条款/报告和文件物理清理。
+- Entry review: 已核对 `docs/development-plan.md` Phase 6、`docs/api-contract.md` 9.7-9.8、`docs/requirements.md` 文件需求、`docs/architecture.md` 文件存储/安全章节、CONTRACT-004 UI PRD、design-system 和 Stitch 原型；未发现阻塞 Pending Decision。
+- Changes: 新增 `FileObject`/`ContractFile` ORM、`FileStore` 本地隔离区和原子存储、ClamAV TCP 适配器、上传/下载 API、安全响应头、限流/审计、文件版本摘要；新增 CONTRACT-004 页面、XHR 上传进度、告知确认、版本表和下载入口；补充 OpenAPI 投影断言、文件安全集成测试、ClamAV 协议单测和 Phase 6 Playwright。
+- API Contract / OpenAPI: 未修改人工契约；9.7/9.8 方法、路径、表单、响应、错误、CSRF、幂等、授权和支持授权禁下载边界按契约实现；运行时 OpenAPI 路径/状态投影由 `test_contract_file_openapi_projects_phase6_paths` 覆盖。
+- ORM / Migration: 新增 `backend/migrations/versions/20260819_0007_phase6_secure_file_lifecycle.py`，包含 `file_objects`、`contract_files`、组织复合外键、版本/current 唯一约束、状态/哈希/大小约束和 storage key 唯一约束。独立 PostgreSQL 数据库 `contract_phase6_migration` 完成 `upgrade head -> downgrade -1 -> upgrade head`，最终 `20260819_0007 (head)`；默认 `contract_test` 保留旧草稿污染，未修改。
+- Frontend / UI Page IDs: `CONTRACT-004` `/contracts/:contractId/files` 已按原型实现上传、告知、处理中、空数据、失败、禁止、归档禁用、viewer 只读和安全下载入口；合同详情文件区域同步接入版本和下载。
+- Tests: `$env:TEST_DATABASE_URL=...contract_phase6_test; $env:REDIS_URL=...; .venv\Scripts\python.exe -m pytest backend/tests -q` -> 76 passed，1 个 Windows pytest cache permission warning；Phase 6 文件集成 -> 4 passed；`backend/tests/unit/test_clamav.py` -> 1 passed；`.venv\Scripts\python.exe -m ruff check backend` -> passed；`.venv\Scripts\python.exe -m mypy backend/app` -> passed；`npm --prefix frontend run lint`、`typecheck` -> passed；Vitest -> 10 files / 30 tests passed；`npm --prefix frontend run build` -> passed，保留既有 Vite chunk-size warning；`npm --prefix frontend run e2e -- --workers=1` -> 30 passed，Chromium 1440px/1280px；当前源码临时 API 镜像在 Compose 网络内执行 ClamAV clean smoke -> passed；`git diff --check` -> passed。
+- Review / Re-review: 复核 tenant/RBAC、viewer 授权、支持授权禁下载、跨组织隐藏、幂等/并发版本、原子移动/失败清理、文件名路径隔离、审计/限流、响应头、Migration 约束和前后端契约。修复 ClamAV `stream: OK\0` 响应误判、补齐契约冻结的模型告知文案、补充加载 skeleton 和 OpenAPI/边界测试；修复后后端全量、前端全量质量门禁和全量 Playwright 均重跑通过。
+- Regression: 后端全量 76 passed；前端 Unit/质量门禁和历史 Phase 3-5 + Phase 6 E2E 30 passed；未实现 Phase 7 解析/OCR 或后续审核/模型/报告功能。
+- Known Issues / Pending Decisions: Playwright 使用受控 API mock，真实浏览器到部署 API 联调仍属于部署 smoke；当前运行中的 API 容器未重启，ClamAV smoke 使用当前源码临时镜像完成；宿主机未暴露 ClamAV 3310 是 Compose 内部网络设计；pytest cache Windows 权限 warning 和 Vite chunk-size warning 非阻塞。Phase 6 不做文件物理清理，保留至后续契约范围。
+- Git branch / HEAD / status / diff summary: `main`；本 Phase 快照包含后端文件生命周期、Migration、测试、前端 CONTRACT-004、Phase 6 E2E 和本阶段账本；未包含 Secret、`.env`、原始合同或生成报告；完成快照后工作区应保持干净。
+- Commit / Push: 已获用户明确授权，将执行正常 Commit/Push；不执行 amend 或 force push。
+- Next Phase and entry conditions: Phase 7 保持 `Not Started`；进入前需重新核对文档解析/OCR/Evidence 契约、解析库和金样数据，不在本 Phase 提前实现。
+
 ## Remaining Phases
 
-Phase 6-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 7-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

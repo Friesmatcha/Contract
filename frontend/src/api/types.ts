@@ -188,6 +188,32 @@ export interface ContractFileSummary {
   id: string
   version_no: number
   is_current: boolean
+  original_name?: string | null
+  media_type?: string | null
+  size_bytes?: number | null
+  scan_status?: 'pending' | 'clean' | 'infected' | 'failed' | null
+  storage_status?: 'quarantine' | 'stored' | 'failed' | null
+  created_at?: string | null
+  external_model_notice_acknowledged_at?: string | null
+}
+
+export interface FileObject {
+  id: string
+  original_name: string
+  media_type: string
+  size_bytes: number
+  sha256: string
+  scan_status: 'pending' | 'clean' | 'infected' | 'failed'
+  storage_status: 'quarantine' | 'stored' | 'failed'
+  created_at: string
+}
+
+export interface ContractFileUploadResponse {
+  file: FileObject
+  contract_file_id: string
+  version_no: number
+  is_current: boolean
+  external_model_notice_acknowledged_at: string
 }
 
 export interface LatestReviewSummary {

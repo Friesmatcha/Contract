@@ -8,7 +8,12 @@ from uuid import UUID, uuid4
 from sqlalchemy import and_, asc, desc, func, or_, select, text
 from sqlalchemy.orm import Session
 
-from backend.app.modules.contracts.models import Contract, ContractAccessGrant
+from backend.app.modules.contracts.models import (
+    Contract,
+    ContractAccessGrant,
+    ContractFile,
+    FileObject,
+)
 from backend.app.modules.contracts.schemas import (
     ContractAccessGrantRequest,
     CreateContractRequest,
@@ -64,7 +69,43 @@ def _next_display_no(session: Session) -> str:
     return f"CTR-{_now().strftime('%Y%m%d')}-{int(sequence_value):06d}"
 
 
-def _empty_file_and_review(contract: Contract) -> dict[str, Any]:
+def _file_summaries(session: Session, contract: Contract) -> list[dict[str, Any]]:
+    rows = session.execute(
+        select(ContractFile, FileObject)
+        .join(
+            FileObject,
+            and_(
+                FileObject.organization_id == ContractFile.organization_id,
+                FileObject.id == ContractFile.file_object_id,
+            ),
+        )
+        .where(
+            ContractFile.organization_id == contract.organization_id,
+            ContractFile.contract_id == contract.id,
+        )
+        .order_by(ContractFile.version_no.desc())
+    ).all()
+    return [
+        {
+            "id": file_object.id,
+            "version_no": contract_file.version_no,
+            "is_current": contract_file.is_current,
+            "original_name": file_object.original_name,
+            "media_type": file_object.media_type,
+            "size_bytes": file_object.size_bytes,
+            "scan_status": file_object.scan_status,
+            "storage_status": file_object.storage_status,
+            "created_at": contract_file.created_at,
+            "external_model_notice_acknowledged_at": (
+                contract_file.external_model_notice_acknowledged_at
+            ),
+        }
+        for contract_file, file_object in rows
+    ]
+
+
+def _empty_file_and_review(session: Session, contract: Contract) -> dict[str, Any]:
+    files = _file_summaries(session, contract)
     return {
         "id": contract.id,
         "display_no": contract.display_no,
@@ -72,8 +113,8 @@ def _empty_file_and_review(contract: Contract) -> dict[str, Any]:
         "declared_type": contract.declared_type,
         "status": contract.status,
         "owner_id": contract.owner_id,
-        "current_file": None,
-        "files": [],
+        "current_file": next((file for file in files if file["is_current"]), None),
+        "files": files,
         "latest_review": None,
         "created_at": contract.created_at,
         "updated_at": contract.updated_at,
@@ -81,8 +122,8 @@ def _empty_file_and_review(contract: Contract) -> dict[str, Any]:
     }
 
 
-def contract_payload(contract: Contract) -> dict[str, Any]:
-    return _empty_file_and_review(contract)
+def contract_payload(session: Session, contract: Contract) -> dict[str, Any]:
+    return _empty_file_and_review(session, contract)
 
 
 def contract_status_payload(contract: Contract) -> dict[str, Any]:
@@ -286,7 +327,7 @@ def list_contracts(
         )
         next_cursor = _cursor_encode(sort=sort, value=last_value, contract=last)
     return {
-        "items": [contract_payload(contract) for contract in items],
+        "items": [contract_payload(session, contract) for contract in items],
         "next_cursor": next_cursor,
         "has_more": len(rows) > limit,
     }

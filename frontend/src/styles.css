@@ -435,6 +435,165 @@ select {
   width: min(100%, 360px);
 }
 
+.contract-files-page {
+  max-width: 1280px;
+}
+
+.external-model-notice {
+  margin-bottom: 20px;
+}
+
+.contract-files-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.65fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.files-history-column {
+  display: grid;
+  min-width: 0;
+  gap: 20px;
+}
+
+.upload-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.file-drop-zone {
+  display: grid;
+  min-height: 176px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 2px dashed #b9c5d8;
+  border-radius: 6px;
+  background: #fbfcfe;
+  color: #172033;
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+}
+
+.file-drop-zone:hover:not(:disabled),
+.file-drop-zone:focus-visible {
+  border-color: #2457a6;
+  background: #f5f7fa;
+  outline: 3px solid rgb(36 87 166 / 18%);
+  outline-offset: 2px;
+}
+
+.file-drop-zone:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.file-drop-zone span {
+  color: #5f6b7a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.file-drop-icon {
+  width: 42px;
+  height: 42px;
+  padding: 10px;
+  border-radius: 50%;
+  background: #e7efff;
+  color: #2457a6;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.selected-file {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #d7dee8;
+  background: #eef2f6;
+}
+
+.selected-file > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.selected-file strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-file span {
+  color: #5f6b7a;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+}
+
+.upload-options {
+  display: grid;
+  gap: 10px;
+}
+
+.upload-options .el-checkbox {
+  white-space: normal;
+}
+
+.upload-progress-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.upload-progress-panel .section-heading {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.upload-progress-panel .section-heading h2 {
+  margin: 0;
+}
+
+.upload-progress-panel .el-progress-bar__outer {
+  background: #d7dee8;
+}
+
+.file-history-panel {
+  overflow: hidden;
+}
+
+.file-history-heading {
+  margin: 0;
+  padding: 16px;
+  border-bottom: 1px solid #d7dee8;
+  background: #f8fafc;
+}
+
+.file-history-panel .el-table {
+  min-width: 920px;
+}
+
+.file-history-panel .el-empty {
+  min-height: 240px;
+}
+
+.contract-files-loading .table-skeleton {
+  min-height: 260px;
+}
+
 .table-skeleton {
   padding: 24px;
 }
@@ -677,7 +836,8 @@ select {
   .filter-panel,
   .detail-grid,
   .settings-grid,
-  .form-row {
+  .form-row,
+  .contract-files-layout {
     grid-template-columns: 1fr;
   }
 

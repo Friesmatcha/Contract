@@ -4,7 +4,12 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from backend.app.config import get_settings
-from backend.app.modules.contracts.models import Contract, ContractAccessGrant
+from backend.app.modules.contracts.models import (
+    Contract,
+    ContractAccessGrant,
+    ContractFile,
+    FileObject,
+)
 from backend.app.modules.identity.models import (
     AuthOneTimeToken,
     AuthRateLimit,
@@ -39,6 +44,8 @@ _registered_models = (
     IdempotencyRecord,
     Contract,
     ContractAccessGrant,
+    FileObject,
+    ContractFile,
 )
 
 

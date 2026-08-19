@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Edit, FolderRemove, Key, RefreshLeft } from '@element-plus/icons-vue'
+import { Download, Edit, FolderRemove, Key, RefreshLeft, Upload } from '@element-plus/icons-vue'
 import { computed, onMounted, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
@@ -68,6 +68,14 @@ function formatDate(value: string | null): string {
   return new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(
     new Date(value),
   )
+}
+
+function openFiles(): void {
+  void router.push(`/contracts/${contractId.value}/files`)
+}
+
+function openFile(fileId: string): void {
+  window.open(`/api/v1/files/${encodeURIComponent(fileId)}/download`, '_blank', 'noopener,noreferrer')
 }
 
 function setError(target: 'page' | 'action', error: unknown): void {
@@ -324,8 +332,15 @@ onMounted(() => {
           <div class="section-heading">
             <div>
               <h2>文件版本</h2>
-              <p>Phase 5 仅建立合同容器，文件上传在下一阶段开放。</p>
+              <p>安全文件版本与授权下载。</p>
             </div>
+            <ElButton
+              v-if="canWrite && contract.status === 'active'"
+              :icon="Upload"
+              @click="openFiles"
+            >
+              上传文件
+            </ElButton>
           </div>
           <ElEmpty
             v-if="contract.files.length === 0"
@@ -333,7 +348,8 @@ onMounted(() => {
           >
             <ElButton
               v-if="canWrite && contract.status === 'active'"
-              disabled
+              :icon="Upload"
+              @click="openFiles"
             >
               上传文件
             </ElButton>
@@ -347,6 +363,21 @@ onMounted(() => {
               prop="version_no"
               label="版本"
             />
+            <ElTableColumn
+              prop="original_name"
+              label="文件名"
+              show-overflow-tooltip
+            />
+            <ElTableColumn label="扫描状态">
+              <template #default="scope">
+                <ElTag
+                  v-if="scope.row.scan_status === 'clean'"
+                  type="success"
+                >
+                  扫描完成
+                </ElTag>
+              </template>
+            </ElTableColumn>
             <ElTableColumn label="状态">
               <template #default="scope">
                 <ElTag
@@ -355,6 +386,17 @@ onMounted(() => {
                 >
                   当前版本
                 </ElTag>
+              </template>
+            </ElTableColumn>
+            <ElTableColumn label="操作">
+              <template #default="scope">
+                <ElButton
+                  text
+                  :icon="Download"
+                  aria-label="下载文件"
+                  title="下载文件"
+                  @click="openFile(scope.row.id)"
+                />
               </template>
             </ElTableColumn>
           </ElTable>
