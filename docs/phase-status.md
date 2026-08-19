@@ -178,7 +178,7 @@
 - Regression: 后端全量 76 passed；前端 Unit/质量门禁和历史 Phase 3-5 + Phase 6 E2E 30 passed；未实现 Phase 7 解析/OCR 或后续审核/模型/报告功能。
 - Known Issues / Pending Decisions: Playwright 使用受控 API mock，真实浏览器到部署 API 联调仍属于部署 smoke；当前运行中的 API 容器未重启，ClamAV smoke 使用当前源码临时镜像完成；宿主机未暴露 ClamAV 3310 是 Compose 内部网络设计；pytest cache Windows 权限 warning 和 Vite chunk-size warning 非阻塞。Phase 6 不做文件物理清理，保留至后续契约范围。
 - Git branch / HEAD / status / diff summary: `main`；本 Phase 快照包含后端文件生命周期、Migration、测试、前端 CONTRACT-004、Phase 6 E2E 和本阶段账本；未包含 Secret、`.env`、原始合同或生成报告；完成快照后工作区应保持干净。
-- Commit / Push: 已获用户明确授权，将执行正常 Commit/Push；不执行 amend 或 force push。
+- Commit / Push: 已按用户授权执行正常 Commit/Push；不执行 amend 或 force push。
 - Next Phase and entry conditions: Phase 7 保持 `Not Started`；进入前需重新核对文档解析/OCR/Evidence 契约、解析库和金样数据，不在本 Phase 提前实现。
 
 ## Remaining Phases
