@@ -1,3 +1,4 @@
+import hashlib
 import os
 import tempfile
 from pathlib import Path, PurePosixPath
@@ -28,6 +29,26 @@ class LocalFileStore:
 
     def open(self, storage_key: str) -> BinaryIO:
         return self._path_for_key(storage_key).open("rb")
+
+    def put(self, source: BinaryIO, storage_key: str) -> tuple[int, str]:
+        target = self._path_for_key(storage_key)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        descriptor, filename = tempfile.mkstemp(dir=target.parent, prefix=".put-")
+        digest = hashlib.sha256()
+        size = 0
+        try:
+            with os.fdopen(descriptor, "w+b") as handle:
+                while chunk := source.read(1024 * 1024):
+                    size += len(chunk)
+                    digest.update(chunk)
+                    handle.write(chunk)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(filename, target)
+        except Exception:
+            Path(filename).unlink(missing_ok=True)
+            raise
+        return size, digest.hexdigest()
 
     def exists(self, storage_key: str) -> bool:
         return self._path_for_key(storage_key).is_file()

@@ -837,17 +837,33 @@ Success `200 OK`：二进制流，设置正确 `Content-Type`, `Content-Length`,
 
 `GET /api/v1/documents/{document_version_id}/pages/{page_no}`。权限：能查看所属合同的用户。
 
-Path：`document_version_id` UUID，`page_no` 从 1 开始。Query：`include_blocks` boolean，默认 true。
+Path：`document_version_id` UUID，`page_no` 从 1 开始，仅适用于 PDF 和图片的物理页。Query：`include_blocks` boolean，默认 true。
 
 Request Example：`GET /api/v1/documents/{id}/pages/3?include_blocks=true`
 
 Success `200 OK`：
 
 ```json
-{ "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "page_no": 3, "text": "...", "image_file_id": "bb9faea0-d5cc-4501-9012-09a44b8204de", "ocr_status": "completed", "ocr_confidence": 0.93, "blocks": [{ "id": "48b75611-80fd-49b2-a511-42ea168d66b8", "order_no": 1, "block_type": "paragraph", "text": "乙方应承担..." }] }
+{ "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "document_kind": "pdf", "page_no": 3, "page_count": 18, "width": 612, "height": 792, "text": "...", "image_file_id": "bb9faea0-d5cc-4501-9012-09a44b8204de", "ocr_status": "completed", "ocr_confidence": 0.93, "error_code": null, "error_message": null, "blocks": [{ "id": "48b75611-80fd-49b2-a511-42ea168d66b8", "order_no": 1, "block_type": "paragraph", "paragraph_no": null, "table_path": null, "text": "乙方应承担...", "bbox": null, "source_spans": [] }] }
 ```
 
-主要错误：`404 DOCUMENT_OR_PAGE_NOT_FOUND`、`409 DOCUMENT_NOT_READY`。DOCX 没有可靠物理页时，前端应依据结果中的 `docx_paragraph`/`docx_table_cell` 定位，不调用虚构页码。
+主要错误：`404 DOCUMENT_OR_PAGE_NOT_FOUND`、`409 DOCUMENT_NOT_READY`。DOCX 没有物理页，不能调用此接口。
+
+### 9.10 获取 DOCX 逻辑块
+
+`GET /api/v1/documents/{document_version_id}/blocks`。权限：能查看所属合同的用户。
+
+Path：`document_version_id` UUID。Query：`include_source_spans` boolean，默认 true。该接口返回文档的全部逻辑块，按原始顺序排列；DOCX 块使用 `docx_paragraph` 或 `docx_table_cell` 定位，不返回虚构页码。PDF/图片也可使用该接口读取其已解析块，但页面跳转必须使用 9.9。
+
+Request Example：`GET /api/v1/documents/{id}/blocks?include_source_spans=true`
+
+Success `200 OK`：
+
+```json
+{ "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "document_kind": "docx", "page_count": 0, "blocks": [{ "id": "48b75611-80fd-49b2-a511-42ea168d66b8", "order_no": 1, "block_type": "paragraph", "page_no": null, "paragraph_no": 4, "table_path": null, "text": "乙方应承担...", "bbox": null, "source_spans": [{ "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "kind": "docx_paragraph", "page_no": null, "paragraph_no": 4, "table_path": null, "start_offset": 0, "end_offset": 7, "bbox": null, "quote": "乙方应承担..." }] }] }
+```
+
+主要错误：`404 DOCUMENT_NOT_FOUND`、`409 DOCUMENT_NOT_READY`。
 
 ## 10. Review Task and Result APIs
 

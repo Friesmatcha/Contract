@@ -723,7 +723,7 @@ frontend/src/features/documents/preview/
 
 ### API Contract
 
-- 9.9 获取文档页面/逻辑块。
+- 9.9 获取 PDF/图片物理页面；9.10 获取 DOCX 逻辑块。
 - 解析/OCR 为内部边界，不新增浏览器供应商接口。
 
 ### 数据库变更

@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-19`
 - Branch: `main`
-- Verification baseline: `d9e4415` (`feat(contracts): add contract catalog and viewer access`).
-- Working tree at verification start: clean; Phase 5 was already published at this baseline and Phase 6 verification started with only the new Phase 6 implementation changes afterward.
-- Current boundary: Phase 0 through Phase 6 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 7 remains `Not Started`.
+- Verification baseline: `5687770` (`docs(phase): record Phase 6 snapshot`).
+- Working tree at verification start: clean at the published Phase 6 baseline; Phase 7 implementation and verification changes remain uncommitted in the working tree.
+- Current boundary: Phase 0 through Phase 7 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 8A/8B and later phases remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -181,9 +181,28 @@
 - Commit / Push: 已按用户授权执行正常 Commit/Push；不执行 amend 或 force push。
 - Next Phase and entry conditions: Phase 7 保持 `Not Started`；进入前需重新核对文档解析/OCR/Evidence 契约、解析库和金样数据，不在本 Phase 提前实现。
 
+## Phase 7: Document Parsing, OCR and Evidence
+
+- Status: `Completed`。
+- Completed at: `2026-08-19`。
+- Current completion boundary: DOCX 保留段落、标题、表格单元格和原始顺序，以逻辑块/字符区间定位；文本 PDF 保存物理页、文本块和渲染页图；扫描 PDF/PNG/JPEG 逐页执行 OCR，保存 bbox、置信度、空白/低置信度/失败状态。解析结果按文件、解析器版本、OCR 阈值和组织页数上限生成 fingerprint，并复用成功结果。
+- Explicitly out of scope: 千问、分类/要素抽取、风险判断、条款比对、审核任务编排、报告和物理文件清理。
+- Entry review: 已核对 `docs/development-plan.md` Phase 7 范围/依赖/验收标准/Pending Decisions、`docs/api-contract.md` 9.9-9.10、`docs/requirements.md` FR-D、`docs/architecture.md` 文档/OCR/Evidence/安全/异步章节，以及 `docs/ui/README.md`、`frontend-prd.md`、`design-system.md` 和 CONTRACT-005 Stitch 原型；UI-P09 已关闭，P-04/P-05/P-07 不阻塞本 Phase。
+- Changes: 新增 `backend/app/modules/documents/` 的解析模型、服务、Schema 和只读 API；新增 `backend/app/integrations/ocr/` 的 PaddleOCR adapter；扩展 `LocalFileStore.put` 用于安全页图落盘；接入应用路由、Alembic model registry、DOCX/PDF/图片金样和 PostgreSQL 集成测试；新增 `frontend/src/pages/documents/`、API/types、CONTRACT-005 路由/样式、Vitest 和 Phase 7 Playwright。
+- API Contract / OpenAPI: 先更新并 Review 9.9 为 PDF/图片物理页、9.10 为 DOCX/全量逻辑块；实现 `include_blocks`、`include_source_spans`、SourceSpan、404/409 错误语义和 viewer/support tenant authorization；集成测试断言两条 OpenAPI 路径投影存在。物理页不存在/越权返回 `DOCUMENT_OR_PAGE_NOT_FOUND`，逻辑块不存在/越权返回 `DOCUMENT_NOT_FOUND`。
+- ORM / Migration: 新增 `backend/migrations/versions/20260819_0008_phase7_documents.py`，创建 `document_versions`、`document_pages`、`document_blocks`、`source_spans`，包含解析 fingerprint、页/块顺序、哈希/状态/置信度/证据目标 CHECK、组织复合外键和索引。独立 PostgreSQL 数据库 `contract_phase7_migration` 完成 `upgrade head -> downgrade -1 -> upgrade head`，最终 revision `20260819_0008 (head)`；默认 `contract_test` 未修改。
+- Frontend / UI Page IDs: `CONTRACT-005` `/documents/:documentVersionId` 按 PRD/design-system/Stitch 实现 PDF/图片页码、页图/文本/证据上下文、DOCX 逻辑块、OCR 状态、loading/empty/error/forbidden/conflict/retry 和无物理页状态；Playwright 覆盖 Chromium 1440px/1280px。
+- Tests: `$env:TEST_DATABASE_URL=...contract_phase7_regression; .venv\Scripts\python.exe -m pytest backend/tests/golden/documents backend/tests/integration/documents -q` -> 10 passed，1 个 Windows pytest cache permission warning；最终独立库 `$env:TEST_DATABASE_URL=...contract_phase7_final; .venv\Scripts\python.exe -m pytest backend/tests -q` -> 86 passed，同一 warning；`.venv\Scripts\python.exe -m compileall -q backend`、`ruff check backend`、`mypy backend/app` -> passed；`npm --prefix frontend run test -- document-preview` -> 3 passed；Vitest -> 11 files/33 tests passed；`npm --prefix frontend run lint`、`typecheck`、`build` -> passed，build 保留 Vite chunk-size warning；`npm --prefix frontend run e2e` -> Chromium 1440px/1280px 的 32 个断言均显示 passed，命令在 Windows Vite 子进程收尾时未退出并按既有问题手动中断；PaddleOCR 3.7.0 + PaddlePaddle 3.3.1 CPU model initialization 和空白 PNG `recognize()` -> `lines 0`；`git diff --check` -> passed。
+- Review / Re-review: 完成契约、OpenAPI、tenant/RBAC、viewer/support 只读边界、复合外键、解析幂等/fingerprint、page limit、OCR failure/low confidence/blank handling、文件页图清理、事务原子性、bbox 兼容、Migration downgrade 和前后端映射 review；修复 page/block flush 顺序、PaddleOCR 3 bbox/Windows cache/oneDNN 兼容、超页拒绝、失败事务残留、物理页 404 错误码和 DOCX fallback。未发现当前 Phase 阻塞项。
+- Regression: 最终后端全量 86 passed；Phase 7 定向 10 passed；前端 Unit/质量门禁 33 passed；Phase 3-6 历史 E2E 与 Phase 7 页面在两种桌面 viewport 的 32 个断言通过；未实现 Phase 8A/8B、审核/模型/报告功能。
+- Known Issues / Pending Decisions: 默认 `contract_test` 保留旧草稿 migration 污染，未修改；pytest cache Windows permission warning 和 Vite chunk-size warning 非阻塞；Playwright 断言通过但 Windows 下 Vite 子进程收尾不退出；`alembic check` 仍报告 Phase 0-6 已有的时间类型、`file_objects.size_bytes`、组织唯一约束和 support FK ORM/Migration 漂移，未修改已发布 migration；PaddleOCR 首次运行需要可写模型缓存和模型源/预热模型，普通自动化测试使用 Fake OCR；无 Phase 7 阻塞 Pending Decision，P-07 仍留至 Phase 9A。
+- Git branch / HEAD / status / diff summary: `main` / `5687770`；工作区保留本 Phase 未提交修改，包含文档契约/规范、后端解析/OCR/模型/Migration/测试、前端 CONTRACT-005/API/Vitest/Playwright；未包含 Secret、`.env`、原始合同、模型缓存或生成报告；用户已有 Phase 7 修改未被覆盖。
+- Commit / Push: 未执行 Commit、Push、amend 或 force push，遵守用户约束。
+- Next Phase and entry conditions: Phase 8A/8B 保持 `Not Started`；进入前按 `docs/development-plan.md` 重新 Review P-04/P-05、规则/模板版本契约和并行 Migration merge 计划。
+
 ## Remaining Phases
 
-Phase 7-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 8A、Phase 8B 及 Phase 9A-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

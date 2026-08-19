@@ -270,6 +270,56 @@ export interface ContractAccessGrant {
   access_level: 'read'
 }
 
+export type DocumentKind = 'docx' | 'pdf' | 'image'
+export type SourceKind = 'pdf_page' | 'image_page' | 'docx_paragraph' | 'docx_table_cell'
+
+export interface SourceSpan {
+  document_version_id: string
+  kind: SourceKind
+  page_no: number | null
+  paragraph_no: number | null
+  table_path: string | null
+  start_offset: number
+  end_offset: number
+  bbox: { x: number; y: number; width: number; height: number } | null
+  quote: string
+}
+
+export interface DocumentBlock {
+  id: string
+  order_no: number
+  block_type: string
+  page_no: number | null
+  paragraph_no: number | null
+  table_path: string | null
+  text: string
+  bbox: { x: number; y: number; width: number; height: number } | null
+  source_spans: SourceSpan[]
+}
+
+export interface DocumentPageResponse {
+  document_version_id: string
+  document_kind: DocumentKind
+  page_no: number
+  page_count: number
+  width: number | null
+  height: number | null
+  text: string
+  image_file_id: string | null
+  ocr_status: string
+  ocr_confidence: number | null
+  error_code: string | null
+  error_message: string | null
+  blocks: DocumentBlock[]
+}
+
+export interface DocumentBlocksResponse {
+  document_version_id: string
+  document_kind: DocumentKind
+  page_count: number
+  blocks: DocumentBlock[]
+}
+
 export interface PlatformModelConfiguration {
   provider: string
   model: string

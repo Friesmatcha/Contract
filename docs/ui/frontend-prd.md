@@ -287,7 +287,7 @@ Recommended UI Decision：将“规则”和“条款模板”归入“知识配
 | CONTRACT-002 | `POST /api/v1/contracts` |
 | CONTRACT-003 | `GET /api/v1/contracts/{contract_id}`; `PATCH /api/v1/contracts/{contract_id}`; `POST /api/v1/contracts/{contract_id}/archive`; `POST /api/v1/contracts/{contract_id}/restore`; `PUT /api/v1/contracts/{contract_id}/access-grants/{user_id}`; `DELETE /api/v1/contracts/{contract_id}/access-grants/{user_id}` |
 | CONTRACT-004 | `GET /api/v1/contracts/{contract_id}`; `POST /api/v1/contracts/{contract_id}/files`; `GET /api/v1/files/{file_id}/download` |
-| CONTRACT-005 | `GET /api/v1/documents/{document_version_id}/pages/{page_no}`; `GET /api/v1/files/{file_id}/download` |
+| CONTRACT-005 | `GET /api/v1/documents/{document_version_id}/pages/{page_no}`; `GET /api/v1/documents/{document_version_id}/blocks`; `GET /api/v1/files/{file_id}/download` |
 | REVIEW-001 | `GET /api/v1/contracts/{contract_id}`; `POST /api/v1/contracts/{contract_id}/reviews` |
 | REVIEW-002 | `GET /api/v1/review-tasks/{review_task_id}`; `POST /api/v1/review-tasks/{review_task_id}/retry` |
 | REVIEW-003 | `GET /api/v1/review-tasks/{review_task_id}/results`; `PATCH /api/v1/contract-classifications/{classification_id}`; `PATCH /api/v1/extracted-fields/{field_id}`; `PATCH /api/v1/risk-findings/{finding_id}`; `PATCH /api/v1/clause-comparisons/{comparison_id}`; `POST /api/v1/review-tasks/{review_task_id}/complete`; `POST /api/v1/feedback`; `POST /api/v1/review-tasks/{review_task_id}/reports` |
@@ -1769,7 +1769,7 @@ N/A。
 - Related Requirements：FR-D02、FR-D03、FR-D04、可解释性 8.1。
 - Related APIs：`GET /documents/{document_version_id}/pages/{page_no}`；Source Locator 5.1。
 - Related Phase：Phase 7、Phase 9C-12。
-- Pending gap：契约要求 DOCX 按段落/表格定位，但当前浏览器 API 只明确了带 `page_no` 的 path；在 Phase 7 前需明确 DOCX 逻辑块的读取方式，UI 不虚构调用。
+- DOCX 逻辑块读取已由 API Contract 9.10 明确；页面不填充虚构页码，使用段落号、表格路径和字符区间展示定位。
 
 ### REVIEW-001 Create Review / 创建审核
 
@@ -3490,7 +3490,7 @@ Prototype Frame (Page ID)
 | UI-P06 | Review `archived` 来源与恢复 | 等待 P-07；只读展示，不创建 archive/restore/cancel 控件 | Phase 9A |
 | UI-P07 | 密码策略和 token TTL | 已采用 API Contract 3.1：密码 12-128 字符、重置 Token 30 分钟、邀请 Token 7 天 | Closed 2026-08-18; boundary tests required |
 | UI-P08 | 合同已有 viewer 授权如何读取 | 当前没有 grant list/contract grant summary；需要先补契约或明确嵌入字段 | Phase 5 UI completeness |
-| UI-P09 | DOCX 逻辑块如何通过浏览器 API 读取 | 当前 page path 需要 `page_no`；必须在 Phase 7 前明确 | Phase 7 |
+| UI-P09 | DOCX 逻辑块如何通过浏览器 API 读取 | 已采用 API Contract 9.10 `GET /documents/{document_version_id}/blocks`；物理页仍使用 9.9 | Closed 2026-08-19 |
 | UI-P10 | 完整修订历史如何读取 | API 保证修订事实但没有独立读取接口；先不设计完整 history feed | Phase 12 UI completeness |
 | UI-P11 | 报告历史列表来源 | 当前无报告列表 API；不实现前端假列表 | Phase 13 UI completeness |
 | UI-P12 | 邀请接受如何预判新用户/已有用户 | 无 invitation preflight API；先采用提交后字段反馈，或先更新契约 | Phase 2 UX |

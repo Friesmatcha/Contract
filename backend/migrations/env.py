@@ -10,6 +10,12 @@ from backend.app.modules.contracts.models import (
     ContractFile,
     FileObject,
 )
+from backend.app.modules.documents.models import (
+    DocumentBlock,
+    DocumentPage,
+    DocumentVersion,
+    SourceSpan,
+)
 from backend.app.modules.identity.models import (
     AuthOneTimeToken,
     AuthRateLimit,
@@ -46,6 +52,10 @@ _registered_models = (
     ContractAccessGrant,
     FileObject,
     ContractFile,
+    DocumentVersion,
+    DocumentPage,
+    DocumentBlock,
+    SourceSpan,
 )
 
 

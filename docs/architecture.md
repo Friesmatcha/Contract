@@ -297,7 +297,7 @@ erDiagram
 | 认证 | `POST /auth/login`, `POST /auth/logout`, `GET /auth/session`, `POST /auth/password-reset/*` | 登录响应不返回密码信息或会话令牌 JSON |
 | 组织成员 | `GET/POST /organizations/{id}/members`, `PATCH /members/{id}` | 组织管理员不能授予平台管理员 |
 | 合同 | `POST /contracts`, `GET /contracts`, `GET/PATCH /contracts/{id}`, `POST /contracts/{id}/archive` | 删除和归档使用明确动作，避免含混的物理 DELETE |
-| 文件 | `POST /contracts/{id}/files`, `GET /files/{id}/download`, `GET /documents/{id}/pages/{page_no}` | 上传使用 multipart；下载每次重新授权 |
+| 文件与文档 | `POST /contracts/{id}/files`, `GET /files/{id}/download`, `GET /documents/{id}/pages/{page_no}`, `GET /documents/{id}/blocks` | 上传使用 multipart；下载和文档预览每次重新授权；DOCX 使用逻辑块定位 |
 | 审核任务 | `POST /contracts/{id}/reviews`, `GET /review-tasks/{id}`, `POST /review-tasks/{id}/retry`, `POST /review-tasks/{id}/complete` | 创建成功返回 `202 Accepted` 与任务 ID |
 | 审核结果 | `GET /review-tasks/{id}/results`, `PATCH /extracted-fields/{id}`, `PATCH /risk-findings/{id}`, `PATCH /clause-comparisons/{id}` | PATCH 必须携带当前 `version`，冲突返回 409 |
 | 风险规则 | `GET/POST /risk-rule-bundles`, `POST /risk-rule-bundles/{id}/versions`, `POST /risk-rule-bundle-versions/{id}/publish` | 发布版本不可编辑 |
