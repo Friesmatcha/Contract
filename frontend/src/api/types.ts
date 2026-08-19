@@ -180,6 +180,70 @@ export interface CreateSupportAccessGrantRequest {
   expires_at: string
 }
 
+export type ContractType = 'purchase' | 'sales' | 'nda' | 'outsourcing' | 'employment' | 'other'
+
+export type ContractStatus = 'active' | 'archived'
+
+export interface ContractFileSummary {
+  id: string
+  version_no: number
+  is_current: boolean
+}
+
+export interface LatestReviewSummary {
+  id: string
+  status: string
+}
+
+export interface Contract {
+  id: string
+  display_no: string
+  title: string
+  declared_type: ContractType | null
+  status: ContractStatus
+  owner_id: string
+  current_file: ContractFileSummary | null
+  files: ContractFileSummary[]
+  latest_review: LatestReviewSummary | null
+  created_at: string
+  updated_at: string
+  version: number
+}
+
+export interface ContractListQuery {
+  q?: string
+  status?: ContractStatus
+  declared_type?: ContractType
+  owner_id?: string
+  sort?: 'created_at' | 'updated_at' | 'title'
+  direction?: 'asc' | 'desc'
+  limit?: number
+  cursor?: string
+}
+
+export interface CreateContractRequest {
+  title: string
+  declared_type?: ContractType
+}
+
+export interface UpdateContractRequest {
+  title?: string
+  declared_type?: ContractType | null
+  version: number
+}
+
+export interface ContractStatusResponse {
+  id: string
+  status: ContractStatus
+  archived_at: string | null
+}
+
+export interface ContractAccessGrant {
+  contract_id: string
+  user_id: string
+  access_level: 'read'
+}
+
 export interface PlatformModelConfiguration {
   provider: string
   model: string

@@ -1,0 +1,1 @@
+"""Contract catalog integration tests."""

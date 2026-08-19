@@ -143,9 +143,28 @@
 - Commit / Push: 未执行 Commit 或 Push，等待用户明确授权；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 5 保持 `Not Started`；进入前核对合同目录、viewer 授权和归档语义的 API Contract 与 P-07，关闭其当前 Phase 决策后再开始。
 
+## Phase 5: Contract Catalog and Viewer Access
+
+- Status: `Completed`。
+- Completed at: `2026-08-19`。
+- Current completion boundary: 组织管理员和审核员可创建、列表筛选、查看、编辑、归档和恢复本组织合同元数据；viewer 只能读取显式授权合同；组织管理员可授予/撤销同组织有效 viewer 的 `read` 权限。合同创建支持服务端展示编号、幂等和乐观版本；列表支持游标、搜索、状态、类型和负责人筛选；归档合同只读，恢复仅组织管理员可执行。
+- Explicitly out of scope: 文件上传、文件下载、文档解析、OCR、审核任务、active ReviewTask 归档 guard、模型、风险、报告和物理删除。
+- Entry review: 已核对 `docs/development-plan.md` Phase 5 范围、依赖、验收标准和 Pending Decisions，以及 `docs/api-contract.md` 8.14-8.15、9.1-9.6；P-07 判断为本 Phase 非阻塞，按计划只实现合同自身归档语义，active ReviewTask guard 留至 Phase 9A。
+- Changes: 新增合同 Model/Schema/Service/API、租户复合外键、合同展示编号序列、合同查看授权和审计；新增 `20260819_0006_phase5_contract_catalog.py`；接入应用路由/CORS header/测试清理；新增合同 API Client、类型、列表/创建/详情页面、应用壳导航和 Phase 5 Playwright。
+- API Contract / OpenAPI: 未修改人工契约；8.14-8.15、9.1-9.6 的方法、路径、字段、权限、错误和状态码按契约实现；集成测试断言八条 Phase 5 OpenAPI 路径投影存在。支持授权通过既有 `X-Support-Access-Grant` 只读 JSON 边界访问合同列表/详情，并沿用逐次访问审计。
+- ORM / Migration: 新增 `contracts`、`contract_access_grants`，包含组织复合外键、viewer 授权唯一约束、状态/类型/标题/版本约束和列表索引。独立 PostgreSQL 数据库 `contract_phase5_migration` 完成 `upgrade head -> downgrade -1 -> upgrade head`，最终 revision `20260819_0006 (head)`；默认 `contract_test` 未修改。
+- Frontend / UI Page IDs: `CONTRACT-001`、`CONTRACT-002`、`CONTRACT-003` 按 frontend PRD、design-system 和 Stitch 原型实现；覆盖 loading、empty、error、forbidden、conflict、archived/read-only、retry、归档/恢复确认和 viewer 授权操作；补充 `owner_id` 筛选，未伪造授权列表事实。
+- Tests: `$env:TEST_DATABASE_URL=postgresql+psycopg://contract:replace-me@127.0.0.1:5432/contract_phase5_test; .venv\Scripts\python.exe -m pytest backend/tests/integration/contracts -q` -> 4 passed，pytest cache permission warning；同库 `.venv\Scripts\python.exe -m pytest backend/tests -q` -> 70 passed，同一 warning；`.venv\Scripts\python.exe -m ruff check backend` -> passed；`.venv\Scripts\python.exe -m mypy backend/app` -> passed；`npm --prefix frontend run test -- --run` -> 9 files/27 tests passed；`npm --prefix frontend run lint`、`typecheck`、`build` -> passed，build 保留既有 Vite chunk-size warning；独立 Vite 服务复用下 `npx playwright test phase5.spec.ts --workers=1` -> 4 passed（Chromium 1440px/1280px）；`git diff --check` -> passed。
+- Review / Re-review: 完成最终 diff/security review，检查 API Contract/OpenAPI、tenant scope、复合租户约束、viewer 越权隐藏、支持只读边界、CSRF/RBAC、幂等、乐观锁、归档状态、审计、Migration 回滚和前后端调用映射；修复非法游标可能返回 500 的边界并补充 422 回归，补齐前端负责人筛选。未发现当前 Phase 阻塞项。
+- Regression: 后端全量、合同集成、前端全量 Unit/质量门禁、OpenAPI 路径断言和 Phase 5 E2E 均在最终修改后重跑通过；未修改 Phase 6/7 或后续审核/模型/报告功能。
+- Known Issues / Pending Decisions: Playwright 使用受控 API mock，真实浏览器到部署 API 的联调仍属于部署 smoke；pytest 缓存目录存在 Windows 权限 warning；Vite chunk-size warning 非阻塞；默认 `contract_test` 保留旧草稿 migration 状态，后续验证继续使用干净专用 PostgreSQL 库；P-07 仍按计划在 Phase 9A 关闭，不阻塞本 Phase。
+- Git branch / HEAD / status / diff summary: `main` / `5202463`；工作区保留本 Phase 未提交修改，包含后端合同模块/Migration/测试、前端合同页面/API/测试/E2E、路由导航和测试 fixture 更新；未包含 Secret、`.env`、原始合同或生成报告。
+- Commit / Push: 未执行 Commit、Push、amend 或 force push，遵守用户约束。
+- Next Phase and entry conditions: Phase 6 进入前需重新核对 Secure File Lifecycle 范围和 API 9.7-9.8；本 Phase 不提供上传、下载或解析接口。
+
 ## Remaining Phases
 
-Phase 5-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 6-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

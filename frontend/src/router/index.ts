@@ -12,6 +12,9 @@ import SupportAccessPage from '@/pages/organization/SupportAccessPage.vue'
 import PlatformModelConfigurationPage from '@/pages/platform/PlatformModelConfigurationPage.vue'
 import PlatformOrganizationDetailPage from '@/pages/platform/PlatformOrganizationDetailPage.vue'
 import PlatformOrganizationsPage from '@/pages/platform/PlatformOrganizationsPage.vue'
+import ContractListPage from '@/pages/contracts/ContractListPage.vue'
+import CreateContractPage from '@/pages/contracts/CreateContractPage.vue'
+import ContractDetailPage from '@/pages/contracts/ContractDetailPage.vue'
 import { defaultLandingPath, loadSession, sessionState } from '@/features/auth/session'
 
 export const routes: RouteRecordRaw[] = [
@@ -43,6 +46,24 @@ export const routes: RouteRecordRaw[] = [
         name: 'platform-model-configuration',
         component: PlatformModelConfigurationPage,
         meta: { title: '模型配置' },
+      },
+      {
+        path: 'contracts',
+        name: 'contracts',
+        component: ContractListPage,
+        meta: { title: '合同目录' },
+      },
+      {
+        path: 'contracts/new',
+        name: 'contract-create',
+        component: CreateContractPage,
+        meta: { title: '创建合同' },
+      },
+      {
+        path: 'contracts/:contractId',
+        name: 'contract-detail',
+        component: ContractDetailPage,
+        meta: { title: '合同详情' },
       },
       {
         path: 'organizations/:organizationId/settings',

@@ -144,6 +144,12 @@ async function signOut(): Promise<void> {
               <span>支持授权</span>
             </ElMenuItem>
             <ElMenuItem
+              index="/contracts"
+            >
+              <ElIcon><FolderOpened /></ElIcon>
+              <span>合同目录</span>
+            </ElMenuItem>
+            <ElMenuItem
               index="/"
             >
               <ElIcon><FolderOpened /></ElIcon>
