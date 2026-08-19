@@ -16,8 +16,8 @@
 
 - Last updated: `2026-08-19`
 - Branch: `main`
-- Verification baseline: `5687770` (`docs(phase): record Phase 6 snapshot`).
-- Working tree at verification start: clean at the published Phase 6 baseline; Phase 7 implementation and verification changes remain uncommitted in the working tree.
+- Verification baseline: `5687770` (`docs(phase): record Phase 6 snapshot`); Phase 7 implementation snapshot: `b4c4f84` (`feat(documents): add parsing OCR and evidence mapping`).
+- Working tree at verification start: clean at the published Phase 6 baseline; Phase 7 implementation was committed only after its recorded verification and user authorization, with this ledger update remaining for the final status snapshot.
 - Current boundary: Phase 0 through Phase 7 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 8A/8B and later phases remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
@@ -196,8 +196,8 @@
 - Review / Re-review: 完成契约、OpenAPI、tenant/RBAC、viewer/support 只读边界、复合外键、解析幂等/fingerprint、page limit、OCR failure/low confidence/blank handling、文件页图清理、事务原子性、bbox 兼容、Migration downgrade 和前后端映射 review；修复 page/block flush 顺序、PaddleOCR 3 bbox/Windows cache/oneDNN 兼容、超页拒绝、失败事务残留、物理页 404 错误码和 DOCX fallback。未发现当前 Phase 阻塞项。
 - Regression: 最终后端全量 86 passed；Phase 7 定向 10 passed；前端 Unit/质量门禁 33 passed；Phase 3-6 历史 E2E 与 Phase 7 页面在两种桌面 viewport 的 32 个断言通过；未实现 Phase 8A/8B、审核/模型/报告功能。
 - Known Issues / Pending Decisions: 默认 `contract_test` 保留旧草稿 migration 污染，未修改；pytest cache Windows permission warning 和 Vite chunk-size warning 非阻塞；Playwright 断言通过但 Windows 下 Vite 子进程收尾不退出；`alembic check` 仍报告 Phase 0-6 已有的时间类型、`file_objects.size_bytes`、组织唯一约束和 support FK ORM/Migration 漂移，未修改已发布 migration；PaddleOCR 首次运行需要可写模型缓存和模型源/预热模型，普通自动化测试使用 Fake OCR；无 Phase 7 阻塞 Pending Decision，P-07 仍留至 Phase 9A。
-- Git branch / HEAD / status / diff summary: `main` / `5687770`；工作区保留本 Phase 未提交修改，包含文档契约/规范、后端解析/OCR/模型/Migration/测试、前端 CONTRACT-005/API/Vitest/Playwright；未包含 Secret、`.env`、原始合同、模型缓存或生成报告；用户已有 Phase 7 修改未被覆盖。
-- Commit / Push: 未执行 Commit、Push、amend 或 force push，遵守用户约束。
+- Git branch / HEAD / status / diff summary: `main` / `b4c4f84`；Phase 7 实现已形成 30 个文件、3007 insertions/12 deletions 的独立实现提交，本台账更新作为最终状态快照；未包含 Secret、`.env`、原始合同、模型缓存或生成报告，未覆盖用户已有修改。
+- Commit / Push: 用户已明确授权正常 Commit/Push；实现提交 `b4c4f84` 已创建，本台账快照提交后两笔提交一并推送；不执行 amend、force push 或历史重写。
 - Next Phase and entry conditions: Phase 8A/8B 保持 `Not Started`；进入前按 `docs/development-plan.md` 重新 Review P-04/P-05、规则/模板版本契约和并行 Migration merge 计划。
 
 ## Remaining Phases
