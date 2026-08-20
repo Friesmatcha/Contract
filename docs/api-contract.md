@@ -313,6 +313,7 @@ Success `200 OK`：
 
 ```json
 {
+  "source_span_id": "6f7c8d9e-0a1b-4c2d-8e3f-456789abcdef",
   "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1",
   "kind": "pdf_page",
   "page_no": 3,
@@ -383,7 +384,7 @@ Success `200 OK`：
 
 ### 5.5 Review Result
 
-审核结果由 `classification`、`extracted_fields`、`risk_findings`、`clause_comparisons`、`warnings` 和 `summary` 组成；所有人工修改保留 `model_value`、`current_value` 和修订历史。
+审核结果由 `classification`、`extracted_fields`、`risk_findings`、`clause_comparisons`、`warnings` 和 `summary` 组成；所有人工修改保留 `model_value`、`current_value` 和修订历史。结果中的 `evidence` 使用带 `source_span_id` 的 `Source Locator`，以支持原文证据跳转；缺失字段可以没有证据定位。
 
 ### 5.6 Money and extracted fields
 
@@ -982,8 +983,8 @@ Success `200 OK`：
 ```json
 {
   "review_task_id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5",
-  "classification": { "model_value": "purchase", "current_value": "purchase", "confidence": 0.96, "status": "detected", "evidence": [{ "kind": "pdf_page", "page_no": 1, "quote": "采购合同" }], "version": 1 },
-  "extracted_fields": [{ "id": "0a47b8d3-6df8-46c4-a5cb-4c277f7c1c2e", "field_key": "contract_amount", "model_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "current_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "status": "found", "confidence": 0.91, "evidence": [{ "kind": "pdf_page", "page_no": 2, "quote": "合同总价为含税人民币壹拾万元" }], "version": 1 }],
+  "classification": { "model_value": "purchase", "current_value": "purchase", "confidence": 0.96, "status": "detected", "evidence": [{ "source_span_id": "6f7c8d9e-0a1b-4c2d-8e3f-456789abcdef", "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "kind": "pdf_page", "page_no": 1, "quote": "采购合同" }], "version": 1 },
+  "extracted_fields": [{ "id": "0a47b8d3-6df8-46c4-a5cb-4c277f7c1c2e", "field_key": "contract_amount", "model_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "current_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "status": "detected", "confidence": 0.91, "evidence": [{ "source_span_id": "7f8e9a0b-1c2d-4e3f-9a45-6789abcdef01", "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "kind": "pdf_page", "page_no": 2, "quote": "合同总价为含税人民币壹拾万元" }], "version": 1 }],
   "risk_findings": [{ "id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "risk_type": "unlimited_liability", "severity": "high", "title": "责任范围不封顶", "description": "...", "basis": "责任条款未设置上限", "suggestion": "建议约定责任上限。", "confidence": 0.88, "source": "model", "status": "pending_review", "evidence": [{ "kind": "pdf_page", "page_no": 3, "quote": "乙方承担全部且无限的责任" }], "version": 1 }],
   "clause_comparisons": [{ "id": "f2b55477-b6a5-4f31-a5c5-bb58b5ca9138", "clause_key": "payment", "status": "deviated", "contract_text": "验收后付款", "difference_summary": "缺少付款期限", "severity": "medium", "suggestion": "补充付款期限。", "evidence": [{ "kind": "pdf_page", "page_no": 4, "quote": "验收后付款" }], "version": 1 }],
   "summary": { "risk_total": 1, "high": 1, "medium": 0, "low": 0, "warning_total": 1, "unresolved_count": 1 }
@@ -1008,7 +1009,7 @@ Success `200 OK`：返回分类及 `version=2`、`edited_by`、`edited_at`。
 
 `PATCH /api/v1/extracted-fields/{field_id}`。权限：`Org Admin | Reviewer`。
 
-Request Body：`current_value: object|null`, `status: found|not_found|needs_confirmation|confirmed|corrected`, `reason?: string`, `version: integer`。值必须符合该 `field_key` 的 JSON Schema。
+Request Body：`current_value: object|null`, `status: detected|not_found|needs_confirmation|confirmed|corrected`, `reason?: string`, `version: integer`。值必须符合该 `field_key` 的 JSON Schema。
 
 Request Example：`{ "current_value": { "amount": "120000.00", "currency": "CNY", "tax_included": true }, "status": "corrected", "reason": "补录附件金额", "version": 1 }`
 

@@ -27,7 +27,7 @@
 | 审核员范围 | 架构权限表一处写“本组织业务范围”，API 明确本组织全部合同 | 采用 API：审核员可查看和处理本组织全部合同 |
 | 模型配置 | 架构数据模型允许组织配置/覆盖，API 明确组织不得覆盖，模型名和密钥来自环境 | 采用 API；只保留平台非秘密运行参数配置 |
 | OpenAPI 定位 | 架构称 OpenAPI 为契约来源，API 文档称自身为唯一契约来源 | Markdown 契约先行；OpenAPI 是后端 Schema 生成的可执行投影，CI 校验二者一致 |
-| 抽取状态 | 公共 `result_status` 没有 `found`，但结果示例和字段修订接口使用 `found` | 在 Phase 9C 前确认并先修订 API 契约 |
+| 抽取状态 | 公共 `result_status` 已统一使用 `detected`；旧结果示例和字段修订接口曾使用 `found` | P-03 已关闭；按 API Contract 使用 `detected`，缺失值使用 `not_found|needs_confirmation` |
 | 组织上下文 | API Contract 2.2.1 已定义 `X-Organization-ID`、单组织自动选择、多组织 409 和 membership 校验；实现仍需在 Phase 3 组织接口中验证 | P-01 已关闭；按契约实现并测试 |
 | 默认版本选择 | 创建审核可省略规则/模板版本，但多规则集/多模板时默认选择规则未定义 | P-04/P-05 已关闭；以 API 11.4/12.4 的显式默认切换、数据库唯一约束和 10.1 的 409 配置错误为准 |
 | 报告恢复 | 需求要求报告失败后可重新生成，API 未完整定义报告状态和失败后的再次 POST 语义 | 在 Phase 13 前确认并修订契约 |
@@ -1108,7 +1108,7 @@ frontend/src/features/reviews/results/
 
 - 10.5 获取审核结果。
 - 10.5 的初始读取边界在本阶段建立；Phase 10 通过同一 DTO/路由补充风险和条款字段，不重复定义结果 API。
-- 不新增 Model Gateway 浏览器 API；`found`/`detected` 状态问题必须先完成契约修订。
+- 不新增 Model Gateway 浏览器 API；结果状态严格使用 API Contract 的 `detected|not_found|needs_confirmation|confirmed|corrected`。
 
 ### 数据库变更
 
@@ -1158,7 +1158,7 @@ feat(extraction): add classification and structured extraction
 
 ### 前置依赖
 
-- Phase 9A、9B、9C；Phase 8A/8B 已发布基线；确认 `found` 是否加入 `result_status` 并更新契约。
+- Phase 9A、9B、9C；Phase 8A/8B 已发布基线；P-03 已关闭，结果状态统一为 `detected` 及其余公共状态。
 
 ### 预计涉及模块
 
@@ -1183,7 +1183,7 @@ frontend/src/features/reviews/results/
 ### API Contract
 
 - 不新增浏览器接口；10.5 的风险/条款结果字段在此阶段接入已由 Phase 9C 建立的结果读取边界。
-- 处理前必须修复 `result_status` 与 `found` 不一致；不得重复定义 10.5 路由或另建结果 DTO。
+- 结果状态与公共 `result_status` 已一致；不得重复定义 10.5 路由或另建结果 DTO。
 
 ### 数据库变更
 
@@ -1309,7 +1309,7 @@ feat(warnings): add warning and notification workflow
 
 ### 前置依赖
 
-- Phase 11；`found` 状态已确认；完成命令的“必须人工项”判定规则可由契约测试定义。
+- Phase 11；`detected` 状态已确认；完成命令的“必须人工项”判定规则可由契约测试定义。
 
 ### 预计涉及模块
 
@@ -1955,7 +1955,7 @@ Stable Baseline
 | --- | --- | --- | --- |
 | P-01（已关闭） | 多组织用户如何选择当前组织？ | Phase 2，已决策 | 采用 API Contract 2.2.1：有组织路径时从资源建立 Tenant Context；无组织路径时使用 `X-Organization-ID`，服务端校验有效 membership；单组织可自动选择，多组织缺失 Header 返回 `409 ORGANIZATION_CONTEXT_REQUIRED`。 |
 | P-02（已关闭） | 平台创建组织等没有组织上下文的写接口，`Idempotency-Key` 如何确定作用域？ | Phase 1/3，已决策 | 组织级使用 `organization:<organization_id>`；平台级使用 `platform:<authenticated_user_id>`；均由服务端可信上下文生成，唯一性为 `(scope, idempotency_key)` |
-| P-03 | `result_status` 缺少 `found`，但 10.5 示例和 10.7 请求使用 `found` | Phase 9C，阻塞 | 将 `found` 正式加入字段状态枚举，或统一改为已有 `detected`；先改契约和测试样例 |
+| P-03（已关闭） | `result_status` 缺少 `found`，但 10.5 示例和 10.7 请求使用 `found` | Phase 9C，已决策 | 保留公共 `detected`；10.5 示例和 10.7 请求统一使用 `detected`，不新增并列状态。 |
 | P-04（已关闭） | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，已决策 | 每组织一个默认规则集；首个成功发布自动成为默认；后续由组织管理员通过 11.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`。 |
 | P-05（已关闭） | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，已决策 | 每组织+合同类型+规范化场景一个默认模板；缺省场景为 `standard`；首个成功发布自动成为默认；后续由组织管理员通过 12.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。 |
 | P-06 | 报告完整状态枚举、失败后再次生成、`REPORT_EXPIRED` 的时间条件和“重新生成”是否创建新记录未定义 | Phase 13，阻塞 | 定义 generating/ready/failed/expired 及再次 POST 的新记录/幂等行为 |
@@ -1965,6 +1965,13 @@ Stable Baseline
 | P-10（已关闭） | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B，已决策 | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；架构说明已同步 |
 | P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
+
+### Decision Record: P-03 Result Status Canonical Value（2026-08-20）
+
+- **Status**：Closed。
+- **Decision**：公共结果状态统一使用 `detected`；10.5 示例和 10.7 字段修订请求中的 `found` 改为 `detected`，不新增同义状态。
+- **Semantics**：模型识别到非空结果使用 `detected`；缺失值保存 JSON `null`，状态使用 `not_found` 或 `needs_confirmation`；人工确认/修订继续使用 `confirmed`/`corrected`。
+- **Contract update**：`docs/api-contract.md` 6.1、10.5 和 10.7 的语义已核对并同步；Phase 9C 以该状态集合实现。
 
 ### Decision Record: P-02 Idempotency Scope（2026-08-17）
 

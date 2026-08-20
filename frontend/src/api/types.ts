@@ -348,6 +348,7 @@ export type DocumentKind = 'docx' | 'pdf' | 'image'
 export type SourceKind = 'pdf_page' | 'image_page' | 'docx_paragraph' | 'docx_table_cell'
 
 export interface SourceSpan {
+  source_span_id: string
   document_version_id: string
   kind: SourceKind
   page_no: number | null
@@ -369,6 +370,64 @@ export interface DocumentBlock {
   text: string
   bbox: { x: number; y: number; width: number; height: number } | null
   source_spans: SourceSpan[]
+}
+
+export type ResultStatus =
+  | 'detected'
+  | 'not_found'
+  | 'needs_confirmation'
+  | 'confirmed'
+  | 'corrected'
+
+export type ContractCategory = 'purchase' | 'sales' | 'nda' | 'outsourcing' | 'employment' | 'other'
+
+export type ExtractedFieldKey =
+  | 'parties'
+  | 'signing_date'
+  | 'contract_amount'
+  | 'performance_period'
+  | 'dispute_resolution'
+  | 'payment_terms'
+  | 'auto_renewal'
+
+export interface SourceLocator {
+  source_span_id: string
+  document_version_id: string
+  kind: 'pdf_page' | 'image_page' | 'docx_paragraph' | 'docx_table_cell'
+  page_no: number | null
+  paragraph_no: number | null
+  table_path: string | null
+  start_offset: number
+  end_offset: number
+  bbox: { x: number; y: number; width: number; height: number } | null
+  quote: string
+}
+
+export interface ContractClassificationResult {
+  id: string
+  model_value: ContractCategory
+  current_value: ContractCategory
+  confidence: number
+  status: ResultStatus
+  evidence: SourceLocator[]
+  version: number
+}
+
+export interface ExtractedFieldResult {
+  id: string
+  field_key: ExtractedFieldKey
+  model_value: unknown | null
+  current_value: unknown | null
+  status: ResultStatus
+  confidence: number
+  evidence: SourceLocator[]
+  version: number
+}
+
+export interface ReviewResults {
+  review_task_id: string
+  classification: ContractClassificationResult
+  extracted_fields: ExtractedFieldResult[]
 }
 
 export interface DocumentPageResponse {

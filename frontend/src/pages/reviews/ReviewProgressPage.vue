@@ -344,11 +344,11 @@ onBeforeUnmount(() => {
       >
         <ElButton
           type="primary"
-          disabled
+          @click="router.push(`/reviews/${task.id}/results`)"
         >
           进入审核结果
         </ElButton>
-        <span class="form-note">结果与人工复核属于后续 Phase。</span>
+        <span class="form-note">当前页面仅展示分类、字段和证据，结果保持只读。</span>
       </div>
       <div
         v-else-if="isSettled"

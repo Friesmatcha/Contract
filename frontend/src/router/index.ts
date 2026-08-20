@@ -18,6 +18,7 @@ import ContractDetailPage from '@/pages/contracts/ContractDetailPage.vue'
 import ContractFilesPage from '@/pages/contracts/ContractFilesPage.vue'
 import ReviewCreatePage from '@/pages/reviews/ReviewCreatePage.vue'
 import ReviewProgressPage from '@/pages/reviews/ReviewProgressPage.vue'
+import ReviewResultsPage from '@/pages/reviews/ReviewResultsPage.vue'
 import DocumentPreviewPage from '@/pages/documents/DocumentPreviewPage.vue'
 import RiskRuleBundleListPage from '@/pages/risks/RiskRuleBundleListPage.vue'
 import RiskRuleBundleDetailPage from '@/pages/risks/RiskRuleBundleDetailPage.vue'
@@ -86,6 +87,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'review-create',
         component: ReviewCreatePage,
         meta: { title: '创建审核' },
+      },
+      {
+        path: 'reviews/:reviewTaskId/results',
+        name: 'review-results',
+        component: ReviewResultsPage,
+        meta: { title: '审核结果' },
       },
       {
         path: 'reviews/:reviewTaskId',

@@ -2983,7 +2983,7 @@ N/A。
 - `current_value=null` 必须结合 `status=not_found|needs_confirmation` 展示为明确业务状态，而不是空白或 `--`。
 - 金额使用 `{amount, currency, tax_included}` 的结构化展示，不将字符串金额转为浮点再展示。
 - 同时显示 model/current，修改后不隐藏机器原值。
-- `found` 与公共 `result_status` 的冲突受 P-03 约束，在其关闭前原型标注 TODO，不扩展枚举。
+- `detected` 是公共结果状态中的已识别值；不使用并列的 `found` 状态。缺失字段按 `not_found|needs_confirmation` 展示。
 
 ### 10.4 Clause Comparison Presentation
 
@@ -3490,7 +3490,7 @@ Prototype Frame (Page ID)
 | ID | Decision | Current recommendation | Blocking boundary |
 | --- | --- | --- | --- |
 | UI-P01 | 多组织用户如何选择当前组织 | 已采用 API Contract 2.2.1：`X-Organization-ID` 仅为选择提示，服务端校验 membership；单组织可自动选择，多组织缺失 Header 返回 409 | Closed 2026-08-18 |
-| UI-P02 | `found` 是否属于 `result_status` | 等待 P-03；原型标 TODO，不创建第三套状态 | Phase 9C |
+| UI-P02（已关闭） | `found` 是否属于 `result_status` | 不加入 `found`；公共结果状态统一使用 `detected`，原型中的 TODO 以该语义实现 | Closed 2026-08-20 |
 | UI-P03 | 规则集默认版本选择 | 已采用 P-04：每组织一个默认规则集，首个发布自动默认，后续显式切换，无默认时 409 | Closed 2026-08-19 |
 | UI-P04 | 模板默认版本/业务场景选择 | 已采用 P-05：按组织+合同类型+规范化场景精确选择默认，无匹配时 409 | Closed 2026-08-19 |
 | UI-P05 | 报告完整状态、失败重试、过期和再次生成 | 等待 P-06；只设计 generating/ready 的确认部分和通用失败容器 | Phase 13 |

@@ -32,6 +32,12 @@ from backend.app.modules.identity.models import (
     User,
 )
 from backend.app.modules.reviews.models import ModelCall, ReviewStageRun, ReviewTask
+from backend.app.modules.reviews.results.models import (
+    ContractClassification,
+    ContractClassificationEvidence,
+    ExtractedField,
+    ExtractedFieldEvidence,
+)
 from backend.app.modules.risks.rules.models import RiskRule, RiskRuleBundle, RiskRuleBundleVersion
 from backend.app.shared.audit import AuditLog
 from backend.app.shared.db import Base
@@ -72,6 +78,10 @@ _registered_models = (
     ReviewTask,
     ReviewStageRun,
     ModelCall,
+    ContractClassification,
+    ContractClassificationEvidence,
+    ExtractedField,
+    ExtractedFieldEvidence,
 )
 
 

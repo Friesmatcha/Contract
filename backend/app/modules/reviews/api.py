@@ -1,4 +1,4 @@
-from typing import Annotated, cast
+from typing import Annotated, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Header, Query, Request, status
@@ -14,6 +14,8 @@ from backend.app.modules.identity.organization import (
 )
 from backend.app.modules.identity.support_access import authorize_support_access
 from backend.app.modules.reviews.models import ReviewTask
+from backend.app.modules.reviews.results.schemas import ReviewResultsResponse
+from backend.app.modules.reviews.results.service import get_review_results
 from backend.app.modules.reviews.schemas import (
     CreateReviewTaskRequest,
     RetryReviewTaskRequest,
@@ -175,6 +177,58 @@ def get_review_task_endpoint(
         include_stage_runs=include_stage_runs,
     )
     return ReviewTaskResponse.model_validate(payload)
+
+
+@router.get(
+    "/{review_task_id}/results",
+    response_model=ReviewResultsResponse,
+    responses={
+        401: {"model": ErrorResponse},
+        403: {"model": ErrorResponse},
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+    },
+)
+def get_review_results_endpoint(
+    review_task_id: UUID,
+    database: DatabaseSession,
+    authenticated: Authenticated,
+    support_grant_id: Annotated[
+        UUID | None, Header(alias="X-Support-Access-Grant")
+    ] = None,
+    _risk_severity: Annotated[
+        Literal["high", "medium", "low"] | None, Query(alias="risk_severity")
+    ] = None,
+    _risk_status: Annotated[str | None, Query(alias="risk_status")] = None,
+    _clause_status: Annotated[str | None, Query(alias="clause_status")] = None,
+    include_evidence: Annotated[bool, Query()] = True,
+) -> ReviewResultsResponse:
+    if support_grant_id is not None:
+        require_platform_admin(
+            authenticated.user.id, authenticated.user.is_platform_admin
+        )
+        grant = authorize_support_access(
+            database,
+            grant_id=support_grant_id,
+            platform_admin_user_id=authenticated.user.id,
+            request_id="review-results-read",
+        )
+        resolved_organization_id = grant.organization_id
+        viewer_user_id = None
+    else:
+        tenant, role = _task_tenant(
+            database, task_id=review_task_id, user_id=authenticated.user.id
+        )
+        resolved_organization_id = tenant.organization_id
+        viewer_user_id = authenticated.user.id if role == "viewer" else None
+    payload = get_review_results(
+        database,
+        organization_id=resolved_organization_id,
+        task_id=review_task_id,
+        viewer_user_id=viewer_user_id,
+        include_evidence=include_evidence,
+    )
+    return ReviewResultsResponse.model_validate(payload)
 
 
 @router.post(

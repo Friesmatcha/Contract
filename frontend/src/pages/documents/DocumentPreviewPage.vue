@@ -21,6 +21,7 @@ const pageFromRoute = computed(() => {
   const value = Number(route.query.page ?? 1)
   return Number.isInteger(value) && value > 0 ? value : 1
 })
+const selectedSourceSpanId = computed(() => String(route.query.source_span_id || ''))
 
 const loading = ref(true)
 const errorMessage = ref('')
@@ -89,6 +90,11 @@ function sourceLabel(block: DocumentBlock): string {
   if (block.table_path) return block.table_path
   if (block.paragraph_no !== null) return `段落 ${block.paragraph_no}`
   return block.page_no ? `第 ${block.page_no} 页` : '逻辑块'
+}
+
+function blockIsHighlighted(block: DocumentBlock): boolean {
+  if (!selectedSourceSpanId.value) return block.source_spans.length > 0
+  return block.source_spans.some((span) => span.source_span_id === selectedSourceSpanId.value)
 }
 
 function ocrLabel(status: string): string {
@@ -193,7 +199,7 @@ watch(pageFromRoute, (value) => {
               v-for="block in blocks"
               :key="block.id"
               class="document-block"
-              :class="{ 'document-block-highlighted': block.source_spans.length > 0 }"
+              :class="{ 'document-block-highlighted': blockIsHighlighted(block) }"
             >
               {{ block.text }}
             </p>
@@ -205,7 +211,7 @@ watch(pageFromRoute, (value) => {
               v-for="block in blocks"
               :key="block.id"
               class="docx-block"
-              :class="{ 'document-block-highlighted': block.source_spans.length > 0 }"
+              :class="{ 'document-block-highlighted': blockIsHighlighted(block) }"
             >
               <div class="docx-block-meta">
                 <span>{{ sourceLabel(block) }}</span>
@@ -220,7 +226,7 @@ watch(pageFromRoute, (value) => {
         <div class="section-heading">
           <div>
             <h2>定位上下文</h2>
-            <p>每个逻辑块保留原始顺序和证据定位。</p>
+            <p>{{ selectedSourceSpanId ? '已定位到结果证据。' : '每个逻辑块保留原始顺序和证据定位。' }}</p>
           </div>
           <ElButton
             :icon="Refresh"

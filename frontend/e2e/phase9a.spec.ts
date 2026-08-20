@@ -181,7 +181,7 @@ test('REVIEW-002 stops polling after a terminal task state', async ({ page }) =>
   await expect(page.getByRole('heading', { name: '审核已完成' })).toBeVisible()
   await page.waitForTimeout(2200)
   expect(taskReads).toBe(1)
-  await expect(page.getByText('进入审核结果')).toBeDisabled()
+  await expect(page.getByText('进入审核结果')).toBeEnabled()
   await assertNoHorizontalOverflow(page)
 })
 

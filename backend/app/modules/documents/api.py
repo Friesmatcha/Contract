@@ -109,6 +109,7 @@ def _source_payload(
     span: SourceSpan,
 ) -> dict[str, object]:
     return {
+        "source_span_id": span.id,
         "document_version_id": document.id,
         "kind": source_kind(document, block),
         "page_no": page_no,

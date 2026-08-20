@@ -67,10 +67,11 @@ class ExtractedField(ModelSchema):
     field_key: str = Field(min_length=1, max_length=128)
     value: Any | None = None
     confidence: float = Field(ge=0, le=1)
-    evidence: list[Evidence] = Field(min_length=1, max_length=50)
+    evidence: list[Evidence] = Field(default_factory=list, max_length=50)
 
 
 class ExtractionResult(ModelResult):
+    evidence: list[Evidence] = Field(default_factory=list, max_length=50)
     fields: list[ExtractedField] = Field(min_length=1, max_length=256)
 
 

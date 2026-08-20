@@ -76,7 +76,7 @@ class FakeModelGateway(ModelGateway):
         item = (
             self._fixtures[capability].popleft()
             if self._fixtures[capability]
-            else _success(capability)
+            else _success(capability, context=request.context)
         )
         if isinstance(item, FakeFailure):
             if item.kind in {"invalid_json", "schema_mismatch", "unknown_fields", "no_evidence"}:
@@ -127,12 +127,27 @@ def _output_failure_payload(kind: str, capability: str) -> dict[str, Any] | str:
             return {**payload, "extra": True}
     payload = _success(capability).payload
     if isinstance(payload, dict):
+        if capability == "extraction" and isinstance(payload.get("fields"), list):
+            payload = {
+                **payload,
+                "fields": [
+                    {**field, "evidence": []}
+                    for field in payload["fields"]
+                    if isinstance(field, dict)
+                ],
+            }
         return {**payload, "evidence": []}
     return payload
 
 
-def _success(capability: str) -> FakeResponse:
-    evidence = [{"source_span_id": "span-1", "quote": "脱敏证据"}]
+def _success(capability: str, *, context: Mapping[str, str] | None = None) -> FakeResponse:
+    resolved_context = context or {}
+    evidence = [
+        {
+            "source_span_id": resolved_context.get("source_span_id", "span-1"),
+            "quote": resolved_context.get("source_quote", "脱敏证据"),
+        }
+    ]
     payload: dict[str, Any]
     if capability == "classification":
         payload = {"category": "other", "confidence": 0.5, "evidence": evidence}
@@ -140,11 +155,47 @@ def _success(capability: str) -> FakeResponse:
         payload = {
             "fields": [
                 {
-                    "field_key": "effective_date",
-                    "value": None,
-                    "confidence": 0.5,
+                    "field_key": "parties",
+                    "value": {"party_a": "甲方", "party_b": "乙方"},
+                    "confidence": 0.8,
                     "evidence": evidence,
-                }
+                },
+                {
+                    "field_key": "signing_date",
+                    "value": "2026-01-01",
+                    "confidence": 0.8,
+                    "evidence": evidence,
+                },
+                {
+                    "field_key": "contract_amount",
+                    "value": {"amount": "100000.00", "currency": "CNY", "tax_included": True},
+                    "confidence": 0.8,
+                    "evidence": evidence,
+                },
+                {
+                    "field_key": "performance_period",
+                    "value": {"value": "12个月"},
+                    "confidence": 0.8,
+                    "evidence": evidence,
+                },
+                {
+                    "field_key": "dispute_resolution",
+                    "value": {"value": "诉讼"},
+                    "confidence": 0.8,
+                    "evidence": evidence,
+                },
+                {
+                    "field_key": "payment_terms",
+                    "value": {"value": "验收后付款"},
+                    "confidence": 0.8,
+                    "evidence": evidence,
+                },
+                {
+                    "field_key": "auto_renewal",
+                    "value": {"value": False},
+                    "confidence": 0.8,
+                    "evidence": evidence,
+                },
             ],
             "evidence": evidence,
         }

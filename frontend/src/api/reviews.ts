@@ -4,6 +4,7 @@ import type {
   ReviewTask,
   RetryReviewTaskRequest,
   RetryReviewTaskResponse,
+  ReviewResults,
 } from '@/api/types'
 
 const API_BASE = '/api/v1'
@@ -20,6 +21,7 @@ export type ReviewApiErrorCode =
   | 'INPUT_VERSION_CHANGED'
   | 'INVALID_STATE_TRANSITION'
   | 'REVIEW_TASK_NOT_FOUND'
+  | 'RESULTS_NOT_READY'
   | 'VERSION_NOT_PUBLISHED'
 
 function reviewTaskPath(reviewTaskId: string): string {
@@ -63,4 +65,12 @@ export function retryReviewTask(
     headers: { 'Idempotency-Key': idempotencyKey },
     body: JSON.stringify(body),
   })
+}
+
+export function getReviewResults(
+  reviewTaskId: string,
+  includeEvidence = true,
+): Promise<ReviewResults> {
+  const query = new URLSearchParams({ include_evidence: String(includeEvidence) })
+  return apiFetch(`${reviewTaskPath(reviewTaskId)}/results?${query.toString()}`)
 }

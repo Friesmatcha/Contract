@@ -8,6 +8,7 @@ SourceKind = Literal["pdf_page", "image_page", "docx_paragraph", "docx_table_cel
 
 
 class SourceSpanResponse(BaseModel):
+    source_span_id: UUID
     document_version_id: UUID
     kind: SourceKind
     page_no: int | None
@@ -52,4 +53,3 @@ class DocumentBlocksResponse(BaseModel):
     document_kind: DocumentKind
     page_count: int
     blocks: list[DocumentBlockResponse]
-

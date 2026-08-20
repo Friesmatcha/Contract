@@ -451,6 +451,140 @@ select {
   margin-top: 16px;
 }
 
+.review-results-page {
+  max-width: 1280px;
+}
+
+.review-result-section {
+  margin-top: 16px;
+}
+
+.review-classification-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid #d7dee8;
+  border-bottom: 1px solid #d7dee8;
+}
+
+.review-classification-grid > div,
+.review-field-values > div {
+  min-width: 0;
+}
+
+.result-label,
+.review-field-values dt {
+  display: block;
+  color: #5f6b7a;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.result-value {
+  display: block;
+  margin-top: 4px;
+  color: #172033;
+  font-size: 18px;
+  line-height: 26px;
+}
+
+.evidence-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.evidence-row {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-left: 3px solid #8ba7d6;
+  background: #f5f7fa;
+}
+
+.evidence-row blockquote {
+  min-width: 0;
+  margin: 0;
+  color: #344054;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.review-result-table-heading {
+  padding: 16px;
+  border-bottom: 1px solid #d7dee8;
+  background: #f8fafc;
+}
+
+.review-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: #d7dee8;
+}
+
+.review-field-card {
+  min-width: 0;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.review-field-card-heading {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-field-card h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.review-field-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+
+.review-field-values dd {
+  min-width: 0;
+  margin: 4px 0 0;
+  color: #172033;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.review-field-values pre {
+  max-height: 130px;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+}
+
+.review-field-confidence {
+  grid-column: 1 / -1;
+}
+
+.compact-evidence-list {
+  margin-top: 12px;
+}
+
+.compact-evidence-list .evidence-row {
+  align-items: center;
+  padding: 8px 10px;
+}
+
 .wide-control {
   width: 100%;
 }
@@ -472,6 +606,11 @@ select {
 
 @media (max-width: 960px) {
   .review-progress-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .review-field-grid,
+  .review-classification-grid {
     grid-template-columns: 1fr;
   }
 }
