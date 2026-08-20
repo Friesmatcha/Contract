@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `bb2e3ef` (`docs(phase): record Phase 7 snapshot`); Phase 7 implementation snapshot: `b4c4f84` (`feat(documents): add parsing OCR and evidence mapping`).
-- Working tree: Phase 8A implementation, contract/documentation updates, shared organization-context changes and tests are uncommitted; generated `test-results/` remains untracked and is not treated as source.
-- Current boundary: Phase 0 through Phase 7 and Phase 8A are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 8B and later phases remain `Not Started`.
+- Verification baseline: `ee1d5a3` (Phase 8B implementation snapshot, pushed to `origin/main`).
+- Working tree after the Phase 8B Git Snapshot: no source changes are pending; generated `test-results/` remains untracked and is not treated as source.
+- Current boundary: Phase 0 through Phase 8B are `Completed` with migration, integration, frontend quality, browser acceptance and review evidence recorded below. Phase 9A and later phases remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -214,11 +214,30 @@
 - Regression / scope: 后端全量 130 passed，前端全量 Unit/质量门禁和 40 项历史+Phase 8A Playwright 回归通过；未实现 Phase 8B 条款模板、Phase 9A 审核任务、风险分析或条款比对。
 - Known Issues / Pending Decisions: Windows pytest cache 仍有权限 warning；Vite build 保留既有 chunk-size warning；Playwright 使用受控 API mock，Windows 下 Vite 子进程收尾仍可能不退出；默认 `contract_test` 旧 Migration 漂移和既有 `alembic check` ORM/Migration 漂移未修改；根目录未跟踪 `test-results/` 为测试生成产物，不纳入实现。P-04/P-05 已关闭，无 Phase 8A 阻塞 Pending Decision。
 - Git branch / HEAD / status / diff summary: `main` / `bb2e3ef`；`git status --short` 显示 Phase 8A 后端/Migration/测试/前端与契约文档修改，以及共享组织上下文回归修改；未跟踪 Phase 8A 新文件和 `test-results/`。工作区未提交，未执行 Commit、Push、amend、force push 或历史重写；`docs/codex-handoff.md` 已删除且未重新创建。
-- Next Phase and entry conditions: Phase 8B 保持 `Not Started`。本次停止于 Phase 8A，等待用户决定是否进入 8B；在用户明确继续前不实现条款模板。
+- Next Phase and entry conditions: Phase 8B 已在后续工作中完成；Phase 9A 仍保持 `Not Started`，不得将本记录理解为已进入审核任务开发。
+
+## Phase 8B: Versioned Clause Templates
+
+- Status: `Completed`。
+- Completed at: `2026-08-20`。
+- Current completion boundary: 在显式 tenant scope 下，组织管理员可管理条款模板、模板版本和标准条款，创建/复制/编辑草稿、发布、停用/启用和通过现有 12.4 PATCH 契约显式切换默认模板；审核员可读取模板和已发布版本，不能读取草稿或执行写操作。已发布版本及其条款不可编辑，历史审核引用的版本不受后续发布影响。Phase 8B 实现 CLAUSE-001 `/clause-templates`、CLAUSE-002 `/clause-templates/:templateId`、CLAUSE-003 `/clause-templates/:templateId/versions/:versionId`；未实现 Word/Excel 导入、条款比对、自动法律意见、风险分析或 Phase 9A 审核任务。
+- Entry review: 已读取并核对 `AGENTS.md`、`docs/phase-status.md`、`docs/development-plan.md`、`docs/api-contract.md`、`docs/requirements.md`、`docs/architecture.md`、`docs/ui/README.md`、`docs/ui/frontend-prd.md`、`docs/ui/design-system.md` 和 CLAUSE-001/002/003 Stitch 原型；P-05 固定语义已关闭且本 Phase 未修改人工 API Contract。
+- Changes: 新增 `backend/app/modules/clauses/templates/` Model/Schema/Service/API、`backend/migrations/versions/20260819_0010_phase8b_clause_templates.py`、CLAUSE 集成测试和 OpenAPI 投影测试；接入 `backend/app/main.py` 与 `backend/migrations/env.py`。新增 `frontend/src/api/clauseTemplates.ts` 和类型、CLAUSE-001/002/003 页面、路由、AppShell 导航、共享样式、Vitest 和 `frontend/e2e/phase8b.spec.ts`。
+- API / authorization: 12.1-12.8 的 Method、Path、Query/Body、响应、错误、CSRF、Idempotency、RBAC 和 state transition 与现有人工契约一致；资源路径根据可信资源组织推导，集合接口使用显式 `X-Organization-ID` tenant scope，不信任客户端组织/角色/权限/归属。Reviewer 只读已发布版本；默认选择严格按合同类型和规范化业务场景精确匹配，不回退。
+- ORM / Migration: `20260819_0010` 线性继承 `20260819_0009`，未修改已发布 Migration、未创建虚假 merge revision。新增模板/版本/标准条款、组织复合外键、默认模板部分唯一索引、current published 复合外键、发布状态与已发布不可变触发器；发布、默认切换、审计在事务内完成，并以组织/资源行锁和约束保证并发安全。独立 PostgreSQL `contract_phase8b_migration` 完成 `upgrade 0010 -> downgrade 0009 -> upgrade head`，最终 `20260819_0010 (head)`；最终核对 5 个模板、5 个版本、40 条演示条款、5 个默认模板。独立测试库为 `contract_phase8b_test`；默认 `contract_test` 未修改。
+- Frontend / UI Page IDs: CLAUSE-001/002/003 按 UI PRD、design-system 和 Stitch 原型实现列表、详情/版本历史、草稿编辑器/标准条款抽屉；覆盖 loading、empty、error、forbidden、conflict、disabled、processing、retry 和已发布只读状态。浏览器实测在 1440px/1280px 下列表、详情、已发布版本和草稿编辑器无横向溢出；筛选栏和下拉 placeholder 已按 1280px 验收修正。
+- Tests: `$env:TEST_DATABASE_URL=...contract_phase8b_test; $env:REDIS_URL=...; .venv\Scripts\python.exe -m pytest backend/tests/integration/clauses -q` -> 5 passed，1 个 Windows pytest cache permission warning；同库 `.venv\Scripts\python.exe -m pytest backend/tests -q` -> 135 passed，同一 warning；`.venv\Scripts\python.exe -m ruff check backend`、`.venv\Scripts\python.exe -m mypy backend/app`、`.venv\Scripts\python.exe -m compileall -q backend`、`git diff --check` -> passed；`npm run test` -> 17 files / 61 tests passed；`npm run lint`、`npm run typecheck` -> passed；`npm run build` -> passed，保留既有 Vite chunk-size warning；`npx playwright test phase8b.spec.ts --workers=1` -> 4 passed（Chromium 1440px/1280px），Windows Vite 测试服务收尾未自动退出，已手动停止，测试断言均通过。
+- OpenAPI check: `test_clause_template_openapi_projects_phase8b_contract` -> passed；为避免新增分页响应类名影响 Phase 8A OpenAPI 投影，条款模块使用专用 `ClauseTemplateCursorPageResponse` schema 名称；Phase 8A 全量 OpenAPI 回归随后端全量测试通过。
+- Review / Re-review: 完成只读 diff review，检查 requirements/API Contract/OpenAPI、tenant/RBAC、默认模板状态机、事务/并发/幂等、数据库约束/触发器、已发布不可变、审计、前后端调用映射和 UI 状态。修复了 PostgreSQL 触发器异常断言、条款分页 schema 与 Phase 8A 的 OpenAPI 命名碰撞、1280px 筛选栏换行和空下拉默认文案；最终未发现当前 Phase 阻塞 finding。
+- Regression / scope: 后端 135 个测试、Phase 8B 定向 5 个测试、前端 61 个 Unit 测试、Phase 8B 4 个两 viewport E2E 和质量门禁均在最终修改后通过；未实现 Phase 9A，未回滚或重实现 Phase 8A，未修改默认 `contract_test` 的旧污染或既有 Alembic 漂移。
+- Known Issues / Pending Decisions: Windows pytest cache permission warning、Vite chunk-size warning 和 Windows Playwright/Vite 子进程收尾问题均为非阻塞；根目录 `test-results/` 为未跟踪测试生成物，不纳入提交。`alembic check` 的既有 Phase 0-6 ORM/Migration 漂移未修改。P-05 已关闭；无阻塞本 Phase 的 Pending Decision。
+- Git branch / HEAD / status / diff summary: `main` / `ee1d5a3`；Phase 8B 源码、Migration、测试和前端实现已形成独立功能快照；功能提交后无源代码修改，用户/测试生成的未跟踪 `test-results/` 保持未提交；本次未覆盖或恢复其他既有修改。
+- Commit / Push: 用户已授权；`ee1d5a3`（`feat(clauses): add versioned clause templates`）已正常提交并推送到 `origin/main`，本账本更新作为后续 docs snapshot 正常提交并推送；未 amend、force push 或重写历史。
+- Next Phase and entry conditions: Phase 8B Git Snapshot 门禁已关闭。Phase 9A 保持 `Not Started`，只允许在后续会话重新读取 Source of Truth、核对 Git/迁移状态并关闭 P-07 对任务创建/归档有影响的语义后进入；不得同时进入 Phase 9B 或实现模型、分类/抽取、风险、条款比对、通知或报告。
 
 ## Remaining Phases
 
-Phase 8B 及 Phase 9A-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 9A-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
