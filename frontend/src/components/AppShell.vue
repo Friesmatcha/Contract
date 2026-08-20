@@ -9,11 +9,19 @@ import {
   SwitchButton,
   UserFilled,
   User,
+  Warning,
 } from '@element-plus/icons-vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { logout, sessionState } from '@/features/auth/session'
+import {
+  activeOrganizationMemberships,
+  currentOrganizationId,
+  currentOrganizationMembership,
+  logout,
+  selectCurrentOrganization,
+  sessionState,
+} from '@/features/auth/session'
 
 const router = useRouter()
 const route = useRoute()
@@ -24,22 +32,42 @@ const isPlatformAdmin = computed(() => session.value?.user.is_platform_admin ?? 
 const organizationId = computed(() => {
   const routeOrganizationId = route.params.organizationId
   if (typeof routeOrganizationId === 'string') return routeOrganizationId
-  return session.value?.memberships[0]?.organization_id
+  return currentOrganizationId.value
 })
-const currentMembership = computed(() =>
-  session.value?.memberships.find((membership) => membership.organization_id === organizationId.value),
-)
+const currentMembership = computed(() => {
+  const routeOrganizationId = route.params.organizationId
+  if (typeof routeOrganizationId !== 'string') return currentOrganizationMembership.value
+  return activeOrganizationMemberships.value.find(
+    (membership) => membership.organization_id === routeOrganizationId,
+  )
+})
 const contextTitle = computed(() => {
   if (isPlatformAdmin.value) return '平台工作区'
+  if (!currentMembership.value && activeOrganizationMemberships.value.length > 1) {
+    return '请选择组织'
+  }
   return currentMembership.value?.organization_name ?? '组织工作区'
 })
 const contextRole = computed(() => {
   if (isPlatformAdmin.value) return '平台管理员'
+  if (!currentMembership.value && activeOrganizationMemberships.value.length > 1) {
+    return '需要组织上下文'
+  }
+  if (!currentMembership.value) return '无可用组织'
   const role = currentMembership.value?.role
   if (role === 'org_admin') return '组织管理员'
   if (role === 'reviewer') return '审核员'
   if (role === 'viewer') return '查看者'
   return '已登录用户'
+})
+const canReadRiskRules = computed(() =>
+  currentMembership.value?.role === 'org_admin' || currentMembership.value?.role === 'reviewer',
+)
+const activeMenuPath = computed(() => {
+  if (route.path.startsWith('/risk-rule-bundles') || route.path.startsWith('/risk-rule-bundle-versions')) {
+    return '/risk-rule-bundles'
+  }
+  return route.path
 })
 const pageTitle = computed(() => (typeof route.meta.title === 'string' ? route.meta.title : '工作区'))
 const breadcrumbs = computed(() => {
@@ -49,12 +77,46 @@ const breadcrumbs = computed(() => {
   }
   if (route.path.startsWith('/platform/')) return ['平台管理', current]
   if (route.path.startsWith('/organizations/')) return ['组织管理', current]
+  if (route.path.startsWith('/risk-rule-bundles') || route.path.startsWith('/risk-rule-bundle-versions')) {
+    return ['知识配置', '风险规则', current]
+  }
   return [current]
 })
 
 function navigate(path: string): void {
   void router.push(path)
 }
+
+async function switchOrganization(value: string): Promise<void> {
+  if (value === currentOrganizationId.value) return
+  let destination: string | { name: string; params: Record<string, string> } | null = null
+  if (route.path.startsWith('/organizations/') && typeof route.name === 'string') {
+    destination = {
+      name: route.name,
+      params: { ...route.params, organizationId: value } as Record<string, string>,
+    }
+  } else if (
+    route.path.startsWith('/risk-rule-bundles/') ||
+    route.path.startsWith('/risk-rule-bundle-versions/')
+  ) {
+    destination = '/risk-rule-bundles'
+  } else if (route.path.startsWith('/contracts/') || route.path.startsWith('/documents/')) {
+    destination = '/contracts'
+  }
+  if (destination) {
+    const failure = await router.push(destination)
+    if (failure) return
+  }
+  selectCurrentOrganization(value)
+}
+
+watch(
+  () => route.params.organizationId,
+  (value) => {
+    if (typeof value === 'string') selectCurrentOrganization(value)
+  },
+  { immediate: true },
+)
 
 async function signOut(): Promise<void> {
   if (signingOut.value) return
@@ -85,7 +147,22 @@ async function signOut(): Promise<void> {
       </button>
 
       <div class="workspace-context">
-        <strong>{{ contextTitle }}</strong>
+        <ElSelect
+          v-if="activeOrganizationMemberships.length > 1"
+          :model-value="organizationId"
+          class="workspace-selector"
+          size="small"
+          aria-label="当前组织"
+          @change="switchOrganization"
+        >
+          <ElOption
+            v-for="membership in activeOrganizationMemberships"
+            :key="membership.organization_id"
+            :label="membership.organization_name"
+            :value="membership.organization_id"
+          />
+        </ElSelect>
+        <strong v-else>{{ contextTitle }}</strong>
         <span>{{ contextRole }}</span>
       </div>
 
@@ -118,7 +195,7 @@ async function signOut(): Promise<void> {
             组织管理
           </p>
           <ElMenu
-            :default-active="route.path"
+            :default-active="activeMenuPath"
             class="sidebar-menu"
             @select="navigate"
           >
@@ -148,6 +225,13 @@ async function signOut(): Promise<void> {
             >
               <ElIcon><FolderOpened /></ElIcon>
               <span>合同目录</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="canReadRiskRules"
+              index="/risk-rule-bundles"
+            >
+              <ElIcon><Warning /></ElIcon>
+              <span>风险规则</span>
             </ElMenuItem>
             <ElMenuItem
               index="/"

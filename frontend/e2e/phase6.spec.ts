@@ -103,7 +103,11 @@ test('writer confirms the model notice and uploads a file version', async ({ pag
     mimeType: 'application/pdf',
     buffer: Buffer.from('%PDF-1.7\n1 0 obj\n%%EOF'),
   })
-  await page.getByRole('checkbox', { name: '我已阅读并确认合同内容将按系统说明用于自动审核' }).check()
+  const noticeCheckbox = page.getByRole('checkbox', {
+    name: '我已阅读并确认合同内容将按系统说明用于自动审核',
+  })
+  await page.locator('.el-checkbox').filter({ has: noticeCheckbox }).click()
+  await expect(noticeCheckbox).toBeChecked()
   await expect(page.getByRole('button', { name: '上传文件' })).toBeEnabled()
   await page.getByRole('button', { name: '上传文件' }).click()
 

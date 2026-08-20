@@ -86,11 +86,7 @@ def default_organization_settings(retention_days: int = DEFAULT_RETENTION_DAYS) 
 def organization_settings(organization: Organization) -> dict[str, Any]:
     settings = default_organization_settings(organization.retention_days)
     settings.update(
-        {
-            key: value
-            for key, value in organization.settings_json.items()
-            if key in _SETTING_FIELDS
-        }
+        {key: value for key, value in organization.settings_json.items() if key in _SETTING_FIELDS}
     )
     settings["retention_days"] = organization.retention_days
     return settings
@@ -367,6 +363,13 @@ def create_organization(
                 with session.begin_nested():
                     session.add_all([organization, membership])
                     session.flush()
+                    from backend.app.modules.risks.rules.service import install_risk_rule_baseline
+
+                    install_risk_rule_baseline(
+                        session,
+                        organization_id=organization.id,
+                        request_id=request_id,
+                    )
             except IntegrityError as exc:
                 raise ApplicationError(
                     status_code=409,

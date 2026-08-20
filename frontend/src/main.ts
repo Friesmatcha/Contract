@@ -1,6 +1,5 @@
 import ElementPlus from 'element-plus'
-import 'element-plus/theme-chalk/base.css'
-import 'element-plus/theme-chalk/el-config-provider.css'
+import 'element-plus/dist/index.css'
 import { createApp } from 'vue'
 
 import App from './App.vue'

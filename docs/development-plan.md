@@ -29,7 +29,7 @@
 | OpenAPI 定位 | 架构称 OpenAPI 为契约来源，API 文档称自身为唯一契约来源 | Markdown 契约先行；OpenAPI 是后端 Schema 生成的可执行投影，CI 校验二者一致 |
 | 抽取状态 | 公共 `result_status` 没有 `found`，但结果示例和字段修订接口使用 `found` | 在 Phase 9C 前确认并先修订 API 契约 |
 | 组织上下文 | API Contract 2.2.1 已定义 `X-Organization-ID`、单组织自动选择、多组织 409 和 membership 校验；实现仍需在 Phase 3 组织接口中验证 | P-01 已关闭；按契约实现并测试 |
-| 默认版本选择 | 创建审核可省略规则/模板版本，但多规则集/多模板时默认选择规则未定义 | 在 Phase 8A/8B 前确认契约和唯一约束 |
+| 默认版本选择 | 创建审核可省略规则/模板版本，但多规则集/多模板时默认选择规则未定义 | P-04/P-05 已关闭；以 API 11.4/12.4 的显式默认切换、数据库唯一约束和 10.1 的 409 配置错误为准 |
 | 报告恢复 | 需求要求报告失败后可重新生成，API 未完整定义报告状态和失败后的再次 POST 语义 | 在 Phase 13 前确认并修订契约 |
 | 任务归档/取消 | 架构状态机提到取消且含 `archived`，API 没有审核任务取消/归档接口 | 本计划不实现未定义命令；在进入 Phase 9A 前确认归档来源 |
 | 批量审核 | 需求和架构第三阶段提到批量审核，API 无批量接口 | 记录为 Future Work；契约补齐前不实现 |
@@ -774,7 +774,7 @@ feat(documents): add parsing OCR and evidence mapping
 
 ### 前置依赖
 
-- Phase 3；确认组织默认规则集选择规则；内置基线仅作为受控 seed/Migration 数据。
+- Phase 3；P-04 已确认组织默认规则集选择规则；内置基线仅作为受控 seed/Migration 数据。
 
 ### 预计涉及模块
 
@@ -789,7 +789,7 @@ frontend/src/features/admin/risk-rules/
 
 - 实现 Risk Rule Model/Schema/Service/API、草稿乐观锁和发布不可变约束。
 - 实现关键词、正则、金额/日期阈值、字段存在性和逻辑组合的 Schema 校验器。
-- 发布切换 current version 与审计同事务；历史版本不可编辑/删除。
+- 发布切换 current version、首次发布默认项/默认切换与审计同事务；默认唯一性由数据库约束保证，历史版本不可编辑/删除。
 
 ### 前端任务
 
@@ -803,12 +803,12 @@ frontend/src/features/admin/risk-rules/
 ### 数据库变更
 
 - 新增 `risk_rule_bundles`、`risk_rule_bundle_versions`、`risk_rules`。
-- 版本号/规则键唯一、发布不可变、current version 复合外键、列表索引。
+- 版本号/规则键唯一、发布不可变、current version 复合外键、每组织默认部分唯一索引、列表索引。
 
 ### 测试要求
 
 ```bash
-python -m pytest backend/tests/api/risk_rules backend/tests/unit/risk_rules
+python -m pytest backend/tests/integration/risks backend/tests/unit/risks
 npm --prefix frontend run test -- risk-rules
 python -m alembic upgrade head
 npm --prefix frontend run lint
@@ -820,12 +820,12 @@ npm --prefix frontend run build
 
 - 组织管理员完成 8 个接口；审核员仅看到已发布版本；viewer/跨组织访问失败。
 - 发布后 PATCH 返回冲突；新草稿不改变历史发布版；任意代码型条件被 422 拒绝。
-- 11 类基线可重复安装且不重复创建；版本切换和审计原子提交。
+- 11 类基线可重复安装且不重复创建；首次发布自动设默认、显式切换、默认停用冲突、版本切换和审计原子提交。
 
 ### 完成条件
 
 - API、UI、Migration、DSL/权限/不可变测试和质量门禁通过。
-- 契约默认选择规则已确认，Review、回归和 Git diff 检查完成。
+- P-04 契约默认选择规则已关闭；Review、回归和 Git diff 检查完成。
 
 ### Git Snapshot
 
@@ -846,7 +846,7 @@ feat(risk-rules): add versioned rule management
 
 ### 前置依赖
 
-- Phase 3；确认同合同类型/业务场景的默认模板选择规则。
+- Phase 3；P-05 已确认同合同类型/规范化业务场景的默认模板选择规则；单一工作流必须在 Phase 8A 全部完成后进入本 Phase。
 
 ### 预计涉及模块
 
@@ -1954,8 +1954,8 @@ Stable Baseline
 | P-01（已关闭） | 多组织用户如何选择当前组织？ | Phase 2，已决策 | 采用 API Contract 2.2.1：有组织路径时从资源建立 Tenant Context；无组织路径时使用 `X-Organization-ID`，服务端校验有效 membership；单组织可自动选择，多组织缺失 Header 返回 `409 ORGANIZATION_CONTEXT_REQUIRED`。 |
 | P-02（已关闭） | 平台创建组织等没有组织上下文的写接口，`Idempotency-Key` 如何确定作用域？ | Phase 1/3，已决策 | 组织级使用 `organization:<organization_id>`；平台级使用 `platform:<authenticated_user_id>`；均由服务端可信上下文生成，唯一性为 `(scope, idempotency_key)` |
 | P-03 | `result_status` 缺少 `found`，但 10.5 示例和 10.7 请求使用 `found` | Phase 9C，阻塞 | 将 `found` 正式加入字段状态枚举，或统一改为已有 `detected`；先改契约和测试样例 |
-| P-04 | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，阻塞 | 契约增加唯一默认规则集语义及切换规则 |
-| P-05 | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，阻塞 | 契约增加每组织+合同类型+场景唯一默认模板语义 |
+| P-04（已关闭） | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，已决策 | 每组织一个默认规则集；首个成功发布自动成为默认；后续由组织管理员通过 11.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`。 |
+| P-05（已关闭） | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，已决策 | 每组织+合同类型+规范化场景一个默认模板；缺省场景为 `standard`；首个成功发布自动成为默认；后续由组织管理员通过 12.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。 |
 | P-06 | 报告完整状态枚举、失败后再次生成、`REPORT_EXPIRED` 的时间条件和“重新生成”是否创建新记录未定义 | Phase 13，阻塞 | 定义 generating/ready/failed/expired 及再次 POST 的新记录/幂等行为 |
 | P-07 | review `archived` 如何进入/恢复？合同归档是否级联；架构提到 cancel 但无 API | Phase 9A，部分阻塞 | 明确合同归档对完成任务的只读影响；未新增契约前不实现 cancel |
 | P-08（已关闭） | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，已决策 | 采用 API Contract 3.1：密码 12-128 字符、不强制字符类别；密码重置 Token 30 分钟、邀请 Token 7 天；Token 至少 256 位随机值且数据库只保存哈希。历史密码限制首期不做。 |
@@ -2002,12 +2002,26 @@ Stable Baseline
 - **Prompt boundary**：提示词仅允许平台基线版本；本 Phase 不增加 prompt 管理 API，也不在创建组织时复制组织级 prompt 版本。Phase 9B 读取冻结的平台基线并将其写入审核任务快照。
 - **Safety**：模型密钥和 `secret_ref` 不写入普通配置表、响应、审计摘要或日志。环境配置缺失时按 API Contract 返回 `503 MODEL_ENVIRONMENT_NOT_CONFIGURED`。
 
+### Decision Record: P-04 Default Risk Rule Bundle（2026-08-19）
+
+- **Status**：Closed。规范来源为 API Contract 10.1、11.1-11.8；产品语义由用户于 2026-08-19 确认。
+- **Decision**：每组织最多一个默认风险规则集；首个成功发布的有效规则集自动成为默认，后续发布不自动替换。发布默认规则集的新版本更新该集的 `current_published_version_id`。
+- **Switching and safety**：组织管理员在 11.4 PATCH 提交 `is_default: true` 显式切换；当前默认不能直接取消或停用，必须先切换到另一个 active 且已有发布版本的规则集。数据库唯一约束、服务事务和审计共同保证并发安全。
+- **Review fallback**：创建审核省略规则版本时使用默认规则集当前发布版本；没有可用默认返回 `409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`。
+
+### Decision Record: P-05 Default Clause Template（2026-08-19）
+
+- **Status**：Closed。规范来源为 API Contract 10.1、12.1-12.8；产品语义由用户于 2026-08-19 确认。
+- **Decision**：每组织、合同类型和规范化场景最多一个默认模板；缺省或空白场景规范为 `standard`，只做精确匹配。每个组合首个成功发布的有效模板自动成为默认，后续发布不自动替换。发布默认模板的新版本更新该模板的 `current_published_version_id`。
+- **Switching and safety**：组织管理员在 12.4 PATCH 提交 `is_default: true` 显式切换；当前默认不能直接取消或停用，必须先切换到同组合另一个 active 且已有发布版本的模板。数据库唯一约束、场景规范化、服务事务和审计共同保证并发安全。
+- **Review fallback**：创建审核省略模板版本时按合同类型和规范化场景使用默认模板当前发布版本；没有对应默认返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。
+
 ### Just-in-Time Closing Order
 
 - Phase 1 前：关闭 P-02；P-11 只需确认当前 Phase 使用的最小数据字段，不要求一次性解决全部后续模型缺口。
 - Phase 2 前：P-01、P-08、P-09 已关闭；Phase 2 仍须实现并测试这些决策，关闭 Pending Decision 不替代完成验收。
 - Phase 3 前：P-10 已关闭；使用平台模型配置/架构同步边界，但不恢复组织级模型覆盖。
-- Phase 8A/8B 与 9A 前：关闭 P-04、P-05；9A 同时关闭 P-07。
+- Phase 8A/8B 与 9A 前：P-04、P-05 已关闭；9A 同时关闭 P-07。
 - Phase 9B 前：冻结 P-09、P-10 对模型 Secret、prompt 和供应商配置的影响；Phase 9C 前关闭 P-03。
 - Phase 13 前关闭 P-06；Phase 14B 前完成 P-11 涉及的清理引用字段 Review；P-12 保持 Future Work，不阻塞当前 Release。
 

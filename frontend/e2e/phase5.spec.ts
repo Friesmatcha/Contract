@@ -119,7 +119,10 @@ test('contract detail supports metadata, archive/restore, and viewer access acti
   await page.getByRole('button', { name: '保存修改' }).click()
   await expect(page.getByRole('heading', { name: '供应商采购合同（修订）' })).toBeVisible()
 
-  await page.getByRole('combobox', { name: '选择 viewer' }).click()
+  await page
+    .locator('.el-select')
+    .filter({ has: page.getByRole('combobox', { name: '选择 viewer' }) })
+    .click()
   await page.getByRole('option', { name: '业务查看者' }).click()
   await page.getByRole('button', { name: '授予查看权限' }).click()
   await expect(page.getByRole('combobox', { name: '选择 viewer' })).toBeVisible()

@@ -515,6 +515,14 @@ select {
   white-space: nowrap;
 }
 
+.workspace-selector {
+  width: 100%;
+}
+
+.workspace-selector .el-select__wrapper {
+  min-height: 30px;
+}
+
 .selected-file {
   display: flex;
   min-width: 0;
@@ -805,6 +813,171 @@ select {
   color: #c43d3d !important;
 }
 
+.risk-rules-page,
+.risk-rule-detail-page,
+.risk-rule-editor-page {
+  max-width: 1280px;
+}
+
+.risk-rules-filter {
+  grid-template-columns: minmax(260px, 1fr) minmax(160px, 220px) auto;
+}
+
+.table-inline-tag {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.rule-bundle-summary {
+  min-width: 0;
+}
+
+.rule-history-heading {
+  margin: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid #d7dee8;
+  background: #f8fafc;
+}
+
+.rule-history-heading h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.rule-history-heading p {
+  margin: 4px 0 0;
+  color: #5f6b7a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.rule-preview-panel {
+  overflow: hidden;
+}
+
+.rule-preview-panel .el-table,
+.rule-editor-table .el-table {
+  min-width: 900px;
+}
+
+.editor-alert {
+  margin-bottom: 20px;
+}
+
+.rule-editor-note {
+  max-width: 920px;
+}
+
+.action-hint {
+  margin: -8px 0 16px;
+  color: #b86a00;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.dialog-section-title {
+  margin: 20px 0 12px;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.rule-editor-table {
+  overflow: hidden;
+}
+
+.editor-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 0 2px;
+  background: linear-gradient(to bottom, rgb(245 247 250 / 0%), #f5f7fa 18px);
+}
+
+.risk-rule-editor-page .el-select,
+.risk-rule-editor-page .el-input,
+.risk-rule-editor-page .el-date-editor {
+  width: 100%;
+}
+
+.condition-editor {
+  container-type: inline-size;
+  display: grid;
+  min-width: 0;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d7dee8;
+  background: #f8fafc;
+}
+
+.condition-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+.condition-editor-grid .el-form-item {
+  margin-bottom: 0;
+}
+
+.condition-children {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid #d7dee8;
+}
+
+.condition-child {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: 8px;
+  align-items: start;
+  min-width: 0;
+}
+
+.condition-child > .condition-editor {
+  background: #fff;
+}
+
+.risk-rule-editor-page .el-drawer .condition-editor-grid {
+  grid-template-columns: 1fr;
+}
+
+@container (max-width: 420px) {
+  .condition-editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1280px) {
+  .app-header {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .app-content {
+    padding: 20px;
+  }
+
+  .risk-rules-page,
+  .risk-rule-detail-page,
+  .risk-rule-editor-page {
+    max-width: none;
+  }
+
+  .risk-rules-filter {
+    grid-template-columns: minmax(220px, 1fr) minmax(150px, 200px) auto;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-page,
   .app-content {
@@ -855,6 +1028,19 @@ select {
   .page-heading-actions,
   .table-footer-actions {
     justify-content: flex-start;
+  }
+
+  .risk-rules-filter {
+    grid-template-columns: 1fr;
+  }
+
+  .editor-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .condition-editor-grid {
+    grid-template-columns: 1fr;
   }
 }
 

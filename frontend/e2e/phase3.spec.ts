@@ -55,9 +55,10 @@ test('platform organization list creates an organization and opens its detail', 
   await expect(page.getByRole('heading', { name: '平台组织' })).toBeVisible()
   await expect(page.getByRole('button', { name: '示例企业' })).toBeVisible()
   await page.getByRole('button', { name: '新建组织' }).click()
-  await page.getByRole('textbox', { name: '组织名称', exact: true }).fill('新组织')
-  await page.getByLabel('初始管理员邮箱').fill('admin@example.com')
-  await page.getByRole('button', { name: '创建组织' }).click()
+  const createDialog = page.getByRole('dialog', { name: '新建组织' })
+  await createDialog.getByRole('textbox', { name: /组织名称/ }).fill('新组织')
+  await createDialog.getByRole('textbox', { name: /初始管理员邮箱/ }).fill('admin@example.com')
+  await createDialog.getByRole('button', { name: '创建组织' }).click()
 
   await expect(page).toHaveURL(/\/platform\/organizations\/org-1$/)
   await expect(page.getByRole('heading', { name: '组织详情' })).toBeVisible()
@@ -132,7 +133,7 @@ test('organization settings submits only changed non-secret values', async ({ pa
   await page.goto('/organizations/org-1/settings')
 
   await expect(page.getByRole('heading', { name: '组织设置' })).toBeVisible()
-  await page.getByLabel('中风险生成预警').click()
+  await page.locator('.el-switch').filter({ has: page.getByLabel('中风险生成预警') }).click()
   await page.getByRole('button', { name: '保存设置' }).click()
   await expect(page.getByRole('heading', { name: '组织设置', exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath(`organization-settings-${testInfo.project.name}.png`), fullPage: true })

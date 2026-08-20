@@ -16,19 +16,16 @@ import {
 import { listOrganizationMembers } from '@/api/organizations'
 import type { Contract, ContractType, Membership } from '@/api/types'
 import PageState from '@/components/PageState.vue'
-import { sessionState } from '@/features/auth/session'
+import {
+  currentOrganizationId,
+  currentOrganizationMembership,
+} from '@/features/auth/session'
 
 const route = useRoute()
 const router = useRouter()
 const contractId = computed(() => String(route.params.contractId ?? ''))
-const organizationId = computed(() =>
-  sessionState.current?.memberships.find((membership) => membership.status === 'active')?.organization_id ?? '',
-)
-const role = computed(() =>
-  sessionState.current?.memberships.find(
-    (membership) => membership.organization_id === organizationId.value,
-  )?.role,
-)
+const organizationId = currentOrganizationId
+const role = computed(() => currentOrganizationMembership.value?.role)
 const canWrite = computed(() => role.value === 'org_admin' || role.value === 'reviewer')
 const isAdmin = computed(() => role.value === 'org_admin')
 

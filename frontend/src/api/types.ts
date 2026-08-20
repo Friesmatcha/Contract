@@ -341,3 +341,135 @@ export interface UpdatePlatformModelConfigurationRequest {
   status?: OrganizationStatus
   version: number
 }
+
+export type RiskRuleEngine = 'deterministic' | 'model'
+export type RiskRuleSeverity = 'high' | 'medium' | 'low'
+export type RiskRuleBundleStatus = 'active' | 'disabled'
+export type RiskRuleVersionStatus = 'draft' | 'published'
+
+export type RiskRuleComparison = 'gt' | 'gte' | 'lt' | 'lte' | 'eq'
+export type RiskRuleTextField = 'contract_text'
+export type RiskRuleAmountField = 'contract_amount'
+export type RiskRuleDateField = 'signing_date'
+export type RiskRulePresenceField =
+  | 'parties'
+  | 'signing_date'
+  | 'contract_amount'
+  | 'performance_period'
+  | 'dispute_resolution'
+  | 'payment_terms'
+  | 'auto_renewal'
+  | 'acceptance_standard'
+  | 'intellectual_property'
+  | 'data_compliance'
+  | 'force_majeure'
+export type RiskRuleField =
+  | RiskRuleTextField
+  | RiskRuleAmountField
+  | RiskRuleDateField
+  | RiskRulePresenceField
+
+export type RiskRuleCondition =
+  | { operator: 'keyword'; field: RiskRuleTextField; value: string }
+  | { operator: 'regex'; field: RiskRuleTextField; pattern: string }
+  | {
+      operator: 'amount_threshold'
+      field: RiskRuleAmountField
+      comparison: RiskRuleComparison
+      value: string
+    }
+  | {
+      operator: 'date_threshold'
+      field: RiskRuleDateField
+      comparison: RiskRuleComparison
+      value: string
+    }
+  | { operator: 'field_exists' | 'field_missing'; field: RiskRulePresenceField }
+  | { operator: 'semantic' }
+  | { operator: 'all' | 'any'; conditions: RiskRuleCondition[] }
+  | { operator: 'not'; condition: RiskRuleCondition }
+
+export interface RiskRuleInput {
+  rule_key: string
+  risk_type: string
+  engine: RiskRuleEngine
+  condition: RiskRuleCondition
+  severity: RiskRuleSeverity
+  suggestion: string
+  enabled: boolean
+}
+
+export interface RiskRule extends RiskRuleInput {
+  id: string
+}
+
+export interface RiskRuleBundle {
+  id: string
+  organization_id: string
+  name: string
+  status: RiskRuleBundleStatus
+  current_published_version_id: string | null
+  is_default: boolean
+  version: number
+}
+
+export interface RiskRuleVersionSummary {
+  id: string
+  organization_id: string
+  version_no: number
+  status: RiskRuleVersionStatus
+  change_note: string
+  effective_at: string | null
+  published_by: string | null
+  rule_count: number
+  rules?: RiskRule[]
+}
+
+export interface RiskRuleBundleDetail extends RiskRuleBundle {
+  versions: RiskRuleVersionSummary[]
+}
+
+export interface RiskRuleVersion {
+  id: string
+  organization_id: string
+  bundle_id: string
+  version_no: number
+  status: RiskRuleVersionStatus
+  change_note: string
+  effective_at: string | null
+  published_by: string | null
+  version: number
+  is_default: boolean
+  current_published_version_id: string | null
+  rules: RiskRule[]
+}
+
+export interface RiskRuleListQuery {
+  status?: RiskRuleBundleStatus
+  q?: string
+  limit?: number
+  cursor?: string
+}
+
+export interface CreateRiskRuleBundleRequest {
+  name: string
+}
+
+export interface UpdateRiskRuleBundleRequest {
+  name?: string
+  status?: RiskRuleBundleStatus
+  is_default?: boolean
+  version: number
+}
+
+export interface CreateRiskRuleVersionRequest {
+  change_note: string
+  source_version_id?: string
+  rules: RiskRuleInput[]
+}
+
+export interface UpdateRiskRuleVersionRequest {
+  rules?: RiskRuleInput[]
+  change_note?: string
+  version: number
+}

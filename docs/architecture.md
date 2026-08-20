@@ -209,14 +209,16 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 
 | 表 | 关键字段 | 关键约束/说明 |
 | --- | --- | --- |
-| `risk_rule_bundles` | `organization_id`, `name`, `current_published_version_id` | 风险规则集逻辑身份 |
+| `risk_rule_bundles` | `organization_id`, `name`, `current_published_version_id`, `is_default` | 风险规则集逻辑身份；每组织最多一个 active 且有发布版本的默认项，由数据库唯一约束保证 |
 | `risk_rule_bundle_versions` | `organization_id`, `bundle_id`, `version_no`, `status`, `change_note`, `effective_at`, `published_by` | `(bundle_id, version_no)` 唯一；发布后不可变 |
 | `risk_rules` | `organization_id`, `bundle_version_id`, `rule_key`, `risk_type`, `engine`, `condition_json`, `severity`, `suggestion`, `enabled` | `engine` 首期仅 `deterministic/model`；条件使用白名单 Schema，不执行任意代码 |
 | `risk_findings` | `organization_id`, `review_task_id`, `risk_type`, `severity`, `title`, `description`, `basis`, `suggestion`, `confidence`, `source`, `status`, `source_span_id`, `rule_id`, `model_call_id`, `fingerprint` | `(review_task_id, fingerprint)` 唯一；无证据不得进入 `confirmed` |
-| `clause_templates` | `organization_id`, `name`, `contract_type`, `business_scenario`, `current_published_version_id` | 模板逻辑身份；可复制、停用 |
+| `clause_templates` | `organization_id`, `name`, `contract_type`, `business_scenario`, `current_published_version_id`, `is_default` | 模板逻辑身份；场景规范为 `standard`；每组织+合同类型+场景最多一个默认项，由数据库唯一约束保证 |
 | `clause_template_versions` | `organization_id`, `template_id`, `version_no`, `status`, `change_note`, `effective_at`, `published_by` | 发布后不可变；审核任务直接引用版本 |
 | `standard_clauses` | `organization_id`, `template_version_id`, `clause_key`, `name`, `standard_text`, `allowed_deviation`, `severity`, `applicability_json`, `suggestion`, `order_no` | 归属于不可变模板版本 |
 | `clause_comparisons` | `organization_id`, `review_task_id`, `standard_clause_id`, `status`, `contract_text`, `difference_summary`, `severity`, `suggestion`, `source_span_id`, `confidence`, `model_call_id` | 状态为 `matched/deviated/missing/uncertain`；缺失可无定位，其余应有证据 |
+
+风险规则条件使用 API Contract 11.5 定义的按 `operator` 判别的封闭 Schema；`keyword/regex` 只允许 `contract_text`，`amount_threshold` 只允许 `contract_amount`，`date_threshold` 只允许 `signing_date`，`field_exists/field_missing` 只允许 5.6 定义的核心抽取字段及内置基线字段，逻辑组合只接受 `all/any/not`，`semantic` 只允许模型引擎。服务端校验精确字段、类型、组合深度和子条件数量后只保存 JSONB 数据，不解释或执行 Python、SQL、脚本及通用表达式。规则版本发布、默认切换、当前版本更新和对应审计在同一数据库事务内完成；组织行锁与默认部分唯一索引共同串行化并发默认变更。
 
 ### 6.6 预警、通知、报告和审计
 

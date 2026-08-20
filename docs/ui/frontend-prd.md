@@ -1819,11 +1819,11 @@ Descriptions、Form、Select、Input、Alert、Button、Tag、Skeleton。
 | --- | --- | --- | --- | --- |
 | 合同文件版本 | Select | Yes | Valid validated file version | `contract_file_id` |
 | 文档版本 | Select/automatic | No | Successful parsed version if selected | `document_version_id` |
-| 风险规则版本 | Select/automatic | No | Published version | `rule_bundle_version_id` |
-| 条款模板版本 | Select/automatic | No | Published version | `clause_template_version_id` |
-| 业务场景 | Text/Select | No | String supported by template flow | `business_scenario` |
+| 风险规则版本 | Select/automatic | No | Published version; omitted uses organization default | `rule_bundle_version_id` |
+| 条款模板版本 | Select/automatic | No | Published version; omitted uses exact contract type + normalized scenario default | `clause_template_version_id` |
+| 业务场景 | Text/Select | No | Missing or blank normalizes to `standard`; exact match only | `business_scenario` |
 
-组织、模型密钥、prompt 和结果内容不在表单中。使用 Idempotency-Key；提交中禁用。规则/模板默认选择受 P-04/P-05 约束，未决前 UI 不声称“系统默认”具体版本。
+组织、模型密钥、prompt 和结果内容不在表单中。使用 Idempotency-Key；提交中禁用。未指定版本时 UI 明确显示“使用组织默认规则集/匹配场景默认模板”；服务端若无默认返回 409 配置错误，前端显示阻塞原因与配置入口。
 
 #### Page States
 
@@ -1837,7 +1837,7 @@ Loading：option skeleton；Empty：无合法文件/无发布版本时显示阻�
 
 - Related Requirements：FR-D05、FR-E、FR-R、FR-C。
 - Related APIs：`POST /contracts/{contract_id}/reviews`, `GET /risk-rule-bundles`, `GET /clause-templates`。
-- Related Phase：Phase 9A；Pending P-04/P-05。
+- Related Phase：Phase 9A；P-04/P-05 已关闭。
 
 ### REVIEW-002 Review Progress / 审核进度
 
@@ -2382,6 +2382,7 @@ Input、Select、Table、Tag、Button、Dialog、Form、Empty、Skeleton。
 | `name` | 规则集名称 | API | Link |
 | `status` | 状态 | API | Tag |
 | `current_published_version_id` | 当前发布版本 | API | Link/empty label |
+| `is_default` | 组织默认 | API | Default tag |
 
 #### Actions
 
@@ -2389,6 +2390,7 @@ Input、Select、Table、Tag、Button、Dialog、Form、Empty、Skeleton。
 | --- | --- | --- | --- |
 | Filter/open | Org Admin, Reviewer | Filter or row | Reload list/open detail |
 | Create bundle | Org Admin | Submit create dialog | Create and open detail |
+| Switch default | Org Admin | Explicit row/detail action | PATCH `is_default=true`; reload default marker |
 
 #### Form
 
@@ -2396,7 +2398,7 @@ Create field：`name` required。Create 使用 Idempotency-Key，成功进入 de
 
 #### Page States
 
-Loading：table skeleton；Empty：create CTA for admin/read-only message reviewer；Error：retry；Forbidden：viewer/no membership；Conflict：name conflict；Disabled：create hidden reviewer；Processing：N/A。
+Loading：table skeleton；Empty：create CTA for admin/read-only message reviewer；Error：retry；Forbidden：viewer/no membership；Conflict：name conflict/default switch conflict；Disabled：create hidden reviewer；Processing：create/switch actions show loading and disable duplicate submission。
 
 #### Confirmation / Destructive Actions
 
@@ -2441,7 +2443,7 @@ Descriptions、Table、Tag、Button、Dialog、Form、Alert、Skeleton。
 
 #### Displayed Data
 
-`id`, `name`, `status`, `current_published_version_id`, `versions[].id`, `version_no`, `status`, `change_note`, `effective_at`, `rule_count`，以及 `include_rules=true` 时契约返回的规则。
+`id`, `name`, `status`, `current_published_version_id`, `is_default`, `versions[].id`, `version_no`, `status`, `change_note`, `effective_at`, `rule_count`，以及 `include_rules=true` 时契约返回的规则。
 
 #### Actions
 
@@ -2452,6 +2454,7 @@ Descriptions、Table、Tag、Button、Dialog、Form、Alert、Skeleton。
 | Open version | Org Admin/Reviewer | Version row | Published read-only or draft editor |
 | Publish draft | Org Admin | Draft action + confirm | Version becomes published/immutable |
 | Disable bundle | Org Admin | Danger action + confirm | Bundle status disabled |
+| Switch default | Org Admin | Explicit action + confirm | PATCH `is_default=true`; only active bundle with published version |
 
 #### Form
 
@@ -2459,7 +2462,7 @@ Bundle：`name?`, `status? active|disabled`, `version`。Create draft：required
 
 #### Page States
 
-Loading：detail/version skeleton；Empty：no versions with create CTA admin；Error：retry；Forbidden：reviewer draft access rejected；Conflict：version/source conflict；Disabled：published immutable, disabled bundle state visible；Processing：N/A。
+Loading：detail/version skeleton；Empty：no versions with create CTA admin；Error：retry；Forbidden：reviewer draft access rejected；Conflict：version/source/default switch conflict；Disabled：published immutable, disabled bundle state visible；Processing：identity/default/enable/disable actions show loading and disable duplicate submission。
 
 #### Confirmation / Destructive Actions
 
@@ -2469,7 +2472,7 @@ Disable 和 Publish 必须 confirmation；Publish 明确不可逆编辑且历史
 
 - Related Requirements：FR-R、版本不可变。
 - Related APIs：Risk Rule 11.3-11.6、11.8，bundle PATCH 11.4。
-- Related Phase：Phase 8A；Pending P-04 default selection。
+- Related Phase：Phase 8A；P-04 已关闭。
 
 ### RULE-003 Risk Rule Draft Editor / 规则草稿编辑
 
@@ -2516,6 +2519,8 @@ Form、Table、Collapse、Drawer、Select、Input、Textarea、Switch、Alert、
 | 资源版本 | Hidden | Yes on PATCH | Latest integer | `version` |
 
 列表与编辑器显示上述规则字段、草稿状态和资源版本。
+
+条件编辑器必须按操作符提供封闭选择：关键词/正则只能选择 `contract_text`；金额阈值只能选择 `contract_amount`；日期阈值只能选择 `signing_date`；字段存在/缺失只能选择 `parties`, `signing_date`, `contract_amount`, `performance_period`, `dispute_resolution`, `payment_terms`, `auto_renewal`, `acceptance_standard`, `intellectual_property`, `data_compliance`, `force_majeure`；逻辑组合仅为 `all/any/not`，最多 5 层且每个 `all/any` 有 1-20 个子条件；`semantic` 仅在 `engine=model` 时可用。页面不得提供任意 JSON、Python、SQL 或表达式输入框。
 
 #### Form
 
@@ -2571,7 +2576,7 @@ Input、Select、Table、Tag、Dialog、Form、Empty、Skeleton。
 
 #### Displayed Data
 
-`name`, `contract_type`, `business_scenario`, `current_published_version_id`, `status`，均来自 API。
+`name`, `contract_type`, `business_scenario`, `current_published_version_id`, `is_default`, `status`，均来自 API。
 
 #### Actions
 
@@ -2579,6 +2584,7 @@ Input、Select、Table、Tag、Dialog、Form、Empty、Skeleton。
 | --- | --- | --- | --- |
 | Filter/open | Org Admin, Reviewer | Filter or row | Reload list/open detail |
 | Create template | Org Admin | Submit create dialog | Create and open detail |
+| Switch default | Org Admin | Explicit row/detail action | PATCH `is_default=true`; reload scoped default marker |
 
 #### Form
 
@@ -2586,7 +2592,7 @@ Create fields：`name` required、`contract_type` required and not `other`、`bu
 
 #### Page States
 
-Loading：table skeleton；Empty：create CTA/read-only empty；Error：retry；Forbidden：viewer；Conflict：template name conflict；Disabled：create hidden reviewer；Processing：N/A。
+Loading：table skeleton；Empty：create CTA/read-only empty；Error：retry；Forbidden：viewer；Conflict：template name/default switch conflict；Disabled：create hidden reviewer；Processing：N/A。
 
 #### Confirmation / Destructive Actions
 
@@ -2630,7 +2636,7 @@ Descriptions、Table、Tag、Button、Dialog、Alert、Skeleton。
 
 #### Displayed Data
 
-`id`, `name`, `contract_type`, `business_scenario`, `status`, `current_published_version_id`, `versions[].id/version_no/status/change_note/effective_at`, optional `clauses[].clause_key/name/severity/enabled`。
+`id`, `name`, `contract_type`, `business_scenario` (blank normalized to `standard`), `status`, `current_published_version_id`, `is_default`, `versions[].id/version_no/status/change_note/effective_at`, optional `clauses[].clause_key/name/severity/enabled`。
 
 #### Actions
 
@@ -2641,6 +2647,7 @@ Descriptions、Table、Tag、Button、Dialog、Alert、Skeleton。
 | Create draft | Org Admin | Action | Create draft version |
 | Publish draft | Org Admin | Confirm publish | Make version immutable |
 | Disable template | Org Admin | Danger action | Set template disabled |
+| Switch default | Org Admin | Explicit action + confirm | PATCH `is_default=true`; only active template with published version in the same exact scope |
 
 #### Form
 
@@ -2648,7 +2655,7 @@ Edit identity：`name?`, `business_scenario?`, `status? active|disabled`, `versi
 
 #### Page States
 
-Loading：detail skeleton；Empty：no versions/clauses；Error：retry；Forbidden：reviewer draft access；Conflict：version/source conflict；Disabled：disabled template unavailable for new default but history readable；Processing：N/A。
+Loading：detail skeleton；Empty：no versions/clauses；Error：retry；Forbidden：reviewer draft access；Conflict：version/source/default switch conflict；Disabled：disabled template unavailable for new default but history readable；Processing：N/A。
 
 #### Confirmation / Destructive Actions
 
@@ -2658,7 +2665,7 @@ Disable and Publish require confirmation；Publish states immutable/history unaf
 
 - Related Requirements：FR-C01-C04。
 - Related APIs：Clause Template 12.3-12.6、12.8，template PATCH 12.4。
-- Related Phase：Phase 8B；Pending P-05 default selection。
+- Related Phase：Phase 8B；P-05 已关闭。
 
 ### CLAUSE-003 Clause Template Draft Editor / 模板草稿编辑
 
@@ -3484,8 +3491,8 @@ Prototype Frame (Page ID)
 | --- | --- | --- | --- |
 | UI-P01 | 多组织用户如何选择当前组织 | 已采用 API Contract 2.2.1：`X-Organization-ID` 仅为选择提示，服务端校验 membership；单组织可自动选择，多组织缺失 Header 返回 409 | Closed 2026-08-18 |
 | UI-P02 | `found` 是否属于 `result_status` | 等待 P-03；原型标 TODO，不创建第三套状态 | Phase 9C |
-| UI-P03 | 规则集默认版本选择 | 等待 P-04；Review Create 显示明确选择，不承诺自动默认 | Phase 8A/9A |
-| UI-P04 | 模板默认版本/业务场景选择 | 等待 P-05；Review Create 显示明确选择 | Phase 8B/9A |
+| UI-P03 | 规则集默认版本选择 | 已采用 P-04：每组织一个默认规则集，首个发布自动默认，后续显式切换，无默认时 409 | Closed 2026-08-19 |
+| UI-P04 | 模板默认版本/业务场景选择 | 已采用 P-05：按组织+合同类型+规范化场景精确选择默认，无匹配时 409 | Closed 2026-08-19 |
 | UI-P05 | 报告完整状态、失败重试、过期和再次生成 | 等待 P-06；只设计 generating/ready 的确认部分和通用失败容器 | Phase 13 |
 | UI-P06 | Review `archived` 来源与恢复 | 等待 P-07；只读展示，不创建 archive/restore/cancel 控件 | Phase 9A |
 | UI-P07 | 密码策略和 token TTL | 已采用 API Contract 3.1：密码 12-128 字符、重置 Token 30 分钟、邀请 Token 7 天 | Closed 2026-08-18; boundary tests required |

@@ -26,6 +26,7 @@ from backend.app.modules.identity.models import (
     SupportAccessGrant,
     User,
 )
+from backend.app.modules.risks.rules.models import RiskRule, RiskRuleBundle, RiskRuleBundleVersion
 from backend.app.shared.audit import AuditLog
 from backend.app.shared.db import Base
 from backend.app.shared.idempotency import IdempotencyRecord
@@ -56,6 +57,9 @@ _registered_models = (
     DocumentPage,
     DocumentBlock,
     SourceSpan,
+    RiskRuleBundle,
+    RiskRuleBundleVersion,
+    RiskRule,
 )
 
 

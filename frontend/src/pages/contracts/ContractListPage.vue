@@ -1,23 +1,20 @@
 <script setup lang="ts">
 import { Plus, Refresh } from '@element-plus/icons-vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { ApiError, toSafeDisplayError } from '@/api/client'
 import { listContracts } from '@/api/contracts'
 import type { Contract, ContractListQuery, ContractStatus, ContractType } from '@/api/types'
 import PageState from '@/components/PageState.vue'
-import { sessionState } from '@/features/auth/session'
+import {
+  currentOrganizationId,
+  currentOrganizationMembership,
+} from '@/features/auth/session'
 
 const router = useRouter()
-const organizationId = computed(() =>
-  sessionState.current?.memberships.find((membership) => membership.status === 'active')?.organization_id ?? '',
-)
-const role = computed(() =>
-  sessionState.current?.memberships.find(
-    (membership) => membership.organization_id === organizationId.value,
-  )?.role,
-)
+const organizationId = currentOrganizationId
+const role = computed(() => currentOrganizationMembership.value?.role)
 const canCreate = computed(() => role.value === 'org_admin' || role.value === 'reviewer')
 
 const items = ref<Contract[]>([])
@@ -33,6 +30,7 @@ const status = ref<ContractStatus | ''>('active')
 const declaredType = ref<ContractType | ''>('')
 const sort = ref<ContractListQuery['sort']>('created_at')
 const direction = ref<ContractListQuery['direction']>('desc')
+let loadGeneration = 0
 
 function typeLabel(value: ContractType | null): string {
   if (!value) return '未声明'
@@ -65,7 +63,9 @@ function resetError(): void {
 }
 
 async function load(reset = true): Promise<void> {
-  if (!organizationId.value) {
+  const generation = ++loadGeneration
+  const requestedOrganizationId = organizationId.value
+  if (!requestedOrganizationId) {
     loading.value = false
     return
   }
@@ -73,7 +73,7 @@ async function load(reset = true): Promise<void> {
   resetError()
   if (reset) nextCursor.value = null
   try {
-    const page = await listContracts(organizationId.value, {
+    const page = await listContracts(requestedOrganizationId, {
       q: search.value.trim() || undefined,
       owner_id: ownerId.value.trim() || undefined,
       status: status.value || undefined,
@@ -83,16 +83,18 @@ async function load(reset = true): Promise<void> {
       limit: 20,
       cursor: reset ? undefined : nextCursor.value ?? undefined,
     })
+    if (generation !== loadGeneration || requestedOrganizationId !== organizationId.value) return
     items.value = reset ? page.items : [...items.value, ...page.items]
     nextCursor.value = page.next_cursor
     hasMore.value = page.has_more
   } catch (error) {
+    if (generation !== loadGeneration || requestedOrganizationId !== organizationId.value) return
     const safe = toSafeDisplayError(error)
     errorMessage.value = safe.message
     errorRequestId.value = safe.requestId
     forbidden.value = error instanceof ApiError && (error.status === 403 || error.status === 404)
   } finally {
-    loading.value = false
+    if (generation === loadGeneration) loading.value = false
   }
 }
 
@@ -101,6 +103,14 @@ function openContract(contract: Contract): void {
 }
 
 onMounted(() => void load())
+
+watch(organizationId, () => {
+  loadGeneration += 1
+  items.value = []
+  nextCursor.value = null
+  hasMore.value = false
+  void load()
+})
 </script>
 
 <template>

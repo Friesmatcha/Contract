@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { sessionState } from '@/features/auth/session'
+import {
+  activeOrganizationMemberships,
+  currentOrganizationMembership,
+  sessionState,
+} from '@/features/auth/session'
 
 const session = computed(() => sessionState.current)
-const membership = computed(() => session.value?.memberships[0])
+const membership = currentOrganizationMembership
+const needsOrganizationSelection = computed(
+  () => !membership.value && activeOrganizationMemberships.value.length > 1,
+)
 </script>
 
 <template>
@@ -43,6 +50,12 @@ const membership = computed(() => session.value?.memberships[0])
         </div>
       </dl>
     </section>
+    <ElResult
+      v-else-if="needsOrganizationSelection"
+      icon="info"
+      title="请选择当前组织"
+      sub-title="请在左侧组织选择器中选择要操作的组织。"
+    />
     <ElResult
       v-else
       icon="info"

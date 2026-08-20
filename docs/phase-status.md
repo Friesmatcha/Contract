@@ -14,11 +14,11 @@
 
 ## Current Position
 
-- Last updated: `2026-08-19`
+- Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `5687770` (`docs(phase): record Phase 6 snapshot`); Phase 7 implementation snapshot: `b4c4f84` (`feat(documents): add parsing OCR and evidence mapping`).
-- Working tree at verification start: clean at the published Phase 6 baseline; Phase 7 implementation was committed only after its recorded verification and user authorization, with this ledger update remaining for the final status snapshot.
-- Current boundary: Phase 0 through Phase 7 are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 8A/8B and later phases remain `Not Started`.
+- Verification baseline: `bb2e3ef` (`docs(phase): record Phase 7 snapshot`); Phase 7 implementation snapshot: `b4c4f84` (`feat(documents): add parsing OCR and evidence mapping`).
+- Working tree: Phase 8A implementation, contract/documentation updates, shared organization-context changes and tests are uncommitted; generated `test-results/` remains untracked and is not treated as source.
+- Current boundary: Phase 0 through Phase 7 and Phase 8A are `Completed` with migration, integration, frontend quality and review evidence recorded below. Phase 8B and later phases remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -200,9 +200,25 @@
 - Commit / Push: 用户已明确授权正常 Commit/Push；实现提交 `b4c4f84` 已创建，本台账快照提交后两笔提交一并推送；不执行 amend、force push 或历史重写。
 - Next Phase and entry conditions: Phase 8A/8B 保持 `Not Started`；进入前按 `docs/development-plan.md` 重新 Review P-04/P-05、规则/模板版本契约和并行 Migration merge 计划。
 
+## Phase 8A: Versioned Risk Rules
+
+- Status: `Completed`。
+- Completed at: `2026-08-20`。
+- Current completion boundary: 组织管理员可在显式 tenant scope 下创建规则集、创建和编辑草稿、复制已发布版本、发布、停用/启用和显式切换默认规则集；审核员只能读取已发布版本，viewer 和跨组织访问被拒绝。已实现白名单 DSL（关键词、正则、金额/日期阈值、字段存在性、逻辑组合），不执行风险分析、任意 Python、SQL 或表达式。
+- Contract / decisions: 先更新并 Review `docs/api-contract.md` 10.1、11.1-11.8，补齐默认标识、显式切换请求/响应、停用冲突、`VERSION_SOURCE_INVALID` 和缺少默认配置错误；P-04/P-05 已同步关闭到 `docs/development-plan.md`、`docs/requirements.md`、`docs/architecture.md` 和 `docs/ui/frontend-prd.md`。`docs/development-plan.md` 的 Phase 8A 测试路径已修正为实际目录 `backend/tests/integration/risks`、`backend/tests/unit/risks`。
+- Changes: 新增 `backend/app/modules/risks/rules/` Model/Schema/Service/API、`backend/tests/{unit,integration}/risks/`、`backend/migrations/versions/20260819_0009_phase8a_risk_rules.py`、风险规则 API Client/校验器/条件编辑器和 RULE-001 `/risk-rule-bundles`、RULE-002 `/risk-rule-bundles/:bundleId`、RULE-003 `/risk-rule-bundle-versions/:versionId` 页面；共享应用壳补齐多组织上下文选择和资源深链同步。
+- API / authorization: 8 个 11.1-11.8 接口的 Method、Path、字段、错误、RBAC、CSRF、幂等和乐观锁已由人工契约和 OpenAPI 投影核对；资源路径从资源归属推导组织，不信任客户端 `organization_id`、角色或错误的 `X-Organization-ID`。集合接口保留显式组织选择，默认切换、发布和审计在同一事务内完成。
+- ORM / Migration: `20260819_0009` 线性继承 `20260819_0008`，未创建虚假 merge revision，未修改已发布 Migration。独立 PostgreSQL `contract_phase8a_migration` 完成 `upgrade head -> downgrade 20260819_0008 -> upgrade head`，最终 revision 为 `20260819_0009`；核对 `uq_risk_rule_bundles_default`、current-version 发布约束触发器、已发布版本/规则不可变触发器均存在，基线为 1 个默认规则集、1 个发布版本、11 条规则。独立测试库使用 `contract_phase8a_test`；默认 `contract_test` 的历史旧 Migration 污染未修改。
+- Tests: `$env:TEST_DATABASE_URL=...contract_phase8a_test; .venv\Scripts\python.exe -m pytest backend/tests/unit/risks backend/tests/integration/risks -q` -> 44 passed；同库 `.venv\Scripts\python.exe -m pytest backend/tests -q` -> 130 passed；`.venv\Scripts\python.exe -m ruff check backend`、`.venv\Scripts\python.exe -m mypy backend/app`、`.venv\Scripts\python.exe -m compileall -q backend`、`git diff --check` -> passed；Phase 8A OpenAPI projection -> 1 passed。`npm --prefix frontend run test` -> 15 files / 56 tests passed；`npm --prefix frontend run lint`、`typecheck`、`build` -> passed；`npx playwright test phase8a.spec.ts --workers=1` -> 8 passed（Chromium 1440px/1280px）；`npx playwright test --workers=1` -> 40 passed（Chromium 1440px/1280px）。
+- Review / Re-review: 独立只读 re-review 于 2026-08-20 完成，未发现 P0/P1 运行时、安全、tenant/RBAC、事务/并发、Migration 或前后端一致性阻塞；确认资源深链组织同步、平台管理员多组织选择器和 `source_version_id` 错误码修复。发现的两个 P2 文档问题已关闭：本记录已更新，Phase 8A 测试路径已与实际目录一致。修复后的回归、质量门禁、Migration 往返和全量 E2E 均已重跑通过。
+- Regression / scope: 后端全量 130 passed，前端全量 Unit/质量门禁和 40 项历史+Phase 8A Playwright 回归通过；未实现 Phase 8B 条款模板、Phase 9A 审核任务、风险分析或条款比对。
+- Known Issues / Pending Decisions: Windows pytest cache 仍有权限 warning；Vite build 保留既有 chunk-size warning；Playwright 使用受控 API mock，Windows 下 Vite 子进程收尾仍可能不退出；默认 `contract_test` 旧 Migration 漂移和既有 `alembic check` ORM/Migration 漂移未修改；根目录未跟踪 `test-results/` 为测试生成产物，不纳入实现。P-04/P-05 已关闭，无 Phase 8A 阻塞 Pending Decision。
+- Git branch / HEAD / status / diff summary: `main` / `bb2e3ef`；`git status --short` 显示 Phase 8A 后端/Migration/测试/前端与契约文档修改，以及共享组织上下文回归修改；未跟踪 Phase 8A 新文件和 `test-results/`。工作区未提交，未执行 Commit、Push、amend、force push 或历史重写；`docs/codex-handoff.md` 已删除且未重新创建。
+- Next Phase and entry conditions: Phase 8B 保持 `Not Started`。本次停止于 Phase 8A，等待用户决定是否进入 8B；在用户明确继续前不实现条款模板。
+
 ## Remaining Phases
 
-Phase 8A、Phase 8B 及 Phase 9A-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 8B 及 Phase 9A-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

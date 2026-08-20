@@ -6,7 +6,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import ContractListPage from '@/pages/contracts/ContractListPage.vue'
 import CreateContractPage from '@/pages/contracts/CreateContractPage.vue'
 import type { AuthSession } from '@/api/types'
-import { sessionState } from '@/features/auth/session'
+import { selectCurrentOrganization, sessionState } from '@/features/auth/session'
 
 afterEach(() => {
   cleanup()
@@ -76,6 +76,81 @@ test('contract list loads rows and sends the current organization header', async
   await waitFor(() => expect(screen.getByText('供应商采购合同')).toBeInTheDocument())
   expect(screen.getAllByText('采购').length).toBeGreaterThan(0)
   expect(new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get('X-Organization-ID')).toBe('org-1')
+})
+
+test('contract list ignores a late response from the previous organization', async () => {
+  sessionState.current = {
+    ...currentSession,
+    memberships: [
+      currentSession.memberships[0]!,
+      {
+        organization_id: 'org-2',
+        organization_name: '第二组织',
+        role: 'reviewer',
+        status: 'active',
+      },
+    ],
+  }
+  sessionState.loaded = true
+  expect(selectCurrentOrganization('org-1')).toBe(true)
+  let resolveFirst: (value: Response) => void = () => undefined
+  const firstResponse = new Promise<Response>((resolve) => {
+    resolveFirst = resolve
+  })
+  const fetchMock = vi
+    .spyOn(globalThis, 'fetch')
+    .mockImplementationOnce(() => firstResponse)
+    .mockResolvedValueOnce(
+      response({
+        items: [
+          {
+            id: 'contract-2',
+            display_no: 'CTR-ORG2-000001',
+            title: '第二组织合同',
+            declared_type: 'sales',
+            status: 'active',
+            owner_id: 'user-1',
+            current_file: null,
+            files: [],
+            latest_review: null,
+            created_at: '2026-08-19T06:00:00Z',
+            updated_at: '2026-08-19T06:00:00Z',
+            version: 1,
+          },
+        ],
+        next_cursor: null,
+        has_more: false,
+      }),
+    )
+
+  await renderAt(ContractListPage, '/contracts', [{ path: '/contracts', component: ContractListPage }])
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+  expect(selectCurrentOrganization('org-2')).toBe(true)
+  await waitFor(() => expect(screen.getByText('第二组织合同')).toBeInTheDocument())
+
+  resolveFirst(
+    response({
+      items: [
+        {
+          id: 'contract-1',
+          display_no: 'CTR-ORG1-000001',
+          title: '第一组织旧响应',
+          declared_type: 'purchase',
+          status: 'active',
+          owner_id: 'user-1',
+          current_file: null,
+          files: [],
+          latest_review: null,
+          created_at: '2026-08-19T06:00:00Z',
+          updated_at: '2026-08-19T06:00:00Z',
+          version: 1,
+        },
+      ],
+      next_cursor: null,
+      has_more: false,
+    }),
+  )
+  await waitFor(() => expect(screen.queryByText('第一组织旧响应')).not.toBeInTheDocument())
 })
 
 test('create contract validates a title and sends idempotency key', async () => {

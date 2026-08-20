@@ -11,15 +11,12 @@ import {
 } from '@/api/documents'
 import type { DocumentBlock, DocumentBlocksResponse, DocumentPageResponse } from '@/api/types'
 import PageState from '@/components/PageState.vue'
-import { sessionState } from '@/features/auth/session'
+import { currentOrganizationId } from '@/features/auth/session'
 
 const route = useRoute()
 const router = useRouter()
 const documentVersionId = computed(() => String(route.params.documentVersionId ?? ''))
-const organizationId = computed(() =>
-  sessionState.current?.memberships.find((membership) => membership.status === 'active')
-    ?.organization_id,
-)
+const organizationId = currentOrganizationId
 const pageFromRoute = computed(() => {
   const value = Number(route.query.page ?? 1)
   return Number.isInteger(value) && value > 0 ? value : 1

@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { toSafeDisplayError } from '@/api/client'
 import { createContract } from '@/api/contracts'
 import type { ContractType } from '@/api/types'
-import { sessionState } from '@/features/auth/session'
+import { currentOrganizationId } from '@/features/auth/session'
 
 const router = useRouter()
-const organizationId = computed(() =>
-  sessionState.current?.memberships.find((membership) => membership.status === 'active')?.organization_id ?? '',
-)
+const organizationId = currentOrganizationId
 const title = ref('')
 const declaredType = ref<ContractType | ''>('')
 const submitting = ref(false)

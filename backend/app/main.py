@@ -22,6 +22,7 @@ from backend.app.modules.contracts.api import router as contracts_router
 from backend.app.modules.documents.api import router as documents_router
 from backend.app.modules.identity.api import router as identity_router
 from backend.app.modules.identity.organization_api import router as organization_router
+from backend.app.modules.risks.rules.api import router as risk_rules_router
 from backend.app.shared.errors import ApplicationError
 
 logger = logging.getLogger(__name__)
@@ -93,6 +94,7 @@ def create_app(
         app.include_router(contracts_router, prefix="/api/v1")
         app.include_router(file_router, prefix="/api/v1")
         app.include_router(documents_router, prefix="/api/v1")
+        app.include_router(risk_rules_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:

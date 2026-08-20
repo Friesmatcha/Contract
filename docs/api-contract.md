@@ -877,9 +877,9 @@ Request Body：
 | --- | --- | --- | --- |
 | `contract_file_id` | UUID | 是 | 已通过校验的合同文件版本 |
 | `document_version_id` | UUID | 否 | 已成功解析时可指定；否则由服务端选择/创建 |
-| `rule_bundle_version_id` | UUID | 否 | 已发布风险规则版本；为空使用组织当前发布版本 |
-| `clause_template_version_id` | UUID | 否 | 已发布条款模板版本；为空按合同类型和场景选择默认版本 |
-| `business_scenario` | string | 否 | 模板选择场景 |
+| `rule_bundle_version_id` | UUID | 否 | 已发布风险规则版本；为空使用当前组织默认规则集的当前发布版本 |
+| `clause_template_version_id` | UUID | 否 | 已发布条款模板版本；为空按合同类型和规范化场景选择默认模板的当前发布版本 |
+| `business_scenario` | string | 否 | 模板选择场景；缺省规范为 `standard`，只做合同类型和场景精确匹配，不回退到其他场景 |
 
 客户端不能提交组织 ID、模型密钥、提示词或结果内容。服务端在任务创建时锁定文件、文档、规则、模板、提示词和模型配置快照，并验证所选文件已经记录外部模型告知确认。
 
@@ -895,7 +895,7 @@ Success `202 Accepted`：返回 `ReviewTask`，初始 `status=pending`。
 { "id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "display_no": "REV-20260817-000045", "contract_id": "5a7b9e6b-3e0d-4ae0-9ae8-0e45fcf3be17", "status": "pending", "progress": 0, "current_stage": "queued", "rule_bundle_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "clause_template_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 CONTRACT_FILE_NOT_FOUND`、`409 ACTIVE_REVIEW_EXISTS`、`409 VERSION_NOT_PUBLISHED`、`422 EXTERNAL_MODEL_NOTICE_NOT_ACKNOWLEDGED`、`422 VALIDATION_ERROR`、`429 CONCURRENCY_LIMIT_EXCEEDED`。
+主要错误：`403 FORBIDDEN`、`404 CONTRACT_FILE_NOT_FOUND`、`409 ACTIVE_REVIEW_EXISTS`、`409 VERSION_NOT_PUBLISHED`、`409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`、`409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`、`409 DEFAULT_VERSION_NOT_APPLICABLE`、`422 EXTERNAL_MODEL_NOTICE_NOT_ACKNOWLEDGED`、`422 VALIDATION_ERROR`、`429 CONCURRENCY_LIMIT_EXCEEDED`。
 
 ### 10.2 获取审核任务
 
@@ -1026,20 +1026,24 @@ Success `200 OK`：返回比对结果、证据和新版本。
 
 ## 11. Risk Rule APIs
 
-规则集和版本属于组织配置。已发布版本不可编辑；修改必须从已发布版本创建新草稿并填写 `change_note`。规则条件仅允许架构定义的白名单操作符（关键词、正则、金额/日期阈值、字段存在性和逻辑组合），不得提交 Python、SQL 或任意表达式。
+规则集和版本属于组织配置。已发布版本不可编辑；修改必须从已发布版本创建新草稿并填写 `change_note`。规则条件仅允许下述白名单 Schema（关键词、正则、金额/日期阈值、字段存在性和逻辑组合），不得提交 Python、SQL、脚本或任意表达式。
+
+规则集和规则版本的成功资源响应均包含服务端根据路径/资源归属确认的 `organization_id`。该字段仅用于展示和客户端上下文同步，客户端不得在 Body、Query 或 Header 中用它改变资源归属；资源路径接口忽略 `X-Organization-ID`。
+
+默认规则集语义：每个组织最多一个默认规则集。第一个成功发布的有效规则集自动成为默认；后续发布不会自动替换默认项。组织管理员通过 11.4 的 `is_default: true` 显式切换，响应返回新的默认标识。发布默认规则集的新版本会原子更新其 `current_published_version_id`。当前默认规则集不能直接停用或取消默认，必须先切换到另一个可用规则集；数据库唯一约束处理并发竞争。没有可用默认规则集时，省略规则版本的审核创建返回 `409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`。
 
 ### 11.1 规则集列表
 
 `GET /api/v1/risk-rule-bundles`。权限：`Org Admin | Reviewer`（审核员只读已发布版本）。
 
-Request Query：通用分页，加 `status`、`q`。无 Body。
+Request Query：通用分页，加 `status=active|disabled`、`q`。无 Body。
 
 Request Example：`GET /api/v1/risk-rule-bundles?limit=20`
 
 Success `200 OK`：
 
 ```json
-{ "items": [{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "name": "企业风险基线", "current_published_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "status": "active" }], "next_cursor": null, "has_more": false }
+{ "items": [{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "name": "企业风险基线", "current_published_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "status": "active", "is_default": true, "version": 3 }], "next_cursor": null, "has_more": false }
 ```
 
 主要错误：`403 FORBIDDEN`。
@@ -1052,7 +1056,7 @@ Request Body：`name: string`（必填）。
 
 Request Example：`{ "name": "采购合同风险规则" }`
 
-Success `201 Created`：`{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "name": "采购合同风险规则", "status": "active", "current_published_version_id": null }`
+Success `201 Created`：`{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "name": "采购合同风险规则", "status": "active", "current_published_version_id": null, "is_default": false, "version": 1 }`
 
 主要错误：`403 ORG_ADMIN_REQUIRED`、`409 RULE_BUNDLE_NAME_CONFLICT`、`422 VALIDATION_ERROR`。
 
@@ -1067,7 +1071,7 @@ Request Example：`GET /api/v1/risk-rule-bundles/5f95fbf7-98fb-4d89-8cd0-4b5d9b1
 Success `200 OK`：返回规则集、版本列表（含 `version_no`, `status`, `change_note`, `effective_at`）和按要求的规则。
 
 ```json
-{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "name": "企业风险基线", "current_published_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "versions": [{ "id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "version_no": 3, "status": "published", "change_note": "增加数据合规风险", "rule_count": 11 }] }
+{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "name": "企业风险基线", "current_published_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "status": "active", "is_default": true, "version": 3, "versions": [{ "id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "version_no": 3, "status": "published", "change_note": "增加数据合规风险", "rule_count": 11 }] }
 ```
 
 主要错误：`403 FORBIDDEN`、`404 RULE_BUNDLE_NOT_FOUND`。
@@ -1076,35 +1080,48 @@ Success `200 OK`：返回规则集、版本列表（含 `version_no`, `status`, 
 
 `PATCH /api/v1/risk-rule-bundles/{bundle_id}`。权限：`Org Admin`。
 
-Request Body：`name?: string`, `status?: active|disabled`, `version: integer`。该动作只修改规则集逻辑身份；规则内容修改必须创建新版本。
+Request Body：`name?: string`, `status?: active|disabled`, `is_default?: boolean`, `version: integer`。该动作只修改规则集逻辑身份；规则内容修改必须创建新版本。`is_default: true` 是显式切换默认规则集的请求，目标必须为 active 且已有当前发布版本；`is_default: false` 不能直接取消当前默认项，必须先把另一个可用规则集设为默认。
 
-Request Example：`{ "status": "disabled", "version": 2 }`
+Request Example：`{ "is_default": true, "version": 2 }`
 
-Success `200 OK`：`{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "name": "企业风险基线", "status": "disabled", "current_published_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "version": 3 }`
+Success `200 OK`：`{ "id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "name": "企业风险基线", "status": "active", "current_published_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "is_default": true, "version": 3 }`
 
-主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_BUNDLE_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`。
+主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_BUNDLE_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`409 RULE_BUNDLE_NAME_CONFLICT`、`409 DEFAULT_RULE_BUNDLE_REQUIRED`、`409 DEFAULT_RULE_BUNDLE_CONFLICT`。
 
 ### 11.5 创建规则草稿版本
 
 `POST /api/v1/risk-rule-bundles/{bundle_id}/versions`。权限：`Org Admin`。需要 `Idempotency-Key`。
 
-Request Body：`change_note: string`（必填）、`source_version_id?: UUID`、`rules: RiskRule[]`（必填；可从来源版本复制后修改）。
+Request Body：`change_note: string`（必填）、`source_version_id?: UUID`、`rules: RiskRule[]`（必填，1-200 条；可从来源版本复制后修改）。
 
-`RiskRule` 字段：`rule_key`, `risk_type`, `engine: deterministic|model`, `condition`, `severity`, `suggestion`, `enabled`。
+`RiskRule` 字段：`rule_key: string`、`risk_type: string`、`engine: deterministic|model`、`condition: RiskRuleCondition`、`severity: high|medium|low`、`suggestion: string`、`enabled: boolean`。同一版本的 `rule_key` 必须唯一；请求中的额外字段返回 422。
+
+`RiskRuleCondition` 是按 `operator` 判别的封闭对象，只允许对应行列出的字段；字符串字段均不得为空白。条件字段必须来自下表的操作符专用白名单，不接受未声明的字段键。逻辑组合从根条件计最多 5 层，每个 `all/any` 含 1 到 20 个子条件：
+
+| `operator` | 其余字段 | 约束 |
+| --- | --- | --- |
+| `keyword` | `field: contract_text`, `value: string` | 只对规范化合同全文执行关键词匹配 |
+| `regex` | `field: contract_text`, `pattern: string` | pattern 最长 1000 字符且必须为有效正则 |
+| `amount_threshold` | `field: contract_amount`, `comparison: gt\|gte\|lt\|lte\|eq`, `value: decimal string` | 有限十进制值，不接受 JSON 浮点数、NaN 或 Infinity |
+| `date_threshold` | `field: signing_date`, `comparison: gt\|gte\|lt\|lte\|eq`, `value: YYYY-MM-DD` | 严格日历日期 |
+| `field_exists` / `field_missing` | `field: parties\|signing_date\|contract_amount\|performance_period\|dispute_resolution\|payment_terms\|auto_renewal\|acceptance_standard\|intellectual_property\|data_compliance\|force_majeure` | 仅检查 5.6 定义的核心抽取字段和内置基线字段是否存在；无其他字段 |
+| `all` / `any` | `conditions: RiskRuleCondition[]` | 1 到 20 个子条件 |
+| `not` | `condition: RiskRuleCondition` | 恰好一个子条件 |
+| `semantic` | 无 | 仅允许 `engine=model` |
 
 Request Example：
 
 ```json
-{ "source_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "change_note": "增加数据合规风险", "rules": [{ "rule_key": "data_compliance_missing", "risk_type": "data_compliance", "engine": "deterministic", "condition": { "operator": "field_missing", "field": "data_clause" }, "severity": "high", "suggestion": "补充数据合规责任条款。", "enabled": true }] }
+{ "source_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "change_note": "增加数据合规风险", "rules": [{ "rule_key": "data_compliance_missing", "risk_type": "data_compliance", "engine": "deterministic", "condition": { "operator": "field_missing", "field": "data_compliance" }, "severity": "high", "suggestion": "补充数据合规责任条款。", "enabled": true }] }
 ```
 
-Success `201 Created`：返回 `version_status=draft` 的完整版本。
+Success `201 Created`：返回 `status=draft` 的完整版本（含服务端确认的 `organization_id`）；草稿不改变默认标识，只有成功发布时才按默认规则处理。
 
 ```json
-{ "id": "ec1d23c1-06a4-4fd6-9b16-ccff9811c2d8", "bundle_id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "version_no": 4, "status": "draft", "change_note": "增加数据合规风险", "rules": [{ "rule_key": "data_compliance_missing", "severity": "high", "enabled": true }] }
+{ "id": "ec1d23c1-06a4-4fd6-9b16-ccff9811c2d8", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "bundle_id": "5f95fbf7-98fb-4d89-8cd0-4b5d9b1d0e65", "version_no": 4, "status": "draft", "change_note": "增加数据合规风险", "rules": [{ "rule_key": "data_compliance_missing", "severity": "high", "enabled": true }] }
 ```
 
-主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_BUNDLE_NOT_FOUND`、`409 VERSION_SOURCE_INVALID`、`422 RULE_SCHEMA_INVALID`。
+主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_BUNDLE_NOT_FOUND`、`409 RULE_BUNDLE_DISABLED`、`409 VERSION_SOURCE_INVALID`、`422 VALIDATION_ERROR`、`422 RULE_SCHEMA_INVALID`。
 
 ### 11.6 获取规则版本
 
@@ -1114,7 +1131,7 @@ Request：Path `version_id` UUID；无 Body。
 
 Request Example：`GET /api/v1/risk-rule-bundle-versions/{version_id}`
 
-Success `200 OK`：返回完整不可变（发布版）或可编辑（草稿）规则版本。
+Success `200 OK`：返回完整不可变（发布版）或可编辑（草稿）规则版本，并包含服务端确认的 `organization_id`、所属规则集的 `is_default`、`current_published_version_id` 标识和草稿资源 `version`；审核员访问草稿仍返回 403。
 
 主要错误：`403 FORBIDDEN`、`404 RULE_VERSION_NOT_FOUND`。
 
@@ -1126,25 +1143,27 @@ Request Body：`rules?: RiskRule[]`, `change_note?: string`, `version: integer`�
 
 Request Example：`{ "rules": [{ "rule_key": "unlimited_liability", "risk_type": "unlimited_liability", "engine": "model", "condition": { "operator": "semantic" }, "severity": "high", "suggestion": "约定责任上限。", "enabled": true }], "version": 1 }`
 
-Success `200 OK`：返回新草稿版本。
+Success `200 OK`：返回新草稿版本。修改草稿不会改变默认规则集或任何已发布版本。
 
-主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_VERSION_NOT_FOUND`、`409 VERSION_ALREADY_PUBLISHED`、`409 RESOURCE_VERSION_CONFLICT`、`422 RULE_SCHEMA_INVALID`。
+主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_VERSION_NOT_FOUND`、`409 VERSION_ALREADY_PUBLISHED`、`409 RESOURCE_VERSION_CONFLICT`、`422 VALIDATION_ERROR`、`422 RULE_SCHEMA_INVALID`。
 
 ### 11.8 发布规则版本
 
 `POST /api/v1/risk-rule-bundle-versions/{version_id}/publish`。权限：`Org Admin`。
 
-Request Body：`{}`。发布前校验规则 Schema；发布后不可编辑，已有审核任务继续引用旧版本。
+Request Body：严格空对象 `{}`。发布前校验规则 Schema；发布后不可编辑，已有审核任务继续引用旧版本。
 
 Request Example：`POST /api/v1/risk-rule-bundle-versions/{version_id}/publish` with body `{}`
 
-Success `200 OK`：`{ "id": "ec1d23c1-06a4-4fd6-9b16-ccff9811c2d8", "status": "published", "effective_at": "2026-08-17T06:00:00Z", "published_by": "..." }`
+Success `200 OK`：`{ "id": "ec1d23c1-06a4-4fd6-9b16-ccff9811c2d8", "organization_id": "1d2f3a4b-5c6d-7e8f-9012-345678901234", "status": "published", "effective_at": "2026-08-17T06:00:00Z", "published_by": "...", "is_default": true, "current_published_version_id": "ec1d23c1-06a4-4fd6-9b16-ccff9811c2d8" }`。首次成功发布时 `is_default=true`；其他规则集发布时保持原默认项不变；发布默认规则集的新版本只更新该集的当前发布版本。
 
-主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_VERSION_NOT_FOUND`、`409 VERSION_NOT_DRAFT`、`422 RULE_SCHEMA_INVALID`。
+主要错误：`403 ORG_ADMIN_REQUIRED`、`404 RULE_VERSION_NOT_FOUND`、`409 VERSION_NOT_DRAFT`、`409 RULE_BUNDLE_DISABLED`、`409 DEFAULT_RULE_BUNDLE_CONFLICT`、`422 RULE_SCHEMA_INVALID`。
 
 ## 12. Clause Template APIs
 
 条款模板与版本遵循同一版本原则：发布版本不可编辑，审核任务创建时锁定版本。每个条款至少有合同类型、业务场景、条款编号、名称、标准文本、允许偏差、风险等级、适用条件、建议文本、启用状态和顺序。
+
+默认模板语义：每个组织、合同类型和规范化业务场景组合最多一个默认模板。`business_scenario` 缺省或为空白时规范为 `standard`；默认选择只做合同类型和场景精确匹配，不回退到其他场景。每个组合下第一个成功发布的有效模板自动成为默认；后续发布不会自动替换。组织管理员通过 12.4 的 `is_default: true` 显式切换，响应返回新的默认标识。发布默认模板的新版本会原子更新其 `current_published_version_id`。当前默认模板不能直接停用或取消默认，必须先切换到同一合同类型和场景下另一个可用模板；数据库唯一约束处理并发竞争。没有对应默认模板时，省略模板版本的审核创建返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。
 
 ### 12.1 模板列表
 
@@ -1157,7 +1176,7 @@ Request Example：`GET /api/v1/clause-templates?contract_type=purchase&status=pu
 Success `200 OK`：
 
 ```json
-{ "items": [{ "id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "name": "采购合同基线", "contract_type": "purchase", "business_scenario": "standard", "current_published_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120", "status": "active" }], "next_cursor": null, "has_more": false }
+{ "items": [{ "id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "name": "采购合同基线", "contract_type": "purchase", "business_scenario": "standard", "current_published_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120", "status": "active", "is_default": true }], "next_cursor": null, "has_more": false }
 ```
 
 主要错误：`403 FORBIDDEN`。
@@ -1166,7 +1185,7 @@ Success `200 OK`：
 
 `POST /api/v1/clause-templates`。权限：`Org Admin`。需要 `Idempotency-Key`。
 
-Request Body：`name: string`, `contract_type: contract_type`（不得为 `other`）, `business_scenario?: string`。
+Request Body：`name: string`, `contract_type: contract_type`（不得为 `other`）, `business_scenario?: string`。场景缺省或为空白时服务端规范为 `standard`。
 
 Request Example：`{ "name": "采购合同基线", "contract_type": "purchase", "business_scenario": "standard" }`
 
@@ -1185,7 +1204,7 @@ Request Example：`GET /api/v1/clause-templates/a82c9d51-feb3-43b4-9a0d-9e3c4ede
 Success `200 OK`：返回模板、版本列表和可选标准条款。
 
 ```json
-{ "id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "name": "采购合同基线", "contract_type": "purchase", "versions": [{ "id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120", "version_no": 1, "status": "published", "clauses": [{ "clause_key": "payment", "name": "付款", "severity": "medium", "enabled": true }] }] }
+{ "id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "name": "采购合同基线", "contract_type": "purchase", "business_scenario": "standard", "status": "active", "is_default": true, "versions": [{ "id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120", "version_no": 1, "status": "published", "clauses": [{ "clause_key": "payment", "name": "付款", "severity": "medium", "enabled": true }] }] }
 ```
 
 主要错误：`403 FORBIDDEN`、`404 TEMPLATE_NOT_FOUND`。
@@ -1194,13 +1213,13 @@ Success `200 OK`：返回模板、版本列表和可选标准条款。
 
 `PATCH /api/v1/clause-templates/{template_id}`。权限：`Org Admin`。
 
-Request Body：`name?: string`, `business_scenario?: string`, `status?: active|disabled`, `version: integer`。条款正文修改必须创建新版本；停用后不能作为新审核的默认模板，历史任务仍可读取。
+Request Body：`name?: string`, `business_scenario?: string`, `status?: active|disabled`, `is_default?: boolean`, `version: integer`。场景在写入前规范化，条款正文修改必须创建新版本；`is_default: true` 是显式切换同一合同类型和规范化场景默认模板的请求，目标必须为 active 且已有当前发布版本；`is_default: false` 不能直接取消当前默认项，必须先切换另一个模板。停用后不能作为新审核的默认模板，历史任务仍可读取。
 
-Request Example：`{ "status": "disabled", "version": 1 }`
+Request Example：`{ "is_default": true, "version": 1 }`
 
-Success `200 OK`：`{ "id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "name": "采购合同基线", "status": "disabled", "current_published_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120", "version": 2 }`
+Success `200 OK`：`{ "id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "name": "采购合同基线", "contract_type": "purchase", "business_scenario": "standard", "status": "active", "current_published_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120", "is_default": true, "version": 2 }`
 
-主要错误：`403 ORG_ADMIN_REQUIRED`、`404 TEMPLATE_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`。
+主要错误：`403 ORG_ADMIN_REQUIRED`、`404 TEMPLATE_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`409 DEFAULT_CLAUSE_TEMPLATE_REQUIRED`、`409 DEFAULT_CLAUSE_TEMPLATE_CONFLICT`。
 
 ### 12.5 创建模板草稿版本
 
@@ -1216,7 +1235,7 @@ Request Example：
 { "change_note": "补充付款期限", "clauses": [{ "clause_key": "payment", "name": "付款", "standard_text": "付款应在验收后 30 日内完成。", "allowed_deviation": "期限可协商但必须明确", "severity": "medium", "applicability": {}, "suggestion": "补充付款期限。", "enabled": true, "order_no": 1 }] }
 ```
 
-Success `201 Created`：返回 `draft` 版本和完整条款。
+Success `201 Created`：返回 `draft` 版本和完整条款；草稿不改变默认标识，只有成功发布时才按组合默认规则处理。
 
 ```json
 { "id": "b5be4d02-7c0b-4d4f-bd83-5e3ea9e204b2", "template_id": "a82c9d51-feb3-43b4-9a0d-9e3c4edec0c1", "version_no": 2, "status": "draft", "change_note": "补充付款期限", "clauses": [{ "clause_key": "payment", "enabled": true }] }
@@ -1232,7 +1251,7 @@ Request：Path `version_id` UUID；无 Body。
 
 Request Example：`GET /api/v1/clause-template-versions/{version_id}`
 
-Success `200 OK`：返回版本、条款、发布信息和 `change_note`。
+Success `200 OK`：返回版本、条款、发布信息和 `change_note`，并包含所属模板的 `is_default` 标识；审核员只可获取已发布版本。
 
 主要错误：`403 FORBIDDEN`、`404 TEMPLATE_VERSION_NOT_FOUND`。
 
@@ -1244,7 +1263,7 @@ Request Body：`clauses?: StandardClause[]`, `change_note?: string`, `version: i
 
 Request Example：`{ "clauses": [{ "clause_key": "payment", "name": "付款", "standard_text": "验收后 30 日内付款", "allowed_deviation": "", "severity": "medium", "applicability": {}, "suggestion": "明确期限", "enabled": true, "order_no": 1 }], "version": 1 }`
 
-Success `200 OK`：返回更新后的草稿。
+Success `200 OK`：返回更新后的草稿。修改草稿不会改变默认模板或任何已发布版本。
 
 主要错误：`403 ORG_ADMIN_REQUIRED`、`404 TEMPLATE_VERSION_NOT_FOUND`、`409 VERSION_ALREADY_PUBLISHED`、`409 RESOURCE_VERSION_CONFLICT`、`422 CLAUSE_SCHEMA_INVALID`。
 
@@ -1256,9 +1275,9 @@ Request Body：`{}`。
 
 Request Example：`POST /api/v1/clause-template-versions/{version_id}/publish` with body `{}`
 
-Success `200 OK`：`{ "id": "b5be4d02-7c0b-4d4f-bd83-5e3ea9e204b2", "status": "published", "effective_at": "2026-08-17T06:10:00Z", "published_by": "..." }`
+Success `200 OK`：`{ "id": "b5be4d02-7c0b-4d4f-bd83-5e3ea9e204b2", "status": "published", "effective_at": "2026-08-17T06:10:00Z", "published_by": "...", "is_default": true, "current_published_version_id": "b5be4d02-7c0b-4d4f-bd83-5e3ea9e204b2" }`。首次成功发布时 `is_default=true`；其他同合同类型/场景模板发布时保持原默认项不变；发布默认模板的新版本只更新该模板的当前发布版本。
 
-主要错误：`403 ORG_ADMIN_REQUIRED`、`404 TEMPLATE_VERSION_NOT_FOUND`、`409 VERSION_NOT_DRAFT`、`422 CLAUSE_SCHEMA_INVALID`。
+主要错误：`403 ORG_ADMIN_REQUIRED`、`404 TEMPLATE_VERSION_NOT_FOUND`、`409 VERSION_NOT_DRAFT`、`409 DEFAULT_CLAUSE_TEMPLATE_CONFLICT`、`422 CLAUSE_SCHEMA_INVALID`。
 
 ## 13. Warning APIs
 
