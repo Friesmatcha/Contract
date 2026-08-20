@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `d132f62` (Phase 9C implementation snapshot, based on the verified Phase 9B ledger baseline `486ecc9`) plus its immediately following Phase 9C ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 9C Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 9C are `Completed` with migration, integration, quality, OpenAPI projection, E2E and independent review evidence recorded below. Phase 10 through Phase 16 remain `Not Started`.
+- Verification baseline: `b64d9e9` (Phase 10 implementation snapshot, based on the verified Phase 9C ledger baseline `fb8db17`) plus its immediately following Phase 10 ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 10 Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 10 are `Completed` with migration, integration, quality, OpenAPI projection, E2E and independent review evidence recorded below. Phase 11 through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -289,9 +289,27 @@
 - Commit / Push: 用户已明确授权；`d132f62`（`feat(extraction): add classification and structured extraction`）已正常提交，本账本更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 10 保持 `Not Started`。后续若进入 Phase 10，必须重新读取 Source of Truth 并单独确认范围，再在同一结果读取边界中增加风险/条款事实；本 Phase 到此停止。
 
+## Phase 10: Risk Analysis, Clause Comparison and Result Aggregation
+
+- Status: `Completed`。
+- Completed at: `2026-08-20`。
+- Current completion boundary: 在锁定的规则/模板版本和文档证据范围内完成白名单确定性风险规则、ModelGateway 风险分析、标准条款比对、规则/模型结果去重、证据验证、稳定 fingerprint/reuse 和统一结果聚合；条款状态区分 `matched/deviated/missing/uncertain`，缺失条款允许无定位，其余可确认结论必须引用当前文档的合法 SourceSpan。人工修订、预警处置、通知、报告和自动训练仍不在本 Phase。
+- Entry / Pending Decision review: 已完整核对 `AGENTS.md`、`docs/phase-status.md`、`docs/development-plan.md` Phase 10、Testing Strategy、Phase 9C boundary 和 Pending Decisions，以及 Phase 10 直接相关的 requirements/architecture/API Contract 章节、UI README/PRD/design-system 和 REVIEW-003 全部适用原型状态。P-03 已关闭；无阻塞当前 Phase 的新 Pending Decision。
+- Changes: 扩展 `backend/app/integrations/model/schemas.py` 的风险空结果、条款 `uncertain` 和证据语义；新增 `backend/app/modules/reviews/results/{models,schemas,service,worker}.py` 的风险/条款结果事实、证据关联、规则执行、模型调用关联、去重/reuse 和结果读取聚合；新增 `backend/migrations/versions/20260820_0014_phase10_review_results.py`；补充风险正负例/阈值/逻辑/跨句/证据/空结果复用测试、Review Results 集成测试、Phase 10 Playwright 和前端结果类型/API/UI。
+- API Contract / OpenAPI: 未修改人工 API Contract，未新增浏览器接口或路由；沿用 `GET /api/v1/review-tasks/{review_task_id}/results`，接入 `risk_severity`、`risk_status`、`clause_status` 和 `include_evidence` 的类型化查询及风险/条款响应投影。Phase 10 相关 OpenAPI 投影测试通过；不返回供应商原始响应、Redis 状态、完整合同、完整 prompt 或完整模型响应。
+- ORM / Migration: 新增 `risk_findings`、`risk_finding_evidence`、`clause_comparisons`、`clause_comparison_evidence`，包含组织复合外键、任务/阶段/规则/模板/模型调用/文档/SourceSpan 关联、状态/等级/置信度/指纹 CHECK、结果唯一指纹和筛选索引。`20260820_0014` 线性继承实际唯一 head `20260820_0013`，未修改已发布 Migration；独立 PostgreSQL `contract_phase10_final` 完成 `downgrade -1 -> upgrade head`，最终唯一 head 为 `20260820_0014`。
+- Frontend / UI Page IDs: REVIEW-003 `/reviews/:reviewTaskId/results` 接入风险摘要与筛选、风险发现表、条款对照表、状态/严重度/来源/置信度、证据定位跳转、无结果和处理中状态；viewer 继续只读，未提供 Phase 12 人工编辑入口。Phase 10 E2E 在 Chromium 1440px/1280px 通过；Playwright 仍受 Windows Vite webserver 子进程收尾问题影响，断言通过后手动停止。
+- Tests: 独立库 Phase 10 定向回归（Review Results、风险规则引擎、OpenAPI）`24 passed`；同一独立 PostgreSQL 库后端全量 `python -m pytest backend/tests -q` -> `196 passed`，1 个 Windows pytest cache permission warning；全量 `ruff check backend`、`mypy backend/app`、`compileall -q backend` 和 `git diff --check` -> passed；前端 `npm --prefix frontend run lint` -> passed（140 个非阻塞格式 warning）、`typecheck` -> passed、Vitest `19 files / 68 tests passed`、`build` -> passed（保留 Vite chunk-size warning）；Phase 10 Playwright -> Chromium 1440px/1280px 各 1 个测试通过；Migration downgrade/upgrade 和 OpenAPI 投影通过。默认 `contract_test` 的既有 `invited_at` 漂移在一次未指定独立库的尝试中重现，未修改该库，验收结果均以独立库为准。
+- Review / Re-review: 完成独立只读 diff/security review，覆盖需求和契约一致性、tenant/RBAC/viewer/support 只读边界、规则版本和模板版本锁定、`rule_id`/`standard_clause_id`/`model_call_id` 关联、SourceSpan/Evidence 合法性、`uncertain`/missing 语义、指纹去重/reuse、Worker 阶段路由、事务和模型输出安全；未发现 Phase 10 blocking finding。
+- Regression / scope: 后端全量 196 tests、前端全量 Unit/质量门禁、Phase 10 两桌面视口 E2E、OpenAPI 和 Migration 往返均在最终修改后通过；未进入 Phase 11，未实现预警、站内通知、人工修订、反馈、报告或后续 Phase。
+- Known Issues / Pending Decisions: Windows pytest cache permission warning、Vite chunk-size warning、Vue lint 非阻塞格式 warning 和 Playwright/Vite 子进程收尾问题均保留为 Known Issues；既有 `contract_test` 污染和已发布 Migration/ORM drift 按固定边界未修复；真实 Qwen smoke 未执行，普通自动化测试全部使用 Fake Model Gateway；`test-results/` 保持未跟踪、未删除、未提交。无阻塞本 Phase 的 Pending Decision。
+- Git branch / HEAD / status / diff summary: `main`；Phase 10 实现快照为 `b64d9e9`，包含后端结果模型/服务/Worker/API schema、`0014` migration、测试、REVIEW-003 前端类型/API/页面/样式，共 18 个文件、3004 insertions/161 deletions；本账本更新作为紧随其后的文档快照。完成后 tracked 工作区干净，仅保留未跟踪 `test-results/`，未覆盖、恢复或删除用户已有修改。
+- Commit / Push: 用户已明确授权；`b64d9e9`（`feat(review-results): add risk and clause analysis`）已正常提交，本账本更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未 amend、force push 或修改历史。
+- Next Phase and entry conditions: Phase 11-16 保持 `Not Started`。进入下一 Phase 前需按开发计划重新进行 entry review；本次不实现预警、通知或任何后续 Phase 能力。
+
 ## Remaining Phases
 
-Phase 10-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 11-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
