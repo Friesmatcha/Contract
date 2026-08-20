@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `1113a15` (Phase 9B implementation snapshot; created from the verified Phase 9A ledger baseline `5dadbec`) plus its immediately following Phase 9B ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 9B Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 9B are `Completed` with migration, integration, quality, OpenAPI projection and independent review evidence recorded below. Phase 9C through Phase 16 remain `Not Started`.
+- Verification baseline: `d132f62` (Phase 9C implementation snapshot, based on the verified Phase 9B ledger baseline `486ecc9`) plus its immediately following Phase 9C ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 9C Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 9C are `Completed` with migration, integration, quality, OpenAPI projection, E2E and independent review evidence recorded below. Phase 10 through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -271,9 +271,27 @@
 - Commit / Push: 用户已明确授权；`1113a15`（`feat(model): add provider-neutral model gateway`）已正常提交并推送，本账本更新作为后续 docs snapshot 正常提交并推送到 `origin/main`；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 9C 明确保持 `Not Started`。本次任务到此停止；进入 9C 前必须重新读取 Source of Truth 并获得用户单独授权，不提前实现正式分类、字段抽取、风险、条款比对、审核结果、预警、通知、报告或新的浏览器业务 API/UI。
 
+## Phase 9C: Classification and Extraction
+
+- Status: `Completed`。
+- Completed at: `2026-08-20`。
+- Current completion boundary: 完成合同分类、7 个核心字段抽取、结构化结果校验、SourceSpan/Evidence 多证据关联、`detected|not_found|needs_confirmation|confirmed|corrected` 公共状态模型、缺失值 JSON `null`、输入/模型/结果 fingerprint 和成功结果复用；接通 Phase 9A Worker 与 Phase 9B Fake Model Gateway；新增 10.5 结果读取的分类/字段初始投影和 REVIEW-003 只读分类、字段、置信度、证据跳转页面。未实现风险分析、条款比对、预警、人工修订、反馈、完成审核、通知、报告或 Phase 10 及后续业务。
+- Entry / Contract review: 已读取并核对本 Phase 要求的 Source of Truth、REVIEW-003 `default`/`evidence-open`/`viewer-readonly` 原型和 API Contract 5.1、5.5、5.6、6、10.1-10.7、18.2、20；P-03 已关闭。公共结果状态保留 `detected`，10.5/10.7 不新增 `found`；缺失字段保存 JSON `null`，使用 `not_found` 或 `needs_confirmation`，未伪造证据。
+- Changes: 新增 `backend/app/modules/reviews/results/{models,schemas,service,worker}.py`、`backend/migrations/versions/20260820_0013_phase9c_results.py`、Phase 9C 契约/集成/OpenAPI 测试；扩展 Fake Gateway 的 7 字段默认响应和 extraction evidence 语义；新增结果 API、TypeScript 类型/API Client、REVIEW-003 路由/页面、证据跳转和文档 SourceSpan ID；仅调整 Phase 9A E2E 的过时“结果入口禁用”断言。
+- API / authorization: 新增 `GET /api/v1/review-tasks/{review_task_id}/results`，返回 PostgreSQL 持久化分类、7 个字段、状态、置信度和 Source Locator；支持 `include_evidence`，保留 10.5 风险/条款查询参数作为后续投影边界，当前不生成或筛选风险/条款事实。任务资源、viewer 显式合同授权、平台支持只读授权和组织范围均在后端校验；不返回供应商响应、Redis 状态、完整 prompt 或完整模型响应。Phase 9C OpenAPI 投影断言通过，结果路由已加入现有 API。
+- ORM / Migration: 新增 `contract_classifications`、`extracted_fields`、`contract_classification_evidence`、`extracted_field_evidence`，包含组织复合外键、任务/字段唯一约束、状态/置信度/指纹 CHECK、Evidence 关联和主证据快捷引用；`20260820_0013` 线性继承实际唯一 head `20260820_0012`，未修改已发布 Migration。独立 PostgreSQL `contract_phase9c_test` 完成 `downgrade 20260820_0012 -> upgrade head`，最终 `20260820_0013 (head)`。
+- Frontend / UI Page IDs: REVIEW-003 `/reviews/:reviewTaskId/results` 实现分类、7 个字段、模型值/当前值、置信度、缺失状态、证据 quote 和 PDF/图片/DOCX 定位跳转；viewer/forbidden、processing、error、retry、empty evidence、只读状态均有边界。文档预览按 `source_span_id` 高亮目标证据，未为 DOCX 伪造页码；1440px/1280px E2E 回归通过。
+- Tests: `...pytest backend/tests/contract/classification_extraction backend/tests/integration/classification_extraction -q` -> 5 passed，1 个 Windows pytest cache permission warning；同专用库 `...pytest backend/tests -q` -> 173 passed，同一 warning；`ruff check backend`、`mypy backend/app`、`compileall -q backend`、`git diff --check` -> passed；前端 `npm run lint`、`typecheck`、`test`、`build` -> passed，18 files / 64 tests；`npm run e2e -- --workers=1` -> 52/52 断言通过，包含 Chromium 1440px/1280px，Windows Vite webserver 在断言完成后未自动退出并按既有边界手动停止；Migration downgrade/upgrade 和 Phase 9C OpenAPI test -> passed。
+- Review / Re-review: 独立审查覆盖 requirements/API Contract、P-03、tenant/RBAC、复合外键、证据合法性、状态/null 语义、fingerprint reuse、事务/Worker 接入、Fake Gateway、OpenAPI、前后端映射和 Phase 10 越界；修正测试夹具父子 flush 顺序、Worker 阶段查询的显式组织范围、结果页 lint warning、结果 API OpenAPI fixture 和过时 E2E 断言。最终未发现 Phase 9C blocking finding。
+- Regression / scope: 最终后端全量、前端全量质量门禁、Phase 9A E2E 直接回归、全量 52 条两视口 E2E 和 Migration 往返均在最终修改后通过；未实现风险分析、条款比对、预警、通知、报告、人工修订、反馈或完成审核。
+- Known Issues / Pending Decisions: Windows pytest cache permission warning、Vite chunk-size warning 和 Windows Playwright/Vite 子进程收尾问题均为非阻塞；真实 Qwen smoke 未执行，普通测试全部使用 Fake Gateway；既有 `alembic check` 漂移和默认 `contract_test` 历史污染按前序记录保留，未在本 Phase 顺便修复；`test-results/` 保留为未跟踪测试生成物，不删除、不提交。无阻塞本 Phase 的 Pending Decision；Phase 10 明确保持 `Not Started`。
+- Git branch / HEAD / status / diff summary: `main`；Phase 9C 实现提交 `d132f62` 包含 28 个文件、2719 insertions/30 deletions，本账本更新作为紧随其后的文档快照；完成后 tracked 工作区干净，仅保留未跟踪 `test-results/`，未覆盖、恢复、删除用户已有修改或未知文件。
+- Commit / Push: 用户已明确授权；`d132f62`（`feat(extraction): add classification and structured extraction`）已正常提交，本账本更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未 amend、force push 或修改历史。
+- Next Phase and entry conditions: Phase 10 保持 `Not Started`。后续若进入 Phase 10，必须重新读取 Source of Truth 并单独确认范围，再在同一结果读取边界中增加风险/条款事实；本 Phase 到此停止。
+
 ## Remaining Phases
 
-Phase 9C-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 10-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
