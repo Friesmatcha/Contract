@@ -16,8 +16,8 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `6be1ff7` (Phase 9A implementation snapshot; created from the verified Phase 8B ledger baseline `b73fdec`) plus its immediately following Phase 9A ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 9B implementation: Phase 9B source, Migration and tests are pending as uncommitted changes; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Verification baseline: `1113a15` (Phase 9B implementation snapshot; created from the verified Phase 9A ledger baseline `5dadbec`) plus its immediately following Phase 9B ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 9B Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is preserved, not treated as source.
 - Current boundary: Phase 0 through Phase 9B are `Completed` with migration, integration, quality, OpenAPI projection and independent review evidence recorded below. Phase 9C through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
@@ -267,8 +267,8 @@
 - Review / Re-review: 独立审查覆盖 tenant/RBAC/复合外键、事务回滚、retry 与 repair retry、timeout/429/5xx/invalid JSON/schema/unknown fields/evidence、fingerprint/version、token/cost/latency、Secret/log/prompt/response 泄露和 OpenAPI 不变性。审查发现并修复了内部调用未显式传递 capability、HTTP 408 映射、Retry-After 日期解析和 provider request ID 长度边界；最终未发现 Phase 9B 阻塞 finding。
 - Regression / scope: 9B 专项、9A async 直接回归、后端全量、Migration 往返、OpenAPI 投影和质量门禁均在最终代码下通过；未进入 Phase 9C，Phase 9A Worker 仍不会产生真实业务结果，未新增分类/抽取/风险/比对结果表或业务 API。
 - Known Issues / Pending Decisions: `alembic check` 仍报告仓库既有旧 Migration/ORM 漂移（timestamp 类型、`file_objects.size_bytes`、organization 唯一约束、support access 外键等），未报告 `model_calls` 漂移；按范围未修改已发布 Migration 或默认 `contract_test` 污染。Windows pytest cache permission warning 非阻塞；`test-results/` 是原有及本次测试生成物，保持未跟踪且未清理。真实 Qwen 付费 smoke 未执行，按约束留给受保护环境；无阻塞本 Phase 的 Pending Decision。
-- Git branch / HEAD / status / diff summary: `main`；local HEAD `5dadbec`，`origin/main` `5dadbec`，fetch 后一致。Phase 9B 修改为后端 ModelGateway/telemetry/ORM/Migration/测试及本账本；tracked 工作区存在上述 Phase 9B 修改，相关新目录保持 untracked，`test-results/` 保持 untracked；未覆盖、恢复、删除用户已有修改或未知文件。
-- Commit / Push: 未执行 Commit、Push、amend、force push 或历史重写；遵守本次用户约束，等待明确授权。
+- Git branch / HEAD / status / diff summary: `main`；Phase 9B 实现快照为 `1113a15`，其后续账本快照与实现一并推送后 local `main` 与 `origin/main` 对齐；tracked 工作区无修改，`test-results/` 保持未跟踪；未覆盖、恢复、删除用户已有修改或未知文件。
+- Commit / Push: 用户已明确授权；`1113a15`（`feat(model): add provider-neutral model gateway`）已正常提交并推送，本账本更新作为后续 docs snapshot 正常提交并推送到 `origin/main`；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 9C 明确保持 `Not Started`。本次任务到此停止；进入 9C 前必须重新读取 Source of Truth 并获得用户单独授权，不提前实现正式分类、字段抽取、风险、条款比对、审核结果、预警、通知、报告或新的浏览器业务 API/UI。
 
 ## Remaining Phases
