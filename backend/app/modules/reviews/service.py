@@ -10,6 +10,11 @@ from sqlalchemy import and_, func, select, text
 from sqlalchemy.orm import Session
 
 from backend.app.config import Settings
+from backend.app.integrations.model.schemas import (
+    DEFAULT_PROMPT_VERSION,
+    DEFAULT_SANITIZATION_POLICY_VERSION,
+    DEFAULT_SCHEMA_VERSION,
+)
 from backend.app.modules.clauses.templates.models import ClauseTemplate, ClauseTemplateVersion
 from backend.app.modules.contracts.models import Contract, ContractFile, FileObject
 from backend.app.modules.documents.models import DocumentVersion
@@ -38,7 +43,7 @@ from backend.app.shared.tenant import TenantContext
 logger = logging.getLogger(__name__)
 LEASE_SECONDS = 60
 REVIEW_TASK_MAX_RETRIES = 3
-PROMPT_BUNDLE_VERSION = "phase9a-no-model"
+PROMPT_BUNDLE_VERSION = DEFAULT_PROMPT_VERSION
 _STAGE_ERROR_CODE = "STAGE_EXECUTION_FAILED"
 
 
@@ -296,6 +301,8 @@ def _model_config_snapshot(
         "provider": settings.model_provider if settings is not None else "qwen",
         "model": settings.model_name if settings is not None else None,
         "model_source": "environment",
+        "schema_version": DEFAULT_SCHEMA_VERSION,
+        "sanitization_policy_version": DEFAULT_SANITIZATION_POLICY_VERSION,
         "timeout_seconds": configuration.timeout_seconds if configuration else 60,
         "max_retries": configuration.max_retries if configuration else 3,
         "usage_tracking_enabled": configuration.usage_tracking_enabled if configuration else True,

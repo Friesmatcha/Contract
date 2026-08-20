@@ -17,8 +17,8 @@
 - Last updated: `2026-08-20`
 - Branch: `main`
 - Verification baseline: `6be1ff7` (Phase 9A implementation snapshot; created from the verified Phase 8B ledger baseline `b73fdec`) plus its immediately following Phase 9A ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 9A Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is not treated as source.
-- Current boundary: Phase 0 through Phase 9A are `Completed` with migration, integration, frontend quality, browser acceptance and independent review evidence recorded below. Phase 9B through Phase 16 remain `Not Started`.
+- Working tree after the Phase 9B implementation: Phase 9B source, Migration and tests are pending as uncommitted changes; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 9B are `Completed` with migration, integration, quality, OpenAPI projection and independent review evidence recorded below. Phase 9C through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -253,9 +253,27 @@
 - Commit / Push: 用户已授权；`6be1ff7`（`feat(reviews): add async review orchestration`）已正常提交，本账本更新作为后续 docs snapshot 正常提交并一并推送到 `origin/main`；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 9A Git Snapshot 门禁已关闭；Phase 9B 明确保持 `Not Started`。后续会话进入 9B 前必须重新读取 Source of Truth，核对 Git、远端和 Migration 基线，并严格限制在 9B；不得进入 9C 或提前实现后续报告、通知等范围。
 
+## Phase 9B: Model Gateway / External Model Boundary
+
+- Status: `Completed`。
+- Completed at: `2026-08-20`。
+- Current completion boundary: 建立 provider-neutral `ModelGateway`，提供 classification、extraction、risk analysis、clause comparison/advice 四类版本化能力边界；实现严格 request/result Schema、证据校验、Fake fixture/error injection 和离线 Qwen adapter。实现 timeout、连接错误、429/5xx、Retry-After、指数退避、有限重试和一次输出修复重试；记录 request/model fingerprint、provider request ID、prompt/schema/sanitization version、token、cost、latency、status/error telemetry。未实现正式分类、字段抽取、风险分析、条款比对业务流程，也未持久化任何业务结果。
+- Entry / Contract review: 已读取并核对 `AGENTS.md`、`docs/phase-status.md`、`docs/development-plan.md` Phase 9B/Phase 9B Test Boundary/P-10、`docs/api-contract.md` 2.3、5.4、8.8-8.9、10.1-10.3、18.2、20、`docs/requirements.md` 7.1/8.3/8.4 和 `docs/architecture.md` 5.1-5.2、6.4、9.3、10.2、12-15.4。P-10 平台/部署配置边界保持关闭；无新增浏览器 API、路由、页面或 prompt/组织模型配置接口。
+- Changes: 新增 `backend/app/integrations/model/{schemas,gateway,fake,qwen}.py`、`backend/app/shared/model_telemetry.py`、模型单元/集成测试；`ReviewTask` 快照改为冻结的平台 baseline prompt/schema/sanitization 版本；Qwen 协议仅存在 integrations/model 边界，普通测试使用生成的测试密钥占位值和离线 opener，不访问真实付费服务。
+- ORM / Migration: 新增 `ModelCall` ORM 和 Migration `backend/migrations/versions/20260820_0012_phase9b_model_calls.py`；model_calls 显式保存 organization/task/stage 关联、provider/model 版本快照、fingerprint、usage/cost/latency/status/error；复合外键阻止跨组织 task/stage 关联，并以数据库约束保护 capability、状态、指纹和非负计量值。为 stage 复合外键新增 `review_stage_runs(organization_id, review_task_id, id)` 唯一约束；未修改已发布 Migration。专用 PostgreSQL `contract_phase9b_migration` 完成 `downgrade 20260820_0011 -> upgrade head`，最终 `20260820_0012 (head)` 且保持单一 head。
+- API Contract / OpenAPI: 未修改人工 API Contract；无新增 browser API/UI。OpenAPI 投影检查为 40 条路径，模型路径仅保留既有 `/api/v1/platform/model-configuration`，review task 路径未变化；现有平台配置响应/审计秘密遮蔽边界保持不变。
+- Frontend / UI Page IDs: 无前端文件、页面、路由或 API Client 变化；严格停留在后端 ModelGateway/持久化边界。
+- Tests: `.venv\Scripts\python.exe -m pytest backend/tests/unit/model_gateway backend/tests/integration/model_gateway backend/tests/integration/reviews_async -q` -> 31 passed，1 个 Windows pytest cache permission warning；专用库 `$env:TEST_DATABASE_URL=...contract_phase9b_test; $env:REDIS_URL=...; .venv\Scripts\python.exe -m pytest backend/tests -q` -> 168 passed，1 个同类 warning；`.venv\Scripts\python.exe -m ruff check backend` -> passed；`.venv\Scripts\python.exe -m mypy backend/app` -> passed；`.venv\Scripts\python.exe -m compileall -q backend` -> passed；`git diff --check` -> passed；Qwen adapter 契约测试使用注入 opener，无公网/真实密钥调用。
+- Review / Re-review: 独立审查覆盖 tenant/RBAC/复合外键、事务回滚、retry 与 repair retry、timeout/429/5xx/invalid JSON/schema/unknown fields/evidence、fingerprint/version、token/cost/latency、Secret/log/prompt/response 泄露和 OpenAPI 不变性。审查发现并修复了内部调用未显式传递 capability、HTTP 408 映射、Retry-After 日期解析和 provider request ID 长度边界；最终未发现 Phase 9B 阻塞 finding。
+- Regression / scope: 9B 专项、9A async 直接回归、后端全量、Migration 往返、OpenAPI 投影和质量门禁均在最终代码下通过；未进入 Phase 9C，Phase 9A Worker 仍不会产生真实业务结果，未新增分类/抽取/风险/比对结果表或业务 API。
+- Known Issues / Pending Decisions: `alembic check` 仍报告仓库既有旧 Migration/ORM 漂移（timestamp 类型、`file_objects.size_bytes`、organization 唯一约束、support access 外键等），未报告 `model_calls` 漂移；按范围未修改已发布 Migration 或默认 `contract_test` 污染。Windows pytest cache permission warning 非阻塞；`test-results/` 是原有及本次测试生成物，保持未跟踪且未清理。真实 Qwen 付费 smoke 未执行，按约束留给受保护环境；无阻塞本 Phase 的 Pending Decision。
+- Git branch / HEAD / status / diff summary: `main`；local HEAD `5dadbec`，`origin/main` `5dadbec`，fetch 后一致。Phase 9B 修改为后端 ModelGateway/telemetry/ORM/Migration/测试及本账本；tracked 工作区存在上述 Phase 9B 修改，相关新目录保持 untracked，`test-results/` 保持 untracked；未覆盖、恢复、删除用户已有修改或未知文件。
+- Commit / Push: 未执行 Commit、Push、amend、force push 或历史重写；遵守本次用户约束，等待明确授权。
+- Next Phase and entry conditions: Phase 9C 明确保持 `Not Started`。本次任务到此停止；进入 9C 前必须重新读取 Source of Truth 并获得用户单独授权，不提前实现正式分类、字段抽取、风险、条款比对、审核结果、预警、通知、报告或新的浏览器业务 API/UI。
+
 ## Remaining Phases
 
-Phase 9B-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 9C-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
