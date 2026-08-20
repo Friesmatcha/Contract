@@ -4,6 +4,11 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from backend.app.config import get_settings
+from backend.app.modules.clauses.templates.models import (
+    ClauseTemplate,
+    ClauseTemplateVersion,
+    StandardClause,
+)
 from backend.app.modules.contracts.models import (
     Contract,
     ContractAccessGrant,
@@ -60,6 +65,9 @@ _registered_models = (
     RiskRuleBundle,
     RiskRuleBundleVersion,
     RiskRule,
+    ClauseTemplate,
+    ClauseTemplateVersion,
+    StandardClause,
 )
 
 

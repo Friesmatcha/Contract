@@ -20,6 +20,9 @@ import DocumentPreviewPage from '@/pages/documents/DocumentPreviewPage.vue'
 import RiskRuleBundleListPage from '@/pages/risks/RiskRuleBundleListPage.vue'
 import RiskRuleBundleDetailPage from '@/pages/risks/RiskRuleBundleDetailPage.vue'
 import RiskRuleVersionEditorPage from '@/pages/risks/RiskRuleVersionEditorPage.vue'
+import ClauseTemplateListPage from '@/pages/clauses/ClauseTemplateListPage.vue'
+import ClauseTemplateDetailPage from '@/pages/clauses/ClauseTemplateDetailPage.vue'
+import ClauseTemplateVersionEditorPage from '@/pages/clauses/ClauseTemplateVersionEditorPage.vue'
 import { defaultLandingPath, loadSession, sessionState } from '@/features/auth/session'
 
 export const routes: RouteRecordRaw[] = [
@@ -99,6 +102,24 @@ export const routes: RouteRecordRaw[] = [
         name: 'risk-rule-version-editor',
         component: RiskRuleVersionEditorPage,
         meta: { title: '规则版本' },
+      },
+      {
+        path: 'clause-templates',
+        name: 'clause-templates',
+        component: ClauseTemplateListPage,
+        meta: { title: '条款模板' },
+      },
+      {
+        path: 'clause-templates/:templateId',
+        name: 'clause-template-detail',
+        component: ClauseTemplateDetailPage,
+        meta: { title: '模板详情' },
+      },
+      {
+        path: 'clause-templates/:templateId/versions/:versionId',
+        name: 'clause-template-version-editor',
+        component: ClauseTemplateVersionEditorPage,
+        meta: { title: '条款版本' },
       },
       {
         path: 'organizations/:organizationId/settings',

@@ -473,3 +473,101 @@ export interface UpdateRiskRuleVersionRequest {
   change_note?: string
   version: number
 }
+
+export type ClauseContractType = Exclude<ContractType, 'other'>
+export type ClauseTemplateStatus = 'active' | 'disabled'
+export type ClauseTemplateVersionStatus = 'draft' | 'published'
+export type ClauseSeverity = 'high' | 'medium' | 'low'
+
+export interface StandardClauseInput {
+  clause_key: string
+  name: string
+  standard_text: string
+  allowed_deviation: string
+  severity: ClauseSeverity
+  applicability: Record<string, unknown>
+  suggestion: string
+  enabled: boolean
+  order_no: number
+}
+
+export interface StandardClause extends StandardClauseInput {
+  id: string
+}
+
+export interface ClauseTemplate {
+  organization_id: string
+  id: string
+  name: string
+  contract_type: ClauseContractType
+  business_scenario: string
+  status: ClauseTemplateStatus
+  current_published_version_id: string | null
+  is_default: boolean
+  version: number
+}
+
+export interface ClauseTemplateVersionSummary {
+  organization_id: string
+  id: string
+  version_no: number
+  status: ClauseTemplateVersionStatus
+  change_note: string
+  effective_at: string | null
+  published_by: string | null
+  clauses?: StandardClause[]
+}
+
+export interface ClauseTemplateDetail extends ClauseTemplate {
+  versions: ClauseTemplateVersionSummary[]
+}
+
+export interface ClauseTemplateVersion {
+  organization_id: string
+  id: string
+  template_id: string
+  version_no: number
+  status: ClauseTemplateVersionStatus
+  change_note: string
+  effective_at: string | null
+  published_by: string | null
+  version: number
+  is_default: boolean
+  current_published_version_id: string | null
+  clauses: StandardClause[]
+}
+
+export interface ClauseTemplateListQuery {
+  contract_type?: ClauseContractType
+  business_scenario?: string
+  status?: ClauseTemplateStatus
+  q?: string
+  limit?: number
+  cursor?: string
+}
+
+export interface CreateClauseTemplateRequest {
+  name: string
+  contract_type: ClauseContractType
+  business_scenario?: string
+}
+
+export interface UpdateClauseTemplateRequest {
+  name?: string
+  business_scenario?: string
+  status?: ClauseTemplateStatus
+  is_default?: boolean
+  version: number
+}
+
+export interface CreateClauseTemplateVersionRequest {
+  change_note: string
+  source_version_id?: string
+  clauses: StandardClauseInput[]
+}
+
+export interface UpdateClauseTemplateVersionRequest {
+  clauses?: StandardClauseInput[]
+  change_note?: string
+  version: number
+}

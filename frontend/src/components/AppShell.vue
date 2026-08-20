@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   ArrowDown,
+  Document,
   FolderOpened,
   Key,
   OfficeBuilding,
@@ -67,6 +68,7 @@ const activeMenuPath = computed(() => {
   if (route.path.startsWith('/risk-rule-bundles') || route.path.startsWith('/risk-rule-bundle-versions')) {
     return '/risk-rule-bundles'
   }
+  if (route.path.startsWith('/clause-templates')) return '/clause-templates'
   return route.path
 })
 const pageTitle = computed(() => (typeof route.meta.title === 'string' ? route.meta.title : '工作区'))
@@ -80,6 +82,7 @@ const breadcrumbs = computed(() => {
   if (route.path.startsWith('/risk-rule-bundles') || route.path.startsWith('/risk-rule-bundle-versions')) {
     return ['知识配置', '风险规则', current]
   }
+  if (route.path.startsWith('/clause-templates')) return ['知识配置', '条款模板', current]
   return [current]
 })
 
@@ -100,6 +103,8 @@ async function switchOrganization(value: string): Promise<void> {
     route.path.startsWith('/risk-rule-bundle-versions/')
   ) {
     destination = '/risk-rule-bundles'
+  } else if (route.path.startsWith('/clause-templates/')) {
+    destination = '/clause-templates'
   } else if (route.path.startsWith('/contracts/') || route.path.startsWith('/documents/')) {
     destination = '/contracts'
   }
@@ -232,6 +237,13 @@ async function signOut(): Promise<void> {
             >
               <ElIcon><Warning /></ElIcon>
               <span>风险规则</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="canReadRiskRules"
+              index="/clause-templates"
+            >
+              <ElIcon><Document /></ElIcon>
+              <span>条款模板</span>
             </ElMenuItem>
             <ElMenuItem
               index="/"

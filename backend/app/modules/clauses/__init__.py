@@ -1,0 +1,1 @@
+"""Clause template management module."""

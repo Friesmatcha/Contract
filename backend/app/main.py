@@ -17,6 +17,7 @@ from backend.app.integrations.notifications.smtp import create_mailer
 from backend.app.integrations.storage.local import LocalFileStore
 from backend.app.logging import configure_logging
 from backend.app.middleware import request_context_middleware
+from backend.app.modules.clauses.templates.api import router as clause_templates_router
 from backend.app.modules.contracts.api import file_router
 from backend.app.modules.contracts.api import router as contracts_router
 from backend.app.modules.documents.api import router as documents_router
@@ -95,6 +96,7 @@ def create_app(
         app.include_router(file_router, prefix="/api/v1")
         app.include_router(documents_router, prefix="/api/v1")
         app.include_router(risk_rules_router, prefix="/api/v1")
+        app.include_router(clause_templates_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:
