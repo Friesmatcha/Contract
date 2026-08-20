@@ -30,6 +30,7 @@ from backend.app.modules.reviews.api import (
     router as reviews_router,
 )
 from backend.app.modules.risks.rules.api import router as risk_rules_router
+from backend.app.modules.warnings.api import notification_router, warning_router
 from backend.app.shared.errors import ApplicationError
 
 logger = logging.getLogger(__name__)
@@ -105,6 +106,8 @@ def create_app(
         app.include_router(clause_templates_router, prefix="/api/v1")
         app.include_router(contract_reviews_router, prefix="/api/v1")
         app.include_router(reviews_router, prefix="/api/v1")
+        app.include_router(warning_router, prefix="/api/v1")
+        app.include_router(notification_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:

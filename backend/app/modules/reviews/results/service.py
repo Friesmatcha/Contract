@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, delete, select
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import Session
 
 from backend.app.integrations.model.gateway import (
@@ -536,7 +536,6 @@ def execute_extraction(
         return
     heartbeat()
 
-
     invocation: ModelInvocationResult[Any] = _invoke_or_fail(
         gateway,
         request,
@@ -672,9 +671,9 @@ def _condition_value(
         return matched, [first_span] if matched else []
     if operator == "regex":
         try:
-            matched = re.search(
-                str(condition.get("pattern", "")), text, flags=re.DOTALL
-            ) is not None
+            matched = (
+                re.search(str(condition.get("pattern", "")), text, flags=re.DOTALL) is not None
+            )
         except re.error:
             matched = False
         return matched, [first_span] if matched else []
@@ -859,14 +858,18 @@ def execute_risk_analysis(
         )
     )
     stage_run.input_fingerprint = input_fingerprint
-    reusable_empty = _has_reusable_empty_stage(
-        session,
-        task=task,
-        stage_run=stage_run,
-        capability="risk_analysis",
-        input_fingerprint=input_fingerprint,
-        model_fingerprint_value=model_fp,
-    ) if not existing else False
+    reusable_empty = (
+        _has_reusable_empty_stage(
+            session,
+            task=task,
+            stage_run=stage_run,
+            capability="risk_analysis",
+            input_fingerprint=input_fingerprint,
+            model_fingerprint_value=model_fp,
+        )
+        if not existing
+        else False
+    )
     session.commit()
     if reusable_empty:
         return
@@ -945,11 +948,11 @@ def execute_risk_analysis(
                     "basis": item.basis,
                     "suggestion": "请结合原文和组织政策复核该风险。",
                     "confidence": 0.5,
-            "source": "model",
-            "rule_key": None,
-            "rule_id": None,
-            "model_call_id": None,
-            "span_ids": span_ids,
+                    "source": "model",
+                    "rule_key": None,
+                    "rule_id": None,
+                    "model_call_id": None,
+                    "span_ids": span_ids,
                 }
             )
     except ResultExecutionError:
@@ -998,9 +1001,7 @@ def execute_risk_analysis(
                     "input": input_fingerprint,
                     "model": model_fp,
                     "finding": {
-                        key: value
-                        for key, value in finding_data.items()
-                        if key != "span_ids"
+                        key: value for key, value in finding_data.items() if key != "span_ids"
                     },
                 }
             )
@@ -1009,9 +1010,7 @@ def execute_risk_analysis(
                 review_task_id=task.id,
                 stage_run_id=stage_run.id,
                 rule_id=finding_data["rule_id"],
-                model_call_id=(
-                    model_call_id if finding_data["source"] == "model" else None
-                ),
+                model_call_id=(model_call_id if finding_data["source"] == "model" else None),
                 document_version_id=document_input.document.id,
                 rule_key=finding_data["rule_key"],
                 risk_type=finding_data["risk_type"],
@@ -1084,14 +1083,18 @@ def execute_clause_comparison(
         )
     )
     stage_run.input_fingerprint = input_fingerprint
-    reusable_empty = _has_reusable_empty_stage(
-        session,
-        task=task,
-        stage_run=stage_run,
-        capability="clause_comparison",
-        input_fingerprint=input_fingerprint,
-        model_fingerprint_value=model_fp,
-    ) if not existing else False
+    reusable_empty = (
+        _has_reusable_empty_stage(
+            session,
+            task=task,
+            stage_run=stage_run,
+            capability="clause_comparison",
+            input_fingerprint=input_fingerprint,
+            model_fingerprint_value=model_fp,
+        )
+        if not existing
+        else False
+    )
     session.commit()
     if reusable_empty:
         return
@@ -1328,6 +1331,22 @@ def _evidence_payloads(
     ]
 
 
+def _warning_total(session: Session, *, organization_id: UUID, task_id: UUID) -> int:
+    from backend.app.modules.warnings.models import Warning
+
+    return int(
+        session.scalar(
+            select(func.count())
+            .select_from(Warning)
+            .where(
+                Warning.organization_id == organization_id,
+                Warning.review_task_id == task_id,
+            )
+        )
+        or 0
+    )
+
+
 def get_review_results(
     session: Session,
     *,
@@ -1424,9 +1443,7 @@ def get_review_results(
         risk_statement = risk_statement.where(RiskFinding.status == risk_status)
     risk_findings = list(
         session.scalars(
-            risk_statement.order_by(
-                RiskFinding.severity, RiskFinding.created_at, RiskFinding.id
-            )
+            risk_statement.order_by(RiskFinding.severity, RiskFinding.created_at, RiskFinding.id)
         )
     )
     clause_statement = select(ClauseComparisonRow).where(
@@ -1484,9 +1501,7 @@ def get_review_results(
         ),
         "version": classification.version,
     }
-    unresolved_count = sum(
-        finding.status == "pending_review" for finding in risk_findings
-    ) + sum(
+    unresolved_count = sum(finding.status == "pending_review" for finding in risk_findings) + sum(
         comparison.status in {"deviated", "missing", "uncertain"}
         for comparison in clause_comparisons
     )
@@ -1573,10 +1588,14 @@ def get_review_results(
             "high": risk_counts["high"],
             "medium": risk_counts["medium"],
             "low": risk_counts["low"],
-            "warning_total": 0,
+            "warning_total": _warning_total(
+                session, organization_id=organization_id, task_id=task.id
+            ),
             "unresolved_count": unresolved_count,
         },
     }
+
+
 __all__ = [
     "DocumentInput",
     "ResultExecutionError",

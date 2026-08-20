@@ -420,7 +420,7 @@ Success `200 OK`：
 | `version_status` | `draft`, `published`, `disabled` | 草稿、已发布、已停用 | 只能通过版本动作 |
 | `feedback_label` | `correct`, `incorrect`, `modified`, `ignored` | 正确、错误、修改、忽略 | 是 |
 
-预警合法流转：`pending_confirmation -> in_progress -> resolved -> closed`；`pending_confirmation/in_progress -> ignored`；组织管理员可 `ignored/closed -> in_progress`。`assign` 和 `note` 不改变主状态。关闭必须有 `resolution` 或 `revision_id`。
+预警合法流转：`pending_confirmation -> in_progress -> resolved -> closed`；`pending_confirmation/in_progress -> ignored`；组织管理员可 `ignored/closed -> in_progress`。`assign` 和 `note` 只允许在 `pending_confirmation` 或 `in_progress` 状态执行，均不改变主状态；忽略、解决或关闭后的预警必须先通过合法状态动作恢复到活动状态，不能在只读/终态上追加这两类事件。关闭必须有 `resolution` 或 `revision_id`。
 
 ## 7. 分页、筛选和排序
 
@@ -1363,7 +1363,7 @@ Success `201 Created`：
 { "event_id": "7ca9e0e7-4567-4a32-9e5d-69c39bb69121", "event_type": "assign", "from_status": "pending_confirmation", "to_status": "pending_confirmation", "assignee_id": "8b2f8a68-5e4a-4b0a-b6a2-6dce4e0f5a11", "created_at": "2026-08-17T05:00:00Z" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 WARNING_NOT_FOUND`、`409 INVALID_STATE_TRANSITION`、`422 ACTION_FIELD_REQUIRED`。`false_positive` 将预警置为 `ignored`，并将关联风险标为 `false_positive`；`close` 必须有结论或修订引用；组织管理员才可重新打开 `ignored/closed`。
+主要错误：`403 FORBIDDEN`、`404 WARNING_NOT_FOUND`、`409 INVALID_STATE_TRANSITION`、`422 ACTION_FIELD_REQUIRED`。`assign` 和 `note` 在 `ignored`、`resolved`、`closed` 状态返回 `409 INVALID_STATE_TRANSITION`；`assign` 必须提供同组织的 active reviewer，`note` 必须提供非空说明。`false_positive` 将预警置为 `ignored`，并将关联风险标为 `false_positive`；`close` 必须有结论或修订引用；组织管理员才可重新打开 `ignored/closed`。
 
 ## 14. Notification APIs
 

@@ -43,6 +43,7 @@ from backend.app.modules.reviews.results.models import (
     RiskFindingEvidence,
 )
 from backend.app.modules.risks.rules.models import RiskRule, RiskRuleBundle, RiskRuleBundleVersion
+from backend.app.modules.warnings.models import Notification, Warning, WarningEvent
 from backend.app.shared.audit import AuditLog
 from backend.app.shared.db import Base
 from backend.app.shared.idempotency import IdempotencyRecord
@@ -90,6 +91,9 @@ _registered_models = (
     RiskFindingEvidence,
     ClauseComparison,
     ClauseComparisonEvidence,
+    Warning,
+    WarningEvent,
+    Notification,
 )
 
 

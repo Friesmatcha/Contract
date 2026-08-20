@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   ArrowDown,
+  Bell,
   Document,
   FolderOpened,
   Key,
@@ -12,7 +13,7 @@ import {
   User,
   Warning,
 } from '@element-plus/icons-vue'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import {
@@ -23,10 +24,15 @@ import {
   selectCurrentOrganization,
   sessionState,
 } from '@/features/auth/session'
+import { getUnreadNotificationCount } from '@/api/warnings'
+import NotificationDrawer from '@/components/NotificationDrawer.vue'
 
 const router = useRouter()
 const route = useRoute()
 const signingOut = ref(false)
+const notificationOpen = ref(false)
+const unreadCount = ref(0)
+let notificationPoll: number | undefined
 
 const session = computed(() => sessionState.current)
 const isPlatformAdmin = computed(() => session.value?.user.is_platform_admin ?? false)
@@ -69,6 +75,7 @@ const activeMenuPath = computed(() => {
     return '/risk-rule-bundles'
   }
   if (route.path.startsWith('/clause-templates')) return '/clause-templates'
+  if (route.path.startsWith('/warnings')) return '/warnings'
   return route.path
 })
 const pageTitle = computed(() => (typeof route.meta.title === 'string' ? route.meta.title : '工作区'))
@@ -83,8 +90,17 @@ const breadcrumbs = computed(() => {
     return ['知识配置', '风险规则', current]
   }
   if (route.path.startsWith('/clause-templates')) return ['知识配置', '条款模板', current]
+  if (route.path.startsWith('/warnings')) return ['预警中心', current]
   return [current]
 })
+
+async function refreshUnreadCount(): Promise<void> {
+  try {
+    unreadCount.value = (await getUnreadNotificationCount()).unread_count
+  } catch {
+    unreadCount.value = 0
+  }
+}
 
 function navigate(path: string): void {
   void router.push(path)
@@ -133,6 +149,15 @@ async function signOut(): Promise<void> {
     signingOut.value = false
   }
 }
+
+onMounted(() => {
+  void refreshUnreadCount()
+  notificationPoll = window.setInterval(() => void refreshUnreadCount(), 60_000)
+})
+
+onUnmounted(() => {
+  if (notificationPoll !== undefined) window.clearInterval(notificationPoll)
+})
 </script>
 
 <template>
@@ -231,6 +256,10 @@ async function signOut(): Promise<void> {
               <ElIcon><FolderOpened /></ElIcon>
               <span>合同目录</span>
             </ElMenuItem>
+            <ElMenuItem index="/warnings">
+              <ElIcon><Warning /></ElIcon>
+              <span>预警中心</span>
+            </ElMenuItem>
             <ElMenuItem
               v-if="canReadRiskRules"
               index="/risk-rule-bundles"
@@ -266,39 +295,58 @@ async function signOut(): Promise<void> {
             {{ breadcrumb }}
           </ElBreadcrumbItem>
         </ElBreadcrumb>
-        <ElDropdown trigger="click">
+        <div class="header-actions">
           <button
-            class="user-menu-trigger"
+            class="notification-trigger"
             type="button"
-            aria-label="账户菜单"
+            aria-label="通知中心"
+            @click="notificationOpen = true"
           >
-            <ElAvatar :size="28">
-              <ElIcon><UserFilled /></ElIcon>
-            </ElAvatar>
-            <span>{{ session.user.display_name }}</span>
-            <ElIcon><ArrowDown /></ElIcon>
+            <ElIcon><Bell /></ElIcon>
+            <ElBadge
+              v-if="unreadCount > 0"
+              :value="unreadCount"
+              :max="99"
+            />
           </button>
-          <template #dropdown>
-            <ElDropdownMenu>
-              <ElDropdownItem disabled>
-                {{ session.user.email }}
-              </ElDropdownItem>
-              <ElDropdownItem
-                divided
-                :disabled="signingOut"
-                @click="signOut"
-              >
-                <ElIcon><SwitchButton /></ElIcon>
-                退出登录
-              </ElDropdownItem>
-            </ElDropdownMenu>
-          </template>
-        </ElDropdown>
+          <ElDropdown trigger="click">
+            <button
+              class="user-menu-trigger"
+              type="button"
+              aria-label="账户菜单"
+            >
+              <ElAvatar :size="28">
+                <ElIcon><UserFilled /></ElIcon>
+              </ElAvatar>
+              <span>{{ session.user.display_name }}</span>
+              <ElIcon><ArrowDown /></ElIcon>
+            </button>
+            <template #dropdown>
+              <ElDropdownMenu>
+                <ElDropdownItem disabled>
+                  {{ session.user.email }}
+                </ElDropdownItem>
+                <ElDropdownItem
+                  divided
+                  :disabled="signingOut"
+                  @click="signOut"
+                >
+                  <ElIcon><SwitchButton /></ElIcon>
+                  退出登录
+                </ElDropdownItem>
+              </ElDropdownMenu>
+            </template>
+          </ElDropdown>
+        </div>
       </header>
 
       <main class="app-content">
         <RouterView />
       </main>
     </div>
+    <NotificationDrawer
+      v-model="notificationOpen"
+      @count-change="unreadCount = $event"
+    />
   </div>
 </template>

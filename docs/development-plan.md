@@ -1963,7 +1963,7 @@ Stable Baseline
 | P-08（已关闭） | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，已决策 | 采用 API Contract 3.1：密码 12-128 字符、不强制字符类别；密码重置 Token 30 分钟、邀请 Token 7 天；Token 至少 256 位随机值且数据库只保存哈希。历史密码限制首期不做。 |
 | P-09（已关闭） | SMTP 发件人、公开前端基址、投递失败可观测性和重试上限未完整冻结 | Phase 2/4，已决策 | 采用 API Contract 3.5：配置由环境注入；缺配置时在账号查询前统一返回 `503 SMTP_NOT_CONFIGURED`；首期后台投递只尝试 1 次且自动重试上限为 0，失败写不含邮箱/Token/完整 URL 的安全结构化日志/指标。当前实现仍须补失败捕获和测试，P-09 关闭不等于 Phase 2 完成。 |
 | P-10（已关闭） | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B，已决策 | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；架构说明已同步 |
-| P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review |
+| P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review；Phase 11 只补齐 Warning/WarningEvent/Notification 当前 6 个 API、通知投递失败事实和租户/并发约束所需字段 |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
 
 ### Decision Record: P-03 Result Status Canonical Value（2026-08-20）
@@ -2032,6 +2032,14 @@ Stable Baseline
   `reviewing`、`pending_review` 任一存在即返回 `409 ACTIVE_REVIEW_EXISTS`，不写入归档状态。
 - **History boundary**：合同归档不级联改变 `ReviewTask` 或 `ReviewStageRun`。`completed`、`failed`、`archived` 任务及其输入快照保持原状态、只读和可追溯。
 - **Command boundary**：API 没有定义 cancel、任务归档或恢复接口；Phase 9A 不实现这些命令，也不自行增加状态迁移。
+
+### Decision Record: P-11 Phase 11 Warning and Notification Minimum Model（2026-08-20）
+
+- **Status**：Closed for Phase 11 model review; later phases may add fields only through their own contract review.
+- **Warning minimum**：`warnings` 保存组织、审核任务、合同、至少一个风险/条款/字段/分类关联、触发类型/时间、稳定去重键、优先级、状态、责任人、截止时间和解决/关闭事实；活动去重由数据库部分唯一索引保证。责任人通过组织复合关联和服务层 active reviewer 校验。
+- **Event minimum**：`warning_events` 追加保存组织、预警、事件类型、from/to 状态、操作者、说明、受控 metadata 和时间；首个 created 事件保存触发条件与规则版本摘要，不保存合同正文或模型原始响应。
+- **Notification minimum**：`notifications` 保存组织、当前用户、预警、`in_app` channel、API 所需 `title/body`、独立 `delivery_status`、attempts、next attempt、read_at 和安全 error_code。API 的 `read/unread` 由 `read_at` 投影，投递失败事实不改变预警事务。
+- **Boundary**：Phase 11 不新增外部通知、自动补偿、手工重试接口、履约提醒、结果人工修订或新的资源 version；Phase 14B 只能在后续 contract/migration review 后使用已有 retry facts 实现补偿。
 
 ### Just-in-Time Closing Order
 

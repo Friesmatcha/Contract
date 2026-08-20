@@ -474,6 +474,130 @@ export interface ReviewResults {
   summary: ReviewResultsSummary
 }
 
+export type WarningStatus =
+  | 'pending_confirmation'
+  | 'in_progress'
+  | 'ignored'
+  | 'resolved'
+  | 'closed'
+export type WarningSeverity = 'high' | 'medium' | 'low'
+export type WarningEventType =
+  | 'confirm'
+  | 'false_positive'
+  | 'ignore'
+  | 'assign'
+  | 'note'
+  | 'resolve'
+  | 'close'
+  | 'reopen'
+
+export interface WarningListItem {
+  id: string
+  contract_id: string
+  review_task_id: string
+  severity: WarningSeverity
+  status: WarningStatus
+  priority: WarningSeverity
+  assignee_id: string | null
+  due_at: string | null
+  trigger_type: string
+  triggered_at: string
+}
+
+export interface WarningSummary {
+  unprocessed_count: number
+  high_count: number
+}
+
+export interface WarningPage extends CursorPage<WarningListItem> {
+  summary: WarningSummary
+}
+
+export interface WarningAssignee {
+  id: string
+  display_name: string | null
+  email: string
+}
+
+export interface WarningEvent {
+  event_id: string
+  event_type: string
+  from_status: WarningStatus | null
+  to_status: WarningStatus | null
+  actor_id: string | null
+  note: string | null
+  assignee_id: string | null
+  due_at: string | null
+  created_at: string
+}
+
+export interface WarningDetail extends WarningListItem {
+  contract_id: string
+  review_task_id: string
+  trigger_type: string
+  triggered_at: string
+  risk_finding_id: string | null
+  clause_comparison_id: string | null
+  extracted_field_id: string | null
+  classification_id: string | null
+  assignee: WarningAssignee | null
+  resolution: string | null
+  revision_id: string | null
+  closed_at: string | null
+  evidence: SourceLocator[]
+  events: WarningEvent[]
+}
+
+export interface WarningListQuery {
+  status?: WarningStatus
+  severity?: WarningSeverity
+  contract_type?: ContractType
+  assignee_id?: string
+  risk_type?: string
+  triggered_from?: string
+  triggered_to?: string
+  sort?: 'triggered_at' | 'priority' | 'due_at'
+  direction?: 'asc' | 'desc'
+  limit?: number
+  cursor?: string
+}
+
+export interface WarningEventRequest {
+  type: WarningEventType
+  note?: string
+  assignee_id?: string
+  due_at?: string | null
+  resolution?: string
+  revision_id?: string
+}
+
+export type NotificationStatus = 'unread' | 'read'
+
+export interface Notification {
+  id: string
+  warning_id: string
+  channel: 'in_app'
+  status: NotificationStatus
+  title: string
+  body: string
+  created_at: string
+}
+
+export type NotificationPage = CursorPage<Notification>
+
+export interface NotificationListQuery {
+  status?: NotificationStatus
+  warning_id?: string
+  limit?: number
+  cursor?: string
+}
+
+export interface NotificationReadResponse {
+  id: string
+  status: 'read'
+  read_at: string
+}
+
 export interface DocumentPageResponse {
   document_version_id: string
   document_kind: DocumentKind

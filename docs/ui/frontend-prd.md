@@ -2166,8 +2166,8 @@ Descriptions、Tag、Alert、Button/Dropdown、Form、Dialog/Drawer、Timeline�
 | Confirm | Org Admin, Reviewer | `pending_confirmation` | `in_progress` |
 | False positive | Org Admin, Reviewer | `pending_confirmation|in_progress` | `ignored`; related risk false positive |
 | Ignore | Org Admin, Reviewer | `pending_confirmation|in_progress` | `ignored` |
-| Assign | Org Admin, Reviewer | Valid warning; assignee same-org reviewer | Append event, status unchanged |
-| Add note | Org Admin, Reviewer | Valid warning | Append event, status unchanged |
+| Assign | Org Admin, Reviewer | `pending_confirmation|in_progress`; assignee same-org active reviewer | Append event, status unchanged |
+| Add note | Org Admin, Reviewer | `pending_confirmation|in_progress`; non-empty note | Append event, status unchanged |
 | Resolve | Org Admin, Reviewer | `in_progress` | `resolved` |
 | Close | Org Admin, Reviewer | `resolved` | `closed` with resolution/revision |
 | Reopen | Org Admin only | `ignored|closed` | `in_progress` |
@@ -3058,11 +3058,11 @@ N/A。
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `pending_confirmation` | Org Admin/Reviewer | Org Admin/Reviewer | Org Admin/Reviewer | Org Admin/Reviewer | Org Admin/Reviewer | No | No | No |
 | `in_progress` | No | Org Admin/Reviewer | Org Admin/Reviewer | Org Admin/Reviewer | Org Admin/Reviewer | Org Admin/Reviewer | No | No |
-| `ignored` | No | No | No | Per server validation; recommended hidden | Org Admin/Reviewer if accepted by server | No | No | Org Admin only |
-| `resolved` | No | No | No | Per server validation | Org Admin/Reviewer if accepted by server | No | Org Admin/Reviewer | No |
+| `ignored` | No | No | No | No; reopen first | No; reopen first | No | No | Org Admin only |
+| `resolved` | No | No | No | No; reopen first | No; reopen first | No | Org Admin/Reviewer | No |
 | `closed` | No | No | No | No | Read-only history | No | No | Org Admin only |
 
-契约明确 `assign` 和 `note` 不改变主状态，但没有逐状态列出它们是否都合法；表中“Per server validation”不能当作已确认行为。原型应优先只在活动状态显示 Assign，在 Phase 11 契约测试关闭这一 UI 细节。
+契约明确 `assign` 和 `note` 只在 `pending_confirmation`、`in_progress` 活动状态合法，且不改变主状态；`ignored`、`resolved`、`closed` 只读，需先执行合法的重新打开动作再追加说明或分派。Phase 11 contract tests 必须覆盖这两个事件在每个状态的允许/拒绝矩阵。
 
 ### 12.2 Filters and Scanning
 

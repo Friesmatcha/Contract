@@ -26,6 +26,8 @@ import RiskRuleVersionEditorPage from '@/pages/risks/RiskRuleVersionEditorPage.v
 import ClauseTemplateListPage from '@/pages/clauses/ClauseTemplateListPage.vue'
 import ClauseTemplateDetailPage from '@/pages/clauses/ClauseTemplateDetailPage.vue'
 import ClauseTemplateVersionEditorPage from '@/pages/clauses/ClauseTemplateVersionEditorPage.vue'
+import WarningListPage from '@/pages/warnings/WarningListPage.vue'
+import WarningDetailPage from '@/pages/warnings/WarningDetailPage.vue'
 import { defaultLandingPath, loadSession, sessionState } from '@/features/auth/session'
 
 export const routes: RouteRecordRaw[] = [
@@ -141,6 +143,18 @@ export const routes: RouteRecordRaw[] = [
         name: 'clause-template-version-editor',
         component: ClauseTemplateVersionEditorPage,
         meta: { title: '条款版本' },
+      },
+      {
+        path: 'warnings',
+        name: 'warnings',
+        component: WarningListPage,
+        meta: { title: '预警中心' },
+      },
+      {
+        path: 'warnings/:warningId',
+        name: 'warning-detail',
+        component: WarningDetailPage,
+        meta: { title: '预警详情' },
       },
       {
         path: 'organizations/:organizationId/settings',

@@ -898,6 +898,9 @@ def complete_stage(session: Session, *, stage_run_id: UUID, lease_owner: str) ->
         progress = int(((_stage_order(run.stage) + 1) / len(REVIEW_STAGES)) * 100)
         task.progress = progress
         if _stage_order(run.stage) == len(REVIEW_STAGES) - 1:
+            from backend.app.modules.warnings.service import generate_warnings
+
+            generate_warnings(session, task=task)
             task.status = "pending_review"
             task.current_stage = run.stage
             task.finished_at = now

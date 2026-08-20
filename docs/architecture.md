@@ -158,7 +158,7 @@ Phase 9A 的 `ReviewTask` 最多允许 3 次显式 retry；达到上限后保持
 
 ### 5.3 预警状态机
 
-允许的主流程为：`pending_confirmation -> in_progress -> resolved -> closed`。`pending_confirmation` 或 `in_progress` 可进入 `ignored`；组织管理员可将 `ignored` 或 `closed` 重新打开到 `in_progress`。转派不改变主状态，但必须新增事件。
+允许的主流程为：`pending_confirmation -> in_progress -> resolved -> closed`。`pending_confirmation` 或 `in_progress` 可进入 `ignored`；组织管理员可将 `ignored` 或 `closed` 重新打开到 `in_progress`。转派和说明只允许发生在 `pending_confirmation` 或 `in_progress`，不改变主状态但必须新增事件；忽略、解决和关闭状态在重新打开前只读。
 
 每次确认、误报、忽略、转派、说明、解决、关闭和重新打开都追加 `warning_events`，不得覆盖历史事件。关闭必须包含结论或关联的人工修订记录。
 
@@ -233,9 +233,9 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 
 | 表 | 关键字段 | 关键约束/说明 |
 | --- | --- | --- |
-| `warnings` | `organization_id`, `review_task_id`, `contract_id`, `risk_finding_id`, `clause_comparison_id`, `extracted_field_id`, `classification_id`, `trigger_type`, `dedupe_key`, `priority`, `status`, `assignee_id`, `due_at`, `resolution`, `closed_at` | 风险、条款、字段或分类至少关联一个；活动状态下 `dedupe_key` 部分唯一 |
+| `warnings` | `organization_id`, `review_task_id`, `contract_id`, `risk_finding_id`, `clause_comparison_id`, `extracted_field_id`, `classification_id`, `trigger_type`, `triggered_at`, `dedupe_key`, `priority`, `status`, `assignee_id`, `due_at`, `resolution`, `closed_at` | 风险、条款、字段或分类至少关联一个；活动状态下 `dedupe_key` 部分唯一 |
 | `warning_events` | `organization_id`, `warning_id`, `event_type`, `from_status`, `to_status`, `actor_id`, `note`, `metadata_json`, `created_at` | 追加写时间线；首个事件保存触发条件和规则版本 |
-| `notifications` | `organization_id`, `user_id`, `warning_id`, `channel`, `status`, `attempts`, `next_attempt_at`, `read_at`, `error_code` | 站内通知首期必做；外部投递失败不回滚预警 |
+| `notifications` | `organization_id`, `user_id`, `warning_id`, `channel`, `title`, `body`, `delivery_status`, `attempts`, `next_attempt_at`, `read_at`, `error_code` | `read/unread` 从 `read_at` 投影；站内通知首期必做；外部投递失败不回滚预警 |
 | `support_access_grants` | `organization_id`, `platform_admin_user_id`, `reason`, `status`, `granted_by`, `expires_at`, `revoked_at`, `revoked_by` | 最长 4 小时；`active` 目标部分唯一；过期转为 `expired`；平台管理员仅可通过有效授权读取业务 JSON，不能写入或下载 |
 | `reports` | `organization_id`, `review_task_id`, `display_no`, `format`, `status`, `snapshot_json`, `template_version`, `file_object_id`, `generated_at`, `error_code` | 报告使用不可变快照；重新生成创建新记录，不覆盖旧文件 |
 | `feedback` | `organization_id`, `review_task_id`, `subject_type`, `subject_id`, `label`, `original_json`, `corrected_json`, `note`, `created_by` | 标签为 `correct/incorrect/modified/ignored`；不自动用于线上训练 |
