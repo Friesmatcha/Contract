@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `b64d9e9` (Phase 10 implementation snapshot, based on the verified Phase 9C ledger baseline `fb8db17`) plus its immediately following Phase 10 ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 10 Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 10 are `Completed` with migration, integration, quality, OpenAPI projection, E2E and independent review evidence recorded below. Phase 11 through Phase 16 remain `Not Started`.
+- Verification baseline: `3c0a7ff` (Phase 11 implementation snapshot, based on the verified Phase 10 ledger baseline `df19383`) plus its immediately following Phase 11 ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 11 Git Snapshot: tracked source and documentation changes are committed; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 11 are `Completed`; Phase 12 through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -307,9 +307,25 @@
 - Commit / Push: 用户已明确授权；`b64d9e9`（`feat(review-results): add risk and clause analysis`）已正常提交，本账本更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 11-16 保持 `Not Started`。进入下一 Phase 前需按开发计划重新进行 entry review；本次不实现预警、通知或任何后续 Phase 能力。
 
+## Phase 11: Warnings and In-App Notifications
+
+- Status: `Completed`.
+- Entry / Pending Decision review: Re-read the Phase 11 development-plan boundary, API Contract 13.1-13.3 and 14.1-14.3, requirements/architecture warning and notification sections, UI README/PRD/design system, and WARNING-001/WARNING-002/NOTIFY-001 assets. P-11 was closed for the minimum Phase 11 Warning/WarningEvent/Notification model. The contract clarification records that `assign` and `note` are legal only in `pending_confirmation` or `in_progress`; `assign` requires an active same-organization reviewer and `note` requires non-empty text.
+- Scope boundary: Implemented warning trigger/deduplication, event state machine, assignment/deadline, in-app notifications/read state/delivery facts, warning list/detail, notification drawer, and result `warning_total`. Email/WeChat, fulfillment reminders, manual result edits, and Phase 12+ behavior were not implemented.
+- Changes: Added `backend/app/modules/warnings/{models,schemas,service,api}.py`, `backend/app/integrations/notifications/in_app.py`, migration `20260820_0015_phase11_warnings_notifications.py`, warning generation at the final review stage transaction boundary, warning/notification API types and client, WARNING-001/WARNING-002 pages, NOTIFY-001 drawer, router/navigation/styles, unit/integration tests, and 1440px/1280px Playwright coverage.
+- API Contract / OpenAPI: Updated the human contract and synchronized architecture/PRD state-matrix clarifications. Six Phase 11 routes are registered and a unit OpenAPI projection test passes. Query enums for warning status/severity/contract type/sort/direction and notification status are type constrained; malformed cursors return the shared validation error.
+- ORM / Migration: `20260820_0015` is a linear child of the actual head `20260820_0014`; ORM models are registered with Alembic and use composite organization foreign keys, active dedupe uniqueness, state/read/delivery constraints and indexes. `alembic heads` and `history` show `20260820_0015 (head)`. Independent Docker PostgreSQL database `contract_phase11_test` completed `upgrade head -> downgrade -1 -> upgrade head`; final revision is `20260820_0015 (head)`.
+- Frontend / UI Page IDs: WARNING-001 `/warnings`, WARNING-002 `/warnings/:warningId`, and NOTIFY-001 header drawer cover loading, empty/error/forbidden/read-only/processing paths present in the implementation. Viewer write actions are hidden; support access is read-only. The notification count polls every 60 seconds and is cleaned up on unmount.
+- Tests: `.venv\Scripts\python.exe -m pytest backend/tests/unit/warning_state backend/tests/integration/warnings -q` -> `10 passed`; `.venv\Scripts\python.exe -m pytest backend/tests -q --basetemp D:\Contract\.pytest-phase11-tmp` against isolated `contract_phase11_test` -> `206 passed`; `.venv\Scripts\python.exe -m ruff check backend`, `.venv\Scripts\python.exe -m mypy backend/app`, `.venv\Scripts\python.exe -m compileall -q backend`, and `git diff --check` -> passed. Explicit backend bootstrap tests -> `15 passed`. `npm --prefix frontend run test -- --run` -> `20 files / 71 tests passed`; `typecheck`, `build`, and `lint` exit 0. Lint retains 140 existing Vue formatting warnings; build retains the existing Vite chunk warning. Phase 11 Playwright assertions were observed passed for Chromium 1440px/1280px (`4 passed`), but the Windows Vite/Playwright process did not cleanly exit and was manually stopped after the assertions.
+- Integration / Review: Warning/Notification integration tests passed `5 passed` within the Phase 11 integration run and the backend full suite passed `206 passed` against isolated PostgreSQL. Independent read-only review covered tenant/RBAC/support read-only access, state transitions, assignment validation, deduplication/concurrency constraints, evidence lookup including primary-result evidence fallback, notification read/delivery separation, migration linearity, API/UI alignment, API read-transaction boundaries, and scope. The contract-test clarification for `assign`/`note` is documented and covered for every warning state. No remaining current-Phase blocking finding was identified.
+- Known Issues / Pending Decisions: The current UI uses a reviewer ID reference input for assignment because Phase 11 exposes no reviewer-directory read API to non-admin reviewers; server-side same-organization active-reviewer validation remains authoritative. Notification delivery is in-app persistence in this Phase; automatic compensation/retry scheduling remains Phase 14B. Existing default `contract_test` pollution, Alembic drift and the pre-existing Windows pytest temp-directory permission issue were not changed; the final full suite used a temporary repository basetemp which was removed after verification. Real Qwen smoke was not run; automated model-path tests use Fake Model Gateway. `test-results/` remains untracked, preserved, and not submitted.
+- Git branch / HEAD / status / diff summary: `main`; Phase 11 implementation snapshot is `3c0a7ff`, containing the warning/notification backend, `0015` migration, contract/architecture/PRD clarifications, tests, and WARNING-001/WARNING-002/NOTIFY-001 frontend implementation. This ledger update is the immediately following documentation snapshot. After completion the tracked working tree is clean and only the preserved untracked `test-results/` remains.
+- Commit / Push: The user explicitly authorized the Git Snapshot and normal push. `3c0a7ff` (`feat(warnings): add warning and notification workflow`) and this following ledger snapshot are pushed to `origin/main`; no amend, force push, history rewrite, cleanup, or deletion was performed.
+- Next Phase and entry conditions: Phase 12 through Phase 16 remain `Not Started`; stop after this Phase 11 status update and do not enter Phase 12.
+
 ## Remaining Phases
 
-Phase 11-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 12-16 均为 `Not Started`。Phase 11 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
