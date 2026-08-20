@@ -16,8 +16,8 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `6be1ff7` (Phase 9A implementation snapshot; created from the verified Phase 8B ledger baseline `b73fdec`).
-- Working tree after the Phase 9A implementation snapshot: only this ledger update is pending; generated `test-results/` remains untracked and is not treated as source.
+- Verification baseline: `6be1ff7` (Phase 9A implementation snapshot; created from the verified Phase 8B ledger baseline `b73fdec`) plus its immediately following Phase 9A ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 9A Git Snapshot: no tracked source or documentation changes are pending; generated `test-results/` remains untracked and is not treated as source.
 - Current boundary: Phase 0 through Phase 9A are `Completed` with migration, integration, frontend quality, browser acceptance and independent review evidence recorded below. Phase 9B through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
@@ -249,7 +249,7 @@
 - Review / Re-review: 独立只读 Review 初次发现 lease 状态、retry 上限、REVIEW-001 Cancel 文案、隐藏页轮询和归档并发锁顺序问题；已完成 Contract/architecture/UI PRD 更新和实现修复。真实 PostgreSQL 并发测试暴露并关闭创建/归档死锁；独立 re-review 确认上述阻塞项全部关闭，无新的 blocking code finding。
 - Regression / scope: 后端全量、9A 专项、OpenAPI、frontend unit/lint/typecheck/build 和两 viewport Playwright 均在最终修复后重跑通过。数据库层覆盖重复领取、并发创建、活动唯一性、并发上限、租约过期、新 attempt、retry 上限、Redis orphan requeue、归档竞争、viewer、support read-only 和跨组织隐藏；未进入 Phase 9B。
 - Known Issues / Pending Decisions: Windows pytest cache permission warning、Vite chunk-size warning 和 Playwright/Vite 子进程收尾问题均非阻塞；未运行真实 Celery worker 的 broker 断连/消息物理丢失故障注入，当前以数据库 orphan 扫描、重复投递幂等和 Fake Stage Executor 验证恢复边界；真实部署 broker smoke 留作部署验证。`test-results/` 为未跟踪测试生成物，保留且不纳入提交。无阻塞本 Phase 的 Pending Decision。
-- Git branch / HEAD / status / diff summary: `main` / `6be1ff7`；Phase 9A 源代码、Migration、测试和规范更新已形成实现快照，`test-results/` 保持未跟踪；未覆盖、恢复或清理用户已有修改/未知文件。
+- Git branch / snapshot / status: `main`；Phase 9A 实现快照为 `6be1ff7`，其后续账本快照与实现一并推送，local `main` 与 `origin/main` 已对齐；tracked 工作区无修改，`test-results/` 保持未跟踪；未覆盖、恢复或清理用户已有修改/未知文件。
 - Commit / Push: 用户已授权；`6be1ff7`（`feat(reviews): add async review orchestration`）已正常提交，本账本更新作为后续 docs snapshot 正常提交并一并推送到 `origin/main`；未 amend、force push 或修改历史。
 - Next Phase and entry conditions: Phase 9A Git Snapshot 门禁已关闭；Phase 9B 明确保持 `Not Started`。后续会话进入 9B 前必须重新读取 Source of Truth，核对 Git、远端和 Migration 基线，并严格限制在 9B；不得进入 9C 或提前实现后续报告、通知等范围。
 
