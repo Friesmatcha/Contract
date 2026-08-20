@@ -14,18 +14,16 @@ from backend.app.modules.reviews.models import ReviewStageRun, ReviewTask
 from backend.app.modules.reviews.results.service import (
     ResultExecutionError,
     execute_classification,
+    execute_clause_comparison,
     execute_extraction,
+    execute_risk_analysis,
 )
 from backend.app.modules.reviews.service import FakeStageExecutor, StageExecutionError
 from backend.app.shared.db import UnitOfWork
 
 
 class Phase9CStageExecutor:
-    """Worker adapter for parsing, classification and extraction only.
-
-    Later stages retain the Phase 9A orchestration placeholder and do not gain
-    any Phase 10 behavior here.
-    """
+    """Worker adapter for the implemented parsing and result-analysis stages."""
 
     def __init__(
         self,
@@ -79,6 +77,22 @@ class Phase9CStageExecutor:
                 )
             elif stage == "extraction":
                 execute_extraction(
+                    self.session,
+                    task=task,
+                    stage_run=run,
+                    gateway=self.gateway,
+                    heartbeat=heartbeat,
+                )
+            elif stage == "risk_analysis":
+                execute_risk_analysis(
+                    self.session,
+                    task=task,
+                    stage_run=run,
+                    gateway=self.gateway,
+                    heartbeat=heartbeat,
+                )
+            elif stage == "clause_comparison":
+                execute_clause_comparison(
                     self.session,
                     task=task,
                     stage_run=run,

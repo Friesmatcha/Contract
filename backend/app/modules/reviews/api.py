@@ -199,8 +199,14 @@ def get_review_results_endpoint(
     _risk_severity: Annotated[
         Literal["high", "medium", "low"] | None, Query(alias="risk_severity")
     ] = None,
-    _risk_status: Annotated[str | None, Query(alias="risk_status")] = None,
-    _clause_status: Annotated[str | None, Query(alias="clause_status")] = None,
+    _risk_status: Annotated[
+        Literal["pending_review", "confirmed", "false_positive", "processed"] | None,
+        Query(alias="risk_status"),
+    ] = None,
+    _clause_status: Annotated[
+        Literal["matched", "deviated", "missing", "uncertain"] | None,
+        Query(alias="clause_status"),
+    ] = None,
     include_evidence: Annotated[bool, Query()] = True,
 ) -> ReviewResultsResponse:
     if support_grant_id is not None:
@@ -226,6 +232,9 @@ def get_review_results_endpoint(
         organization_id=resolved_organization_id,
         task_id=review_task_id,
         viewer_user_id=viewer_user_id,
+        risk_severity=_risk_severity,
+        risk_status=_risk_status,
+        clause_status=_clause_status,
         include_evidence=include_evidence,
     )
     return ReviewResultsResponse.model_validate(payload)

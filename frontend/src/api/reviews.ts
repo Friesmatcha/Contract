@@ -4,6 +4,8 @@ import type {
   ReviewTask,
   RetryReviewTaskRequest,
   RetryReviewTaskResponse,
+  RiskFindingStatus,
+  RiskSeverity,
   ReviewResults,
 } from '@/api/types'
 
@@ -69,8 +71,21 @@ export function retryReviewTask(
 
 export function getReviewResults(
   reviewTaskId: string,
-  includeEvidence = true,
+  options: boolean | {
+    includeEvidence?: boolean
+    riskSeverity?: RiskSeverity
+    riskStatus?: RiskFindingStatus
+    clauseStatus?: 'matched' | 'deviated' | 'missing' | 'uncertain'
+  } = {},
 ): Promise<ReviewResults> {
-  const query = new URLSearchParams({ include_evidence: String(includeEvidence) })
+  const resolvedOptions = typeof options === 'boolean'
+    ? { includeEvidence: options }
+    : options
+  const query = new URLSearchParams({
+    include_evidence: String(resolvedOptions.includeEvidence ?? true),
+  })
+  if (resolvedOptions.riskSeverity) query.set('risk_severity', resolvedOptions.riskSeverity)
+  if (resolvedOptions.riskStatus) query.set('risk_status', resolvedOptions.riskStatus)
+  if (resolvedOptions.clauseStatus) query.set('clause_status', resolvedOptions.clauseStatus)
   return apiFetch(`${reviewTaskPath(reviewTaskId)}/results?${query.toString()}`)
 }

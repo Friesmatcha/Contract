@@ -4,6 +4,9 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 ResultStatus = Literal["detected", "not_found", "needs_confirmation", "confirmed", "corrected"]
+RiskFindingStatus = Literal["pending_review", "confirmed", "false_positive", "processed"]
+RiskFindingSource = Literal["rule", "model"]
+ClauseComparisonStatus = Literal["matched", "deviated", "missing", "uncertain"]
 ContractCategory = Literal["purchase", "sales", "nda", "outsourcing", "employment", "other"]
 SourceKind = Literal["pdf_page", "image_page", "docx_paragraph", "docx_table_cell"]
 CoreFieldKey = Literal[
@@ -55,15 +58,57 @@ class ExtractedFieldResponse(ResultResponse):
     version: int
 
 
+class RiskFindingResponse(ResultResponse):
+    id: UUID
+    risk_type: str
+    severity: Literal["high", "medium", "low"]
+    title: str
+    description: str
+    basis: str
+    suggestion: str
+    confidence: float
+    source: RiskFindingSource
+    status: RiskFindingStatus
+    evidence: list[SourceLocatorResponse]
+    version: int
+
+
+class ClauseComparisonResponse(ResultResponse):
+    id: UUID
+    clause_key: str
+    status: ClauseComparisonStatus
+    contract_text: str | None
+    difference_summary: str | None
+    severity: Literal["high", "medium", "low"]
+    suggestion: str
+    evidence: list[SourceLocatorResponse]
+    version: int
+
+
+class ReviewResultsSummary(ResultResponse):
+    risk_total: int
+    high: int
+    medium: int
+    low: int
+    warning_total: int
+    unresolved_count: int
+
+
 class ReviewResultsResponse(ResultResponse):
     review_task_id: UUID
     classification: ContractClassificationResponse
     extracted_fields: list[ExtractedFieldResponse]
+    risk_findings: list[RiskFindingResponse]
+    clause_comparisons: list[ClauseComparisonResponse]
+    summary: ReviewResultsSummary
 
 
 __all__ = [
     "ContractClassificationResponse",
     "ExtractedFieldResponse",
+    "RiskFindingResponse",
+    "ClauseComparisonResponse",
+    "ReviewResultsSummary",
     "ReviewResultsResponse",
     "SourceLocatorResponse",
 ]

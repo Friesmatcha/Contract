@@ -1,6 +1,9 @@
 import hashlib
 import json
+import re
 from dataclasses import dataclass
+from datetime import date
+from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID
 
@@ -15,10 +18,19 @@ from backend.app.integrations.model.gateway import (
 from backend.app.integrations.model.schemas import (
     ClassificationRequest,
     ClassificationResult,
+    ClauseComparisonRequest,
     ExtractionRequest,
     ExtractionResult,
+    RiskAnalysisRequest,
+)
+from backend.app.integrations.model.schemas import (
+    ClauseComparisonResult as ModelClauseComparisonResult,
 )
 from backend.app.integrations.model.schemas import ExtractedField as ModelExtractedField
+from backend.app.integrations.model.schemas import (
+    RiskAnalysisResult as ModelRiskAnalysisResult,
+)
+from backend.app.modules.clauses.templates.models import StandardClause
 from backend.app.modules.contracts.models import ContractAccessGrant
 from backend.app.modules.documents.models import (
     DocumentBlock,
@@ -26,15 +38,22 @@ from backend.app.modules.documents.models import (
     DocumentVersion,
     SourceSpan,
 )
-from backend.app.modules.reviews.models import ReviewStageRun, ReviewTask
+from backend.app.modules.reviews.models import ModelCall, ReviewStageRun, ReviewTask
 from backend.app.modules.reviews.results.models import (
     CONTRACT_CATEGORIES,
     CORE_EXTRACTED_FIELD_KEYS,
+    ClauseComparisonEvidence,
     ContractClassification,
     ContractClassificationEvidence,
     ExtractedField,
     ExtractedFieldEvidence,
+    RiskFinding,
+    RiskFindingEvidence,
 )
+from backend.app.modules.reviews.results.models import (
+    ClauseComparison as ClauseComparisonRow,
+)
+from backend.app.modules.risks.rules.models import RiskRule
 from backend.app.shared.db import UnitOfWork
 from backend.app.shared.errors import ApplicationError
 from backend.app.shared.model_telemetry import (
@@ -61,7 +80,13 @@ class DocumentInput:
 
 def _canonical_fingerprint(payload: Any) -> str:
     return hashlib.sha256(
-        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        ).encode()
     ).hexdigest()
 
 
@@ -123,6 +148,44 @@ def _model_fingerprint_for(gateway: ModelGateway, request: Any) -> str:
     )
 
 
+def _has_reusable_empty_stage(
+    session: Session,
+    *,
+    task: ReviewTask,
+    stage_run: ReviewStageRun,
+    capability: str,
+    input_fingerprint: str,
+    model_fingerprint_value: str,
+) -> bool:
+    """Reuse a completed analysis whose valid output contained no rows."""
+    return (
+        session.scalar(
+            select(ReviewStageRun.id)
+            .join(
+                ModelCall,
+                and_(
+                    ModelCall.organization_id == ReviewStageRun.organization_id,
+                    ModelCall.review_task_id == ReviewStageRun.review_task_id,
+                    ModelCall.stage_run_id == ReviewStageRun.id,
+                ),
+            )
+            .where(
+                ReviewStageRun.organization_id == task.organization_id,
+                ReviewStageRun.review_task_id == task.id,
+                ReviewStageRun.id != stage_run.id,
+                ReviewStageRun.stage == stage_run.stage,
+                ReviewStageRun.status == "succeeded",
+                ReviewStageRun.input_fingerprint == input_fingerprint,
+                ModelCall.capability == capability,
+                ModelCall.status == "succeeded",
+                ModelCall.model_fingerprint == model_fingerprint_value,
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
 def _persist_telemetry(
     session: Session,
     invocation: tuple[Any, ...],
@@ -168,7 +231,7 @@ def _invoke_or_fail(
                     capability=capability,
                 ),
             )
-        else:
+        elif capability == "extraction":
             invocation = gateway.extract(
                 request,
                 context=ModelCallContext(
@@ -178,6 +241,28 @@ def _invoke_or_fail(
                     capability=capability,
                 ),
             )
+        elif capability == "risk_analysis":
+            invocation = gateway.analyze_risk(
+                request,
+                context=ModelCallContext(
+                    organization_id=task.organization_id,
+                    review_task_id=task.id,
+                    stage_run_id=stage_run.id,
+                    capability=capability,
+                ),
+            )
+        elif capability == "clause_comparison":
+            invocation = gateway.compare_clauses(
+                request,
+                context=ModelCallContext(
+                    organization_id=task.organization_id,
+                    review_task_id=task.id,
+                    stage_run_id=stage_run.id,
+                    capability=capability,
+                ),
+            )
+        else:
+            raise ResultExecutionError("MODEL_CAPABILITY_INVALID", "模型能力不受支持。")
     except ModelGatewayError as exc:
         _persist_telemetry(
             session,
@@ -535,6 +620,626 @@ def execute_extraction(
     heartbeat()
 
 
+def _field_context(
+    session: Session, *, task: ReviewTask
+) -> tuple[dict[str, Any], dict[str, list[UUID]]]:
+    fields = list(
+        session.scalars(
+            select(ExtractedField).where(
+                ExtractedField.organization_id == task.organization_id,
+                ExtractedField.review_task_id == task.id,
+            )
+        )
+    )
+    values = {field.field_key: field.current_value_json for field in fields}
+    evidence: dict[str, list[UUID]] = {}
+    for field in fields:
+        evidence[field.field_key] = [
+            row.source_span_id
+            for row in session.scalars(
+                select(ExtractedFieldEvidence)
+                .where(
+                    ExtractedFieldEvidence.organization_id == task.organization_id,
+                    ExtractedFieldEvidence.extracted_field_id == field.id,
+                )
+                .order_by(ExtractedFieldEvidence.position_no)
+            )
+        ]
+    return values, evidence
+
+
+def _presence_keywords(field: str) -> tuple[str, ...]:
+    return {
+        "acceptance_standard": ("验收",),
+        "intellectual_property": ("知识产权", "著作权", "专利"),
+        "data_compliance": ("数据合规", "个人信息", "数据保护"),
+        "force_majeure": ("不可抗力",),
+    }.get(field, ())
+
+
+def _condition_value(
+    condition: dict[str, Any],
+    *,
+    text: str,
+    values: dict[str, Any],
+    evidence: dict[str, list[UUID]],
+    first_span: UUID,
+) -> tuple[bool, list[UUID]]:
+    operator = condition.get("operator")
+    if operator == "keyword":
+        keyword_value = str(condition.get("value", ""))
+        matched = keyword_value in text
+        return matched, [first_span] if matched else []
+    if operator == "regex":
+        try:
+            matched = re.search(
+                str(condition.get("pattern", "")), text, flags=re.DOTALL
+            ) is not None
+        except re.error:
+            matched = False
+        return matched, [first_span] if matched else []
+    if operator in {"field_exists", "field_missing"}:
+        field = str(condition.get("field"))
+        field_value = values.get(field)
+        if field in values:
+            present = field_value is not None
+            field_evidence = evidence.get(field, [])
+        else:
+            keywords = _presence_keywords(field)
+            present = any(keyword in text for keyword in keywords)
+            field_evidence = [first_span] if present else []
+        matched = present if operator == "field_exists" else not present
+        return matched, field_evidence or ([first_span] if matched else [])
+    if operator in {"amount_threshold", "date_threshold"}:
+        field = str(condition.get("field"))
+        raw = values.get(field)
+        raw_value: Any = raw.get("amount") if isinstance(raw, dict) else raw
+        if operator == "amount_threshold":
+            try:
+                left_amount = Decimal(str(raw_value))
+                right_amount = Decimal(str(condition.get("value")))
+            except (InvalidOperation, TypeError, ValueError):
+                return False, []
+        else:
+            try:
+                left_date = date.fromisoformat(str(raw_value))
+                right_date = date.fromisoformat(str(condition.get("value")))
+            except (TypeError, ValueError):
+                return False, []
+        comparison = str(condition.get("comparison", ""))
+        if operator == "amount_threshold":
+            matched = {
+                "gt": left_amount > right_amount,
+                "gte": left_amount >= right_amount,
+                "lt": left_amount < right_amount,
+                "lte": left_amount <= right_amount,
+                "eq": left_amount == right_amount,
+            }.get(comparison, False)
+        else:
+            matched = {
+                "gt": left_date > right_date,
+                "gte": left_date >= right_date,
+                "lt": left_date < right_date,
+                "lte": left_date <= right_date,
+                "eq": left_date == right_date,
+            }.get(comparison, False)
+        return matched, evidence.get(field, []) or ([first_span] if matched else [])
+    if operator in {"all", "any"}:
+        results = [
+            _condition_value(
+                child,
+                text=text,
+                values=values,
+                evidence=evidence,
+                first_span=first_span,
+            )
+            for child in condition.get("conditions", [])
+        ]
+        matched = (
+            all(item[0] for item in results)
+            if operator == "all"
+            else any(item[0] for item in results)
+        )
+        span_ids: list[UUID] = []
+        for item_matched, item_spans in results:
+            if item_matched:
+                for span_id in item_spans:
+                    if span_id not in span_ids:
+                        span_ids.append(span_id)
+        return matched, span_ids
+    if operator == "not":
+        matched, _ = _condition_value(
+            condition.get("condition", {}),
+            text=text,
+            values=values,
+            evidence=evidence,
+            first_span=first_span,
+        )
+        return not matched, [first_span] if not matched else []
+    return False, []
+
+
+def _risk_input_fingerprint(
+    document_input: DocumentInput, *, task: ReviewTask, values: dict[str, Any]
+) -> str:
+    return _canonical_fingerprint(
+        {
+            "document_parse_fingerprint": document_input.document.parse_fingerprint,
+            "rule_bundle_version_id": str(task.rule_bundle_version_id),
+            "fields": values,
+        }
+    )
+
+
+def _replace_risk_evidence(
+    session: Session, *, finding: RiskFinding, document_version_id: UUID, span_ids: list[UUID]
+) -> None:
+    session.execute(
+        delete(RiskFindingEvidence).where(
+            RiskFindingEvidence.organization_id == finding.organization_id,
+            RiskFindingEvidence.finding_id == finding.id,
+        )
+    )
+    for position_no, span_id in enumerate(span_ids):
+        session.add(
+            RiskFindingEvidence(
+                organization_id=finding.organization_id,
+                finding_id=finding.id,
+                document_version_id=document_version_id,
+                source_span_id=span_id,
+                position_no=position_no,
+            )
+        )
+    finding.evidence_span_id = span_ids[0] if span_ids else None
+
+
+def _replace_clause_evidence(
+    session: Session,
+    *,
+    comparison: ClauseComparisonRow,
+    document_version_id: UUID,
+    span_ids: list[UUID],
+) -> None:
+    session.execute(
+        delete(ClauseComparisonEvidence).where(
+            ClauseComparisonEvidence.organization_id == comparison.organization_id,
+            ClauseComparisonEvidence.comparison_id == comparison.id,
+        )
+    )
+    for position_no, span_id in enumerate(span_ids):
+        session.add(
+            ClauseComparisonEvidence(
+                organization_id=comparison.organization_id,
+                comparison_id=comparison.id,
+                document_version_id=document_version_id,
+                source_span_id=span_id,
+                position_no=position_no,
+            )
+        )
+    comparison.evidence_span_id = span_ids[0] if span_ids else None
+
+
+def execute_risk_analysis(
+    session: Session,
+    *,
+    task: ReviewTask,
+    stage_run: ReviewStageRun,
+    gateway: ModelGateway,
+    heartbeat: Any,
+) -> None:
+    document_input = _load_document_input(session, task)
+    values, field_evidence = _field_context(session, task=task)
+    rules = list(
+        session.scalars(
+            select(RiskRule)
+            .where(
+                RiskRule.organization_id == task.organization_id,
+                RiskRule.bundle_version_id == task.rule_bundle_version_id,
+                RiskRule.enabled.is_(True),
+            )
+            .order_by(RiskRule.rule_key, RiskRule.id)
+        )
+    )
+    input_fingerprint = _risk_input_fingerprint(document_input, task=task, values=values)
+    request = RiskAnalysisRequest(
+        input_text=document_input.text,
+        input_version=f"document-{document_input.document.parse_fingerprint}",
+        context={
+            **_request_context(document_input),
+            "rule_bundle_version_id": str(task.rule_bundle_version_id),
+        },
+    )
+    model_fp = _model_fingerprint_for(gateway, request)
+    existing = list(
+        session.scalars(
+            select(RiskFinding).where(
+                RiskFinding.organization_id == task.organization_id,
+                RiskFinding.review_task_id == task.id,
+            )
+        )
+    )
+    stage_run.input_fingerprint = input_fingerprint
+    reusable_empty = _has_reusable_empty_stage(
+        session,
+        task=task,
+        stage_run=stage_run,
+        capability="risk_analysis",
+        input_fingerprint=input_fingerprint,
+        model_fingerprint_value=model_fp,
+    ) if not existing else False
+    session.commit()
+    if reusable_empty:
+        return
+    if existing and all(
+        row.input_fingerprint == input_fingerprint and row.model_fingerprint == model_fp
+        for row in existing
+    ):
+        with UnitOfWork(session) as unit_of_work:
+            for row in existing:
+                row.stage_run_id = stage_run.id
+            unit_of_work.commit()
+        return
+
+    heartbeat()
+    findings: list[dict[str, Any]] = []
+    seen: set[tuple[str, str]] = set()
+    first_span = next(iter(document_input.spans))
+    for rule in rules:
+        if rule.engine != "deterministic":
+            continue
+        matched, span_ids = _condition_value(
+            rule.condition_json,
+            text=document_input.text,
+            values=values,
+            evidence=field_evidence,
+            first_span=first_span,
+        )
+        if not matched:
+            continue
+        if not span_ids:
+            span_ids = [first_span]
+        key = (rule.risk_type, rule.rule_key)
+        if key in seen:
+            continue
+        seen.add(key)
+        findings.append(
+            {
+                "risk_type": rule.risk_type,
+                "severity": rule.severity,
+                "title": rule.risk_type,
+                "description": rule.suggestion,
+                "basis": f"规则 {rule.rule_key} 命中合同文本或结构化字段。",
+                "suggestion": rule.suggestion,
+                "confidence": 1.0,
+                "source": "rule",
+                "rule_key": rule.rule_key,
+                "rule_id": rule.id,
+                "model_call_id": None,
+                "span_ids": span_ids,
+            }
+        )
+
+    invocation: ModelInvocationResult[Any] | None = None
+    try:
+        invocation = _invoke_or_fail(
+            gateway,
+            request,
+            capability="risk_analysis",
+            task=task,
+            stage_run=stage_run,
+            session=session,
+        )
+        output: ModelRiskAnalysisResult = invocation.output
+        for item in output.findings:
+            span_ids = _source_span_ids(item.evidence, document_input=document_input, required=True)
+            key = (item.risk_type, item.title)
+            if any(existing_key[0] == item.risk_type for existing_key in seen):
+                continue
+            seen.add(key)
+            findings.append(
+                {
+                    "risk_type": item.risk_type,
+                    "severity": item.severity,
+                    "title": item.title,
+                    "description": item.basis,
+                    "basis": item.basis,
+                    "suggestion": "请结合原文和组织政策复核该风险。",
+                    "confidence": 0.5,
+            "source": "model",
+            "rule_key": None,
+            "rule_id": None,
+            "model_call_id": None,
+            "span_ids": span_ids,
+                }
+            )
+    except ResultExecutionError:
+        if invocation is not None:
+            _persist_telemetry(
+                session,
+                invocation.telemetry,
+                task=task,
+                stage_run=stage_run,
+                capability="risk_analysis",
+            )
+        raise
+
+    with UnitOfWork(session) as unit_of_work:
+        model_call_id: UUID | None = None
+        if invocation is not None:
+            model_calls = persist_invocation(
+                session,
+                invocation.telemetry,
+                context=ModelCallContext(
+                    organization_id=task.organization_id,
+                    review_task_id=task.id,
+                    stage_run_id=stage_run.id,
+                    capability="risk_analysis",
+                ),
+            )
+            session.flush()
+            model_call_id = next(
+                (
+                    model_call.id
+                    for model_call in reversed(model_calls)
+                    if model_call.status == "succeeded"
+                ),
+                None,
+            )
+        session.execute(
+            delete(RiskFinding).where(
+                RiskFinding.organization_id == task.organization_id,
+                RiskFinding.review_task_id == task.id,
+            )
+        )
+        for finding_data in findings:
+            result_fingerprint = _canonical_fingerprint(
+                {
+                    "capability": "risk_analysis",
+                    "input": input_fingerprint,
+                    "model": model_fp,
+                    "finding": {
+                        key: value
+                        for key, value in finding_data.items()
+                        if key != "span_ids"
+                    },
+                }
+            )
+            row = RiskFinding(
+                organization_id=task.organization_id,
+                review_task_id=task.id,
+                stage_run_id=stage_run.id,
+                rule_id=finding_data["rule_id"],
+                model_call_id=(
+                    model_call_id if finding_data["source"] == "model" else None
+                ),
+                document_version_id=document_input.document.id,
+                rule_key=finding_data["rule_key"],
+                risk_type=finding_data["risk_type"],
+                severity=finding_data["severity"],
+                title=finding_data["title"],
+                description=finding_data["description"],
+                basis=finding_data["basis"],
+                suggestion=finding_data["suggestion"],
+                confidence=finding_data["confidence"],
+                source=finding_data["source"],
+                status="pending_review",
+                input_fingerprint=input_fingerprint,
+                model_fingerprint=model_fp,
+                result_fingerprint=result_fingerprint,
+            )
+            session.add(row)
+            session.flush()
+            _replace_risk_evidence(
+                session,
+                finding=row,
+                document_version_id=document_input.document.id,
+                span_ids=finding_data["span_ids"],
+            )
+        unit_of_work.commit()
+    heartbeat()
+
+
+def execute_clause_comparison(
+    session: Session,
+    *,
+    task: ReviewTask,
+    stage_run: ReviewStageRun,
+    gateway: ModelGateway,
+    heartbeat: Any,
+) -> None:
+    document_input = _load_document_input(session, task)
+    clauses = list(
+        session.scalars(
+            select(StandardClause)
+            .where(
+                StandardClause.organization_id == task.organization_id,
+                StandardClause.template_version_id == task.clause_template_version_id,
+                StandardClause.enabled.is_(True),
+            )
+            .order_by(StandardClause.order_no, StandardClause.id)
+        )
+    )
+    clause_by_key = {clause.clause_key: clause for clause in clauses}
+    input_fingerprint = _canonical_fingerprint(
+        {
+            "document_parse_fingerprint": document_input.document.parse_fingerprint,
+            "clause_template_version_id": str(task.clause_template_version_id),
+        }
+    )
+    request = ClauseComparisonRequest(
+        input_text=document_input.text,
+        input_version=f"document-{document_input.document.parse_fingerprint}",
+        context={
+            **_request_context(document_input),
+            "clause_template_version_id": str(task.clause_template_version_id),
+        },
+    )
+    model_fp = _model_fingerprint_for(gateway, request)
+    existing = list(
+        session.scalars(
+            select(ClauseComparisonRow).where(
+                ClauseComparisonRow.organization_id == task.organization_id,
+                ClauseComparisonRow.review_task_id == task.id,
+            )
+        )
+    )
+    stage_run.input_fingerprint = input_fingerprint
+    reusable_empty = _has_reusable_empty_stage(
+        session,
+        task=task,
+        stage_run=stage_run,
+        capability="clause_comparison",
+        input_fingerprint=input_fingerprint,
+        model_fingerprint_value=model_fp,
+    ) if not existing else False
+    session.commit()
+    if reusable_empty:
+        return
+    if existing and all(
+        row.input_fingerprint == input_fingerprint and row.model_fingerprint == model_fp
+        for row in existing
+    ):
+        with UnitOfWork(session) as unit_of_work:
+            for row in existing:
+                row.stage_run_id = stage_run.id
+            unit_of_work.commit()
+        return
+
+    heartbeat()
+    invocation: ModelInvocationResult[Any] | None = None
+    comparisons: list[dict[str, Any]] = []
+    try:
+        invocation = _invoke_or_fail(
+            gateway,
+            request,
+            capability="clause_comparison",
+            task=task,
+            stage_run=stage_run,
+            session=session,
+        )
+        output: ModelClauseComparisonResult = invocation.output
+        seen: set[str] = set()
+        for item in output.comparisons:
+            if item.clause_key not in clause_by_key:
+                if item.result == "not_applicable":
+                    continue
+                raise ResultExecutionError("MODEL_CLAUSE_UNKNOWN", "模型返回了未配置的条款。")
+            if item.clause_key in seen:
+                raise ResultExecutionError(
+                    "MODEL_CLAUSE_DUPLICATED", "模型返回了重复条款比对结果。"
+                )
+            seen.add(item.clause_key)
+            if item.result == "not_applicable":
+                continue
+            status = {
+                "match": "matched",
+                "deviation": "deviated",
+                "missing": "missing",
+                "uncertain": "uncertain",
+            }.get(item.result)
+            if status is None:
+                raise ResultExecutionError(
+                    "MODEL_CLAUSE_STATUS_INVALID", "模型返回了不支持的条款状态。"
+                )
+            span_ids = _source_span_ids(
+                item.evidence,
+                document_input=document_input,
+                required=status != "missing",
+            )
+            clause = clause_by_key[item.clause_key]
+            comparisons.append(
+                {
+                    "clause_key": item.clause_key,
+                    "standard_clause_id": clause.id,
+                    "status": status,
+                    "contract_text": document_input.spans[span_ids[0]].quote if span_ids else None,
+                    "difference_summary": item.explanation,
+                    "severity": clause.severity,
+                    "suggestion": clause.suggestion,
+                    "confidence": 0.5,
+                    "span_ids": span_ids,
+                }
+            )
+    except ResultExecutionError:
+        if invocation is not None:
+            _persist_telemetry(
+                session,
+                invocation.telemetry,
+                task=task,
+                stage_run=stage_run,
+                capability="clause_comparison",
+            )
+        raise
+
+    with UnitOfWork(session) as unit_of_work:
+        model_call_id: UUID | None = None
+        if invocation is not None:
+            model_calls = persist_invocation(
+                session,
+                invocation.telemetry,
+                context=ModelCallContext(
+                    organization_id=task.organization_id,
+                    review_task_id=task.id,
+                    stage_run_id=stage_run.id,
+                    capability="clause_comparison",
+                ),
+            )
+            session.flush()
+            model_call_id = next(
+                (
+                    model_call.id
+                    for model_call in reversed(model_calls)
+                    if model_call.status == "succeeded"
+                ),
+                None,
+            )
+        session.execute(
+            delete(ClauseComparisonRow).where(
+                ClauseComparisonRow.organization_id == task.organization_id,
+                ClauseComparisonRow.review_task_id == task.id,
+            )
+        )
+        for comparison_data in comparisons:
+            result_fingerprint = _canonical_fingerprint(
+                {
+                    "capability": "clause_comparison",
+                    "input": input_fingerprint,
+                    "model": model_fp,
+                    "comparison": {
+                        key: value for key, value in comparison_data.items() if key != "span_ids"
+                    },
+                }
+            )
+            row = ClauseComparisonRow(
+                organization_id=task.organization_id,
+                review_task_id=task.id,
+                stage_run_id=stage_run.id,
+                standard_clause_id=comparison_data["standard_clause_id"],
+                model_call_id=model_call_id,
+                document_version_id=document_input.document.id,
+                clause_key=comparison_data["clause_key"],
+                status=comparison_data["status"],
+                contract_text=comparison_data["contract_text"],
+                difference_summary=comparison_data["difference_summary"],
+                severity=comparison_data["severity"],
+                suggestion=comparison_data["suggestion"],
+                confidence=comparison_data["confidence"],
+                input_fingerprint=input_fingerprint,
+                model_fingerprint=model_fp,
+                result_fingerprint=result_fingerprint,
+            )
+            session.add(row)
+            session.flush()
+            _replace_clause_evidence(
+                session,
+                comparison=row,
+                document_version_id=document_input.document.id,
+                span_ids=comparison_data["span_ids"],
+            )
+        unit_of_work.commit()
+    heartbeat()
+
+
 def _results_not_ready() -> ApplicationError:
     return ApplicationError(
         status_code=409,
@@ -629,7 +1334,10 @@ def get_review_results(
     organization_id: UUID,
     task_id: UUID,
     viewer_user_id: UUID | None,
-    include_evidence: bool,
+    risk_severity: str | None = None,
+    risk_status: str | None = None,
+    clause_status: str | None = None,
+    include_evidence: bool = True,
 ) -> dict[str, Any]:
     statement = select(ReviewTask).where(
         ReviewTask.organization_id == organization_id,
@@ -706,6 +1414,58 @@ def get_review_results(
         )
         for field in fields
     }
+    risk_statement = select(RiskFinding).where(
+        RiskFinding.organization_id == organization_id,
+        RiskFinding.review_task_id == task.id,
+    )
+    if risk_severity is not None:
+        risk_statement = risk_statement.where(RiskFinding.severity == risk_severity)
+    if risk_status is not None:
+        risk_statement = risk_statement.where(RiskFinding.status == risk_status)
+    risk_findings = list(
+        session.scalars(
+            risk_statement.order_by(
+                RiskFinding.severity, RiskFinding.created_at, RiskFinding.id
+            )
+        )
+    )
+    clause_statement = select(ClauseComparisonRow).where(
+        ClauseComparisonRow.organization_id == organization_id,
+        ClauseComparisonRow.review_task_id == task.id,
+    )
+    if clause_status is not None:
+        clause_statement = clause_statement.where(ClauseComparisonRow.status == clause_status)
+    clause_comparisons = list(
+        session.scalars(
+            clause_statement.order_by(ClauseComparisonRow.clause_key, ClauseComparisonRow.id)
+        )
+    )
+    risk_evidence = {
+        finding.id: list(
+            session.scalars(
+                select(RiskFindingEvidence)
+                .where(
+                    RiskFindingEvidence.organization_id == organization_id,
+                    RiskFindingEvidence.finding_id == finding.id,
+                )
+                .order_by(RiskFindingEvidence.position_no)
+            )
+        )
+        for finding in risk_findings
+    }
+    clause_evidence = {
+        comparison.id: list(
+            session.scalars(
+                select(ClauseComparisonEvidence)
+                .where(
+                    ClauseComparisonEvidence.organization_id == organization_id,
+                    ClauseComparisonEvidence.comparison_id == comparison.id,
+                )
+                .order_by(ClauseComparisonEvidence.position_no)
+            )
+        )
+        for comparison in clause_comparisons
+    }
     classification_payload = {
         "id": classification.id,
         "model_value": classification.model_value,
@@ -723,6 +1483,16 @@ def get_review_results(
             else []
         ),
         "version": classification.version,
+    }
+    unresolved_count = sum(
+        finding.status == "pending_review" for finding in risk_findings
+    ) + sum(
+        comparison.status in {"deviated", "missing", "uncertain"}
+        for comparison in clause_comparisons
+    )
+    risk_counts = {
+        severity: sum(finding.severity == severity for finding in risk_findings)
+        for severity in ("high", "medium", "low")
     }
     return {
         "review_task_id": task.id,
@@ -749,11 +1519,70 @@ def get_review_results(
             }
             for field in fields
         ],
+        "risk_findings": [
+            {
+                "id": finding.id,
+                "risk_type": finding.risk_type,
+                "severity": finding.severity,
+                "title": finding.title,
+                "description": finding.description,
+                "basis": finding.basis,
+                "suggestion": finding.suggestion,
+                "confidence": finding.confidence,
+                "source": finding.source,
+                "status": finding.status,
+                "evidence": (
+                    _evidence_payloads(
+                        session,
+                        organization_id=organization_id,
+                        document=document,
+                        association_rows=risk_evidence[finding.id],
+                    )
+                    if include_evidence
+                    else []
+                ),
+                "version": finding.version,
+            }
+            for finding in risk_findings
+        ],
+        "clause_comparisons": [
+            {
+                "id": comparison.id,
+                "clause_key": comparison.clause_key,
+                "status": comparison.status,
+                "contract_text": comparison.contract_text,
+                "difference_summary": comparison.difference_summary,
+                "severity": comparison.severity,
+                "suggestion": comparison.suggestion,
+                "evidence": (
+                    _evidence_payloads(
+                        session,
+                        organization_id=organization_id,
+                        document=document,
+                        association_rows=clause_evidence[comparison.id],
+                    )
+                    if include_evidence
+                    else []
+                ),
+                "version": comparison.version,
+            }
+            for comparison in clause_comparisons
+        ],
+        "summary": {
+            "risk_total": len(risk_findings),
+            "high": risk_counts["high"],
+            "medium": risk_counts["medium"],
+            "low": risk_counts["low"],
+            "warning_total": 0,
+            "unresolved_count": unresolved_count,
+        },
     }
 __all__ = [
     "DocumentInput",
     "ResultExecutionError",
     "execute_classification",
     "execute_extraction",
+    "execute_risk_analysis",
+    "execute_clause_comparison",
     "get_review_results",
 ]

@@ -424,10 +424,54 @@ export interface ExtractedFieldResult {
   version: number
 }
 
+export type RiskFindingStatus = 'pending_review' | 'confirmed' | 'false_positive' | 'processed'
+export type RiskFindingSource = 'rule' | 'model'
+export type RiskSeverity = 'high' | 'medium' | 'low'
+export type ClauseComparisonStatus = 'matched' | 'deviated' | 'missing' | 'uncertain'
+
+export interface RiskFindingResult {
+  id: string
+  risk_type: string
+  severity: RiskSeverity
+  title: string
+  description: string
+  basis: string
+  suggestion: string
+  confidence: number
+  source: RiskFindingSource
+  status: RiskFindingStatus
+  evidence: SourceLocator[]
+  version: number
+}
+
+export interface ClauseComparisonResult {
+  id: string
+  clause_key: string
+  status: ClauseComparisonStatus
+  contract_text: string | null
+  difference_summary: string | null
+  severity: RiskSeverity
+  suggestion: string
+  evidence: SourceLocator[]
+  version: number
+}
+
+export interface ReviewResultsSummary {
+  risk_total: number
+  high: number
+  medium: number
+  low: number
+  warning_total: number
+  unresolved_count: number
+}
+
 export interface ReviewResults {
   review_task_id: string
   classification: ContractClassificationResult
   extracted_fields: ExtractedFieldResult[]
+  risk_findings: RiskFindingResult[]
+  clause_comparisons: ClauseComparisonResult[]
+  summary: ReviewResultsSummary
 }
 
 export interface DocumentPageResponse {

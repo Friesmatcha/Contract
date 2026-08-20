@@ -84,17 +84,19 @@ class RiskFinding(ModelSchema):
 
 
 class RiskAnalysisResult(ModelResult):
-    findings: list[RiskFinding] = Field(min_length=1, max_length=256)
+    evidence: list[Evidence] = Field(default_factory=list, max_length=50)
+    findings: list[RiskFinding] = Field(default_factory=list, max_length=256)
 
 
 class ClauseComparison(ModelSchema):
     clause_key: str = Field(min_length=1, max_length=128)
-    result: Literal["match", "deviation", "missing", "not_applicable"]
+    result: Literal["match", "deviation", "missing", "uncertain", "not_applicable"]
     explanation: str = Field(min_length=1, max_length=2_000)
-    evidence: list[Evidence] = Field(min_length=1, max_length=50)
+    evidence: list[Evidence] = Field(default_factory=list, max_length=50)
 
 
 class ClauseComparisonResult(ModelResult):
+    evidence: list[Evidence] = Field(default_factory=list, max_length=50)
     comparisons: list[ClauseComparison] = Field(min_length=1, max_length=256)
 
 
