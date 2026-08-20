@@ -1788,7 +1788,7 @@ Frontend Page URL：`/contracts/:contractId/reviews/new`。
 #### Entry Points / Exit
 
 - Entry：Contract Detail 或 File Upload success。
-- Exit：成功进入 Review Progress；取消返回 Contract Detail。
+- Exit：成功进入 Review Progress；未提交前离开表单返回 Contract Detail。这里的“取消”不取消已创建的任务。
 
 #### Primary User Goal
 
@@ -1811,7 +1811,7 @@ Descriptions、Form、Select、Input、Alert、Button、Tag、Skeleton。
 | Action | Role | Trigger | Result |
 | --- | --- | --- | --- |
 | Create review | Org Admin, Reviewer | Submit | `202 pending`; navigate progress |
-| Cancel | Org Admin, Reviewer | Secondary button | Return contract |
+| Leave form | Org Admin, Reviewer | Secondary button before submit | Return contract without creating a task |
 
 #### Form
 

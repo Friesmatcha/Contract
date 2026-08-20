@@ -16,6 +16,8 @@ import ContractListPage from '@/pages/contracts/ContractListPage.vue'
 import CreateContractPage from '@/pages/contracts/CreateContractPage.vue'
 import ContractDetailPage from '@/pages/contracts/ContractDetailPage.vue'
 import ContractFilesPage from '@/pages/contracts/ContractFilesPage.vue'
+import ReviewCreatePage from '@/pages/reviews/ReviewCreatePage.vue'
+import ReviewProgressPage from '@/pages/reviews/ReviewProgressPage.vue'
 import DocumentPreviewPage from '@/pages/documents/DocumentPreviewPage.vue'
 import RiskRuleBundleListPage from '@/pages/risks/RiskRuleBundleListPage.vue'
 import RiskRuleBundleDetailPage from '@/pages/risks/RiskRuleBundleDetailPage.vue'
@@ -78,6 +80,18 @@ export const routes: RouteRecordRaw[] = [
         name: 'contract-files',
         component: ContractFilesPage,
         meta: { title: '文件版本' },
+      },
+      {
+        path: 'contracts/:contractId/reviews/new',
+        name: 'review-create',
+        component: ReviewCreatePage,
+        meta: { title: '创建审核' },
+      },
+      {
+        path: 'reviews/:reviewTaskId',
+        name: 'review-progress',
+        component: ReviewProgressPage,
+        meta: { title: '审核进度' },
       },
       {
         path: 'documents/:documentVersionId',

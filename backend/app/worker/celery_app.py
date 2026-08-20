@@ -20,8 +20,25 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
         timezone="UTC",
         enable_utc=True,
         worker_hijack_root_logger=False,
+        task_acks_late=True,
+        task_reject_on_worker_lost=True,
+        worker_prefetch_multiplier=1,
+        beat_schedule={
+            "reviews-recover-expired-leases": {
+                "task": "reviews.recover_expired_leases",
+                "schedule": 30.0,
+            },
+            "reviews-requeue-orphaned-tasks": {
+                "task": "reviews.requeue_orphaned_tasks",
+                "schedule": 60.0,
+            },
+        },
     )
     return application
 
 
 celery_app = create_celery_app()
+
+# Register task modules for a worker started with this module as its app.
+from backend.app.worker import compensation as _review_compensation  # noqa: E402,F401
+from backend.app.worker import review_tasks as _review_tasks  # noqa: E402,F401

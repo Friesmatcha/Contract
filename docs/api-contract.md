@@ -402,7 +402,9 @@ Success `200 OK`：
 | `review_status` | `pending`, `parsing`, `reviewing`, `pending_review`, `completed`, `failed`, `archived` | 待处理、解析中、审核中、待复核、已完成、失败、已归档 | 否，使用业务动作 |
 | `result_status` | `detected`, `not_found`, `needs_confirmation`, `confirmed`, `corrected` | 已识别、未发现、待确认、已确认、人工修订 | 通过审核/修订接口间接改变 |
 
-任务合法流转：`pending -> parsing -> reviewing -> pending_review -> completed -> archived`；任一处理阶段可到 `failed`，`failed -> parsing/reviewing` 由 retry；`completed -> pending` 只通过重新审核创建新任务；`archived` 只读。
+任务合法流转：`pending -> parsing -> reviewing -> pending_review -> completed`；任一处理阶段可到 `failed`，
+`failed -> parsing/reviewing` 由 retry；重新审核创建新的 `ReviewTask`；`archived` 仅表示已有的只读历史事实，
+本契约没有把合同归档或任何未定义命令作为其进入来源。合同归档不改变任务状态。
 
 ### 6.2 风险、条款和预警
 
@@ -783,6 +785,14 @@ Success `200 OK`：返回更新后的 `Contract`。
 
 `POST /api/v1/contracts/{contract_id}/archive`。权限：`Org Admin | Reviewer`。无 Body。
 
+归档与审核任务在同一事务边界内检查。若该合同存在状态为
+`pending`、`parsing`、`reviewing` 或 `pending_review` 的活动 `ReviewTask`，归档不得写入合同，返回
+`409 ACTIVE_REVIEW_EXISTS`；响应不泄露其他组织或无权任务的信息。合同归档不会级联修改任何
+`ReviewTask` 或 `ReviewStageRun`。已经处于 `completed`、`failed` 或 `archived` 的任务保持原状态、只读和可追溯，
+其历史输入快照不因合同归档而改变。
+
+本契约未定义审核任务取消、任务归档或任务恢复命令，因此本 Phase 不提供这些接口，也不增加相应状态迁移。
+
 Request Example：`{}`
 
 Success `200 OK`：`{ "id": "5a7b9e6b-3e0d-4ae0-9ae8-0e45fcf3be17", "status": "archived", "archived_at": "2026-08-17T05:00:00Z" }`
@@ -889,19 +899,30 @@ Request Example：
 { "contract_file_id": "9c86608c-6c82-456f-8958-b65223e33ba3", "rule_bundle_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "clause_template_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120" }
 ```
 
-Success `202 Accepted`：返回 `ReviewTask`，初始 `status=pending`。
+Success `202 Accepted`：返回 `ReviewTask`，初始 `status=pending`。响应包含锁定的
+`contract_file_id`、可用时的 `document_version_id`、已发布规则/模板版本 ID 和业务场景；配置快照中的
+模型密钥、合同正文和提示词正文不返回。
 
 ```json
 { "id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "display_no": "REV-20260817-000045", "contract_id": "5a7b9e6b-3e0d-4ae0-9ae8-0e45fcf3be17", "status": "pending", "progress": 0, "current_stage": "queued", "rule_bundle_version_id": "d2f7e5cd-9235-4328-b0b1-7af8dfc5fa99", "clause_template_version_id": "7f4e18e9-2d1e-4b52-8c8c-4d08c8d11120" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 CONTRACT_FILE_NOT_FOUND`、`409 ACTIVE_REVIEW_EXISTS`、`409 VERSION_NOT_PUBLISHED`、`409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`、`409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`、`409 DEFAULT_VERSION_NOT_APPLICABLE`、`422 EXTERNAL_MODEL_NOTICE_NOT_ACKNOWLEDGED`、`422 VALIDATION_ERROR`、`429 CONCURRENCY_LIMIT_EXCEEDED`。
+主要错误：`403 FORBIDDEN`、`404 CONTRACT_FILE_NOT_FOUND`、`404 DOCUMENT_NOT_FOUND`、`409 CONTRACT_ARCHIVED`、
+`409 ACTIVE_REVIEW_EXISTS`、`409 VERSION_NOT_PUBLISHED`、`409 CONTRACT_FILE_NOT_READY`、
+`409 DOCUMENT_NOT_READY`、
+`409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`、`409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`、
+`409 DEFAULT_VERSION_NOT_APPLICABLE`、`422 EXTERNAL_MODEL_NOTICE_NOT_ACKNOWLEDGED`、
+`422 VALIDATION_ERROR`、`429 CONCURRENCY_LIMIT_EXCEEDED`。
 
 ### 10.2 获取审核任务
 
 `GET /api/v1/review-tasks/{review_task_id}`。权限：合同可见用户；viewer 需显式授权。
 
 Request：Path `review_task_id` UUID；无 Body。可选 Query `include_stage_runs` boolean，默认 false。
+
+`include_stage_runs=true` 时返回当前任务可见的阶段尝试；阶段事实包含 `stage`、`status`、`attempt_no`、租约心跳
+时间和安全错误信息，不返回内部堆栈或外部供应商响应。Viewer 必须对合同具有显式 `read` 授权；平台支持访问
+仅可读取，不可创建或重试。
 
 Request Example：`GET /api/v1/review-tasks/67f0ab0d-cf70-470c-b5e7-92a18d6d73a5?include_stage_runs=true`
 
@@ -917,7 +938,9 @@ Success `200 OK`：返回 `ReviewTask`；`failed` 必须有可读 `error_code`/`
 
 `POST /api/v1/review-tasks/{review_task_id}/retry`。权限：`Org Admin | Reviewer`；仅 `failed` 可调用。需要 `Idempotency-Key`。
 
-Request Body：`{}`；可选 `from_stage?: parsing|classification|extraction|risk_analysis|clause_comparison|report`，默认从第一个失败阶段继续。不得改变已锁定输入版本。
+Request Body：`{}`；可选 `from_stage?: parsing|classification|extraction|risk_analysis|clause_comparison|report`，默认从第一个失败阶段继续。不得改变已锁定输入版本。成功阶段在输入指纹未变化时复用，
+新的 stage attempt 以数据库唯一约束记录。Phase 9A 每个 `ReviewTask` 最多允许 3 次显式 retry；达到上限后返回
+`409 RETRY_LIMIT_EXCEEDED`，任务保持 `failed`，不得创建新的 attempt。
 
 Request Example：`{ "from_stage": "risk_analysis" }`
 
@@ -927,7 +950,8 @@ Success `202 Accepted`：
 { "review_task_id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "status": "pending", "resumed_from_stage": "risk_analysis" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 INVALID_STATE_TRANSITION`、`409 INPUT_VERSION_CHANGED`、`429 CONCURRENCY_LIMIT_EXCEEDED`。
+主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 INVALID_STATE_TRANSITION`、
+`409 INPUT_VERSION_CHANGED`、`409 RETRY_LIMIT_EXCEEDED`、`429 CONCURRENCY_LIMIT_EXCEEDED`。
 
 ### 10.4 确认审核完成
 

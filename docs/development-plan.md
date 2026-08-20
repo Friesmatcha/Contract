@@ -919,6 +919,7 @@ Create Review -> Queue -> Worker -> Stage Transition -> Success/Failure -> Retry
 
 - 做：`ReviewTask`、`ReviewStageRun`、审核任务创建/查询/重试、Celery 编排、Worker 基础结构、stage 状态机、lease、heartbeat、crash recovery、compensation、并发限制、幂等、重试边界和 Fake Stage Executor。
 - 不做：Qwen 调用、`ModelGateway`、分类、字段抽取、风险分析、条款比对、通知、报告和真实业务结果。
+- 9A 的任务 retry 上限固定为每个 `ReviewTask` 最多 3 次；租约超时的 stage 进入 `retryable`，补偿后由新 attempt 恢复。该边界不复用平台模型调用的 `max_retries`。
 
 ### 前置依赖
 
@@ -980,6 +981,7 @@ npm --prefix frontend run build
 - 创建返回 202/pending 并锁定输入版本；无文件、未发布版本、未确认告知、并发超限按契约失败。
 - Fake Stage Executor 可验证 Queue、Worker、stage success/failure、retry、lease 超时和 compensation，不调用真实或 Fake Model Gateway。
 - Redis 消息丢失、Worker 崩溃和重复投递不会产生重复活动任务或跳过阶段；失败有可读错误。
+- 每个任务最多 3 次显式 retry；租约超时保留 `retryable` 阶段事实并创建新的 attempt，超过上限返回 `RETRY_LIMIT_EXCEEDED`。
 - active ReviewTask 存在时归档合同返回 409；无 active 任务时合同自身归档行为保持 Phase 5 语义。
 - 前端轮询、退避、失败、重试和终态处理可独立验证。
 
@@ -1957,7 +1959,7 @@ Stable Baseline
 | P-04（已关闭） | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，已决策 | 每组织一个默认规则集；首个成功发布自动成为默认；后续由组织管理员通过 11.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`。 |
 | P-05（已关闭） | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，已决策 | 每组织+合同类型+规范化场景一个默认模板；缺省场景为 `standard`；首个成功发布自动成为默认；后续由组织管理员通过 12.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。 |
 | P-06 | 报告完整状态枚举、失败后再次生成、`REPORT_EXPIRED` 的时间条件和“重新生成”是否创建新记录未定义 | Phase 13，阻塞 | 定义 generating/ready/failed/expired 及再次 POST 的新记录/幂等行为 |
-| P-07 | review `archived` 如何进入/恢复？合同归档是否级联；架构提到 cancel 但无 API | Phase 9A，部分阻塞 | 明确合同归档对完成任务的只读影响；未新增契约前不实现 cancel |
+| P-07（9A 已关闭） | review `archived` 如何进入/恢复？合同归档是否级联；架构提到 cancel 但无 API | Phase 9A，已决策 | active `pending|parsing|reviewing|pending_review` 任务阻止合同归档并返回 `409 ACTIVE_REVIEW_EXISTS`；合同归档不级联任务状态；terminal/history 任务保持只读和可追溯；未有契约依据不实现 cancel、任务归档/恢复接口或新的状态迁移 |
 | P-08（已关闭） | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，已决策 | 采用 API Contract 3.1：密码 12-128 字符、不强制字符类别；密码重置 Token 30 分钟、邀请 Token 7 天；Token 至少 256 位随机值且数据库只保存哈希。历史密码限制首期不做。 |
 | P-09（已关闭） | SMTP 发件人、公开前端基址、投递失败可观测性和重试上限未完整冻结 | Phase 2/4，已决策 | 采用 API Contract 3.5：配置由环境注入；缺配置时在账号查询前统一返回 `503 SMTP_NOT_CONFIGURED`；首期后台投递只尝试 1 次且自动重试上限为 0，失败写不含邮箱/Token/完整 URL 的安全结构化日志/指标。当前实现仍须补失败捕获和测试，P-09 关闭不等于 Phase 2 完成。 |
 | P-10（已关闭） | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B，已决策 | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；架构说明已同步 |
@@ -2015,6 +2017,14 @@ Stable Baseline
 - **Decision**：每组织、合同类型和规范化场景最多一个默认模板；缺省或空白场景规范为 `standard`，只做精确匹配。每个组合首个成功发布的有效模板自动成为默认，后续发布不自动替换。发布默认模板的新版本更新该模板的 `current_published_version_id`。
 - **Switching and safety**：组织管理员在 12.4 PATCH 提交 `is_default: true` 显式切换；当前默认不能直接取消或停用，必须先切换到同组合另一个 active 且已有发布版本的模板。数据库唯一约束、场景规范化、服务事务和审计共同保证并发安全。
 - **Review fallback**：创建审核省略模板版本时按合同类型和规范化场景使用默认模板当前发布版本；没有对应默认返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。
+
+### Decision Record: P-07 Review Task and Contract Archive（2026-08-20）
+
+- **Status**：Closed for Phase 9A。规范来源为 API Contract 9.5、10.1-10.3 及本 Phase 的 Contract Review。
+- **Archive guard**：合同归档事务锁定合同后，检查同组织同合同的 active `ReviewTask`；`pending`、`parsing`、
+  `reviewing`、`pending_review` 任一存在即返回 `409 ACTIVE_REVIEW_EXISTS`，不写入归档状态。
+- **History boundary**：合同归档不级联改变 `ReviewTask` 或 `ReviewStageRun`。`completed`、`failed`、`archived` 任务及其输入快照保持原状态、只读和可追溯。
+- **Command boundary**：API 没有定义 cancel、任务归档或恢复接口；Phase 9A 不实现这些命令，也不自行增加状态迁移。
 
 ### Just-in-Time Closing Order
 

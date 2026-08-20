@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-20`
 - Branch: `main`
-- Verification baseline: `ee1d5a3` (Phase 8B implementation snapshot, pushed to `origin/main`).
-- Working tree after the Phase 8B Git Snapshot: no source changes are pending; generated `test-results/` remains untracked and is not treated as source.
-- Current boundary: Phase 0 through Phase 8B are `Completed` with migration, integration, frontend quality, browser acceptance and review evidence recorded below. Phase 9A and later phases remain `Not Started`.
+- Verification baseline: `b73fdec` (Phase 8B ledger snapshot; `HEAD` and `origin/main` both verified at this revision before Phase 9A work).
+- Working tree after the Phase 8B Git Snapshot: Phase 9A source, tests and specification updates are intentionally uncommitted; generated `test-results/` remains untracked and is not treated as source.
+- Current boundary: Phase 0 through Phase 9A are `Completed` with migration, integration, frontend quality, browser acceptance and independent review evidence recorded below. Phase 9B through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -235,9 +235,27 @@
 - Commit / Push: 用户已授权；`ee1d5a3`（`feat(clauses): add versioned clause templates`）已正常提交并推送到 `origin/main`，本账本更新作为后续 docs snapshot 正常提交并推送；未 amend、force push 或重写历史。
 - Next Phase and entry conditions: Phase 8B Git Snapshot 门禁已关闭。Phase 9A 保持 `Not Started`，只允许在后续会话重新读取 Source of Truth、核对 Git/迁移状态并关闭 P-07 对任务创建/归档有影响的语义后进入；不得同时进入 Phase 9B 或实现模型、分类/抽取、风险、条款比对、通知或报告。
 
+## Phase 9A: Review Task and Async Orchestration
+
+- Status: `Completed`。
+- Completed at: `2026-08-20`。
+- Current completion boundary: 完成 `ReviewTask`、`ReviewStageRun`、10.1 创建、10.2 查询、10.3 失败重试、Celery 编排、Fake Stage Executor、阶段状态机、attempt、lease、heartbeat、Worker 崩溃恢复、补偿、Redis orphan requeue、重复投递幂等、组织并发上限 3 和输入快照锁定。未实现 ModelGateway、Qwen 调用、分类、字段抽取、风险分析、条款比对、通知、报告或真实业务结果。
+- Entry / Contract review: 已重新读取并核对本 Phase 要求的 Source of Truth、REVIEW-001/002 和 CONTRACT-003 原型/规范；P-07 已关闭。`GET /review-tasks/{id}` 按任务资源归属建立 tenant context 并忽略客户端组织 Header；viewer 只能读取显式合同授权任务；支持访问只能读取；创建/重试不接受客户端 tenant、role、权限或结果内容。
+- Contract update: 10.1-10.3 增加快照返回边界、stage 事实、`RETRY_LIMIT_EXCEEDED` 和每任务最多 3 次显式 retry；9.5 增加 active `pending|parsing|reviewing|pending_review` 归档 guard、终态历史只读和不级联语义。架构同步 lease 超时 `retryable -> 新 attempt`、补偿次数和任务 retry 上限。REVIEW-001 文案明确“离开未提交表单”，不表示取消已创建任务。
+- Changes: 新增 `backend/app/modules/reviews/{models,schemas,service,api}.py`、`backend/app/worker/{review_tasks,compensation}.py`、Migration `backend/migrations/versions/20260820_0011_phase9a_review_tasks.py`；接入 `backend/app/main.py`、`backend/app/worker/celery_app.py` 和 `backend/migrations/env.py`；合同服务增加同事务归档 guard，并按“组织锁 -> 合同锁”顺序避免创建/归档死锁。新增 reviews async 集成/单元测试、OpenAPI 投影测试。
+- ORM / Migration: `20260820_0011` 线性继承实际唯一 head `20260819_0010`，新增 review task/stage run、组织复合外键、活动任务部分唯一索引、stage attempt 唯一约束、租约/状态索引、快照和序列；未修改已发布 Migration，未创建 merge revision。独立 PostgreSQL `contract_phase9a_migration` 完成 `upgrade -> downgrade -1 -> upgrade`，最终 `20260820_0011 (head)`；测试使用 `contract_phase9a_test`，未修改默认 `contract_test` 的历史污染。
+- Frontend / UI Page IDs: 新增 REVIEW-001 `/contracts/:contractId/reviews/new`、REVIEW-002 `/reviews/:reviewTaskId`，并接入 CONTRACT-003 创建入口/active review 状态。覆盖 loading、empty、error、forbidden、conflict、disabled、processing、失败 retry、网络错误；前台 2 秒起始退避，隐藏页面 10-60 秒降频，恢复可见立即刷新，终态停止轮询；只展示任务/stage 状态，不展示结果或风险结论。最终 E2E 覆盖 Chromium 1440px/1280px。
+- Tests: `TEST_DATABASE_URL=...contract_phase9a_test; REDIS_URL=...; .venv\Scripts\python.exe -m pytest backend/tests/integration/reviews_async -q` -> 11 passed，1 个 Windows pytest cache permission warning；同库 `.venv\Scripts\python.exe -m pytest backend/tests` -> 148 passed，同一 warning；`.venv\Scripts\python.exe -m ruff check backend` -> passed；`.venv\Scripts\python.exe -m mypy backend/app` -> passed；9A OpenAPI 投影 -> 1 passed / 10 deselected，同一 warning；`npm --prefix frontend run test` -> 18 files / 64 tests passed；frontend lint/typecheck passed；build passed，保留既有 Vite chunk-size warning；`npm --prefix frontend run e2e` -> 52 passed，包含 1440px/1280px，Windows Vite 子进程收尾未自动退出，已在全部断言通过后手动停止。
+- Review / Re-review: 独立只读 Review 初次发现 lease 状态、retry 上限、REVIEW-001 Cancel 文案、隐藏页轮询和归档并发锁顺序问题；已完成 Contract/architecture/UI PRD 更新和实现修复。真实 PostgreSQL 并发测试暴露并关闭创建/归档死锁；独立 re-review 确认上述阻塞项全部关闭，无新的 blocking code finding。
+- Regression / scope: 后端全量、9A 专项、OpenAPI、frontend unit/lint/typecheck/build 和两 viewport Playwright 均在最终修复后重跑通过。数据库层覆盖重复领取、并发创建、活动唯一性、并发上限、租约过期、新 attempt、retry 上限、Redis orphan requeue、归档竞争、viewer、support read-only 和跨组织隐藏；未进入 Phase 9B。
+- Known Issues / Pending Decisions: Windows pytest cache permission warning、Vite chunk-size warning 和 Playwright/Vite 子进程收尾问题均非阻塞；未运行真实 Celery worker 的 broker 断连/消息物理丢失故障注入，当前以数据库 orphan 扫描、重复投递幂等和 Fake Stage Executor 验证恢复边界；真实部署 broker smoke 留作部署验证。`test-results/` 为未跟踪测试生成物，保留且不纳入提交。无阻塞本 Phase 的 Pending Decision。
+- Git branch / HEAD / status / diff summary: `main` / `b73fdec`；`origin/main` 在开始前核对为 `b73fdec`；Phase 9A 所有源代码、Migration、测试和规范更新均保持未提交，`test-results/` 保持未跟踪；未覆盖、恢复或清理用户已有修改/未知文件。
+- Commit / Push: 未经用户再次明确授权，本 Phase 不 Commit、不 Push；未 amend、force push 或修改历史。
+- Next Phase and entry conditions: Phase 9A 已完成；Phase 9B 明确保持 `Not Started`。本次停止，不实现 ModelGateway/Qwen、分类/抽取、风险、条款比对、通知、报告或真实业务结果；进入 9B 前需用户再次授权并重新执行 Source of Truth、Git 和 Migration 基线核对。
+
 ## Remaining Phases
 
-Phase 9A-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
+Phase 9B-16 均为 `Not Started`。范围、依赖和验收标准见 `docs/development-plan.md`；不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

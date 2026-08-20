@@ -56,7 +56,8 @@ def clean_database(database_engine: Engine) -> Iterator[None]:
         connection.execute(text("ALTER TABLE audit_logs DISABLE TRIGGER audit_logs_no_truncate"))
         connection.execute(
             text(
-                "TRUNCATE TABLE auth_rate_limits, audit_logs, idempotency_records, "
+                "TRUNCATE TABLE review_stage_runs, review_tasks, auth_rate_limits, audit_logs, "
+                "idempotency_records, "
                 "contract_access_grants, contract_files, file_objects, contracts, "
                 "organization_memberships, "
                 "support_access_grants, users, organizations, "

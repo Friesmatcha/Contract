@@ -137,15 +137,24 @@ sequenceDiagram
 
 | 状态 | 进入条件 | 可执行动作 |
 | --- | --- | --- |
-| `pending` | 上传和校验完成 | 取消、开始处理 |
+| `pending` | 上传和校验完成 | 开始处理 |
 | `parsing` | Worker 领取解析阶段 | 记录进度、失败 |
 | `reviewing` | 文档可用且开始规则/模型审核 | 记录进度、失败 |
 | `pending_review` | 机器审核和预警生成完成 | 人工修订、确认完成 |
 | `completed` | 审核员确认或按组织配置自动完成 | 导出、归档、重新审核 |
 | `failed` | 某阶段达到重试上限或产生不可重试错误 | 查看原因、从失败阶段重试 |
-| `archived` | 人工归档 | 只读查看、按权限恢复 |
+| `archived` | 仅由未来明确的任务归档命令进入；不由合同归档级联产生 | 只读查看；本 Phase 无任务归档/恢复命令 |
 
 状态迁移由后端命令完成，并以条件更新防止两个 Worker 同时推进。`failed` 保存公开错误码和可读信息；内部异常只进入受控日志。
+合同归档与审核任务使用同一数据库事务：合同锁定后，active `pending`、`parsing`、`reviewing`、`pending_review`
+任务阻止归档并返回 `ACTIVE_REVIEW_EXISTS`；合同归档不级联修改任务或阶段运行，terminal/history 事实保持只读。
+Phase 9A 的 `ReviewTask` 最多允许 3 次显式 retry；达到上限后保持 `failed`，返回
+`RETRY_LIMIT_EXCEEDED`，不再创建新的阶段 attempt。该上限是任务编排边界，不复用平台模型调用的
+`model_configurations.max_retries`。
+
+`ReviewStageRun` 的租约超时迁移为 `retryable`，补偿逻辑执行清理并重新投递任务；下一次 Worker 领取时
+以数据库唯一约束创建该阶段的下一个 `attempt_no`。`compensation_attempts` 记录补偿次数，不能将过期运行
+直接标记为成功或复用同一个 attempt。
 
 ### 5.3 预警状态机
 

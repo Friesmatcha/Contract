@@ -270,6 +270,80 @@ export interface ContractAccessGrant {
   access_level: 'read'
 }
 
+export type ReviewStatus =
+  | 'pending'
+  | 'parsing'
+  | 'reviewing'
+  | 'pending_review'
+  | 'completed'
+  | 'failed'
+  | 'archived'
+
+export type ReviewStage =
+  | 'parsing'
+  | 'classification'
+  | 'extraction'
+  | 'risk_analysis'
+  | 'clause_comparison'
+  | 'report'
+
+export type ReviewStageStatus =
+  | 'pending'
+  | 'running'
+  | 'succeeded'
+  | 'failed'
+  | 'retryable'
+
+export interface ReviewStageRun {
+  id: string
+  stage: ReviewStage
+  status: ReviewStageStatus
+  attempt_no: number
+  heartbeat_at: string | null
+  started_at: string | null
+  finished_at: string | null
+  error_code: string | null
+  error_message: string | null
+}
+
+export interface ReviewTask {
+  id: string
+  display_no: string
+  contract_id: string
+  contract_file_id: string
+  document_version_id: string | null
+  status: ReviewStatus
+  progress: number
+  current_stage: 'queued' | ReviewStage
+  rule_bundle_version_id: string
+  clause_template_version_id: string
+  business_scenario: string
+  error_code: string | null
+  error_message: string | null
+  created_at: string
+  started_at: string | null
+  finished_at: string | null
+  stage_runs?: ReviewStageRun[]
+}
+
+export interface CreateReviewTaskRequest {
+  contract_file_id: string
+  document_version_id?: string
+  rule_bundle_version_id?: string
+  clause_template_version_id?: string
+  business_scenario?: string
+}
+
+export interface RetryReviewTaskRequest {
+  from_stage?: ReviewStage
+}
+
+export interface RetryReviewTaskResponse {
+  review_task_id: string
+  status: 'pending'
+  resumed_from_stage: ReviewStage
+}
+
 export type DocumentKind = 'docx' | 'pdf' | 'image'
 export type SourceKind = 'pdf_page' | 'image_page' | 'docx_paragraph' | 'docx_table_cell'
 

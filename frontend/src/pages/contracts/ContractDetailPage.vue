@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Download, Edit, FolderRemove, Key, RefreshLeft, Upload } from '@element-plus/icons-vue'
+import { Download, Edit, FolderRemove, Key, RefreshLeft, Upload, VideoPlay } from '@element-plus/icons-vue'
 import { computed, onMounted, ref } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
@@ -28,6 +28,33 @@ const organizationId = currentOrganizationId
 const role = computed(() => currentOrganizationMembership.value?.role)
 const canWrite = computed(() => role.value === 'org_admin' || role.value === 'reviewer')
 const isAdmin = computed(() => role.value === 'org_admin')
+const activeReviewStatuses = new Set(['pending', 'parsing', 'reviewing', 'pending_review'])
+const hasActiveReview = computed(() =>
+  Boolean(contract.value?.latest_review && activeReviewStatuses.has(contract.value.latest_review.status)),
+)
+const canStartReview = computed(() => {
+  const file = contract.value?.current_file
+  return Boolean(
+    canWrite.value &&
+    !hasActiveReview.value &&
+    contract.value?.status === 'active' &&
+    file?.scan_status === 'clean' &&
+    file.storage_status === 'stored' &&
+    file.external_model_notice_acknowledged_at,
+  )
+})
+
+function reviewStatusLabel(value: string): string {
+  return {
+    pending: '等待处理',
+    parsing: '正在解析',
+    reviewing: '正在审核',
+    pending_review: '等待人工复核',
+    completed: '已完成',
+    failed: '失败',
+    archived: '历史任务',
+  }[value] || value
+}
 
 const contract = ref<Contract | null>(null)
 const loading = ref(true)
@@ -69,6 +96,14 @@ function formatDate(value: string | null): string {
 
 function openFiles(): void {
   void router.push(`/contracts/${contractId.value}/files`)
+}
+
+function openReview(reviewId: string): void {
+  void router.push(`/reviews/${reviewId}`)
+}
+
+function startReview(): void {
+  void router.push(`/contracts/${contractId.value}/reviews/new`)
 }
 
 function openFile(fileId: string): void {
@@ -403,8 +438,16 @@ onMounted(() => {
           <div class="section-heading">
             <div>
               <h2>最近审核</h2>
-              <p>审核任务将在后续 Phase 建立。</p>
+              <p>异步任务状态与阶段记录。</p>
             </div>
+            <ElButton
+              v-if="canStartReview"
+              type="primary"
+              :icon="VideoPlay"
+              @click="startReview"
+            >
+              创建审核
+            </ElButton>
           </div>
           <ElEmpty
             v-if="!contract.latest_review"
@@ -416,10 +459,27 @@ onMounted(() => {
             border
           >
             <ElDescriptionsItem label="任务 ID">
-              {{ contract.latest_review.id }}
+              <button
+                class="inline-link technical-value"
+                type="button"
+                @click="openReview(contract.latest_review.id)"
+              >
+                {{ contract.latest_review.id }}
+              </button>
             </ElDescriptionsItem>
             <ElDescriptionsItem label="状态">
-              {{ contract.latest_review.status }}
+              <ElTag :type="hasActiveReview ? 'warning' : 'info'">
+                {{ reviewStatusLabel(contract.latest_review.status) }}
+              </ElTag>
+            </ElDescriptionsItem>
+            <ElDescriptionsItem label="打开任务">
+              <ElButton
+                text
+                type="primary"
+                @click="openReview(contract.latest_review.id)"
+              >
+                查看进度
+              </ElButton>
             </ElDescriptionsItem>
           </ElDescriptions>
         </section>

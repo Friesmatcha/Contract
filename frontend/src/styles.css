@@ -397,6 +397,85 @@ select {
   min-width: 760px;
 }
 
+.review-create-grid,
+.review-progress-layout {
+  align-items: start;
+}
+
+.review-progress-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.85fr);
+  gap: 16px;
+}
+
+.review-progress-number {
+  margin: 18px 0 10px;
+  color: #2457a6;
+  font-family: "JetBrains Mono", Consolas, monospace;
+  font-size: 42px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.review-stage-row,
+.review-failure-actions,
+.form-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-stage-row {
+  justify-content: space-between;
+}
+
+.review-stage-row + p,
+.review-error-copy,
+.form-note {
+  margin: 4px 0 0;
+  color: #5f6b7a;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.review-error-copy {
+  color: #c43d3d;
+}
+
+.review-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.review-failure-alert {
+  margin-top: 16px;
+}
+
+.wide-control {
+  width: 100%;
+}
+
+.inline-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #2457a6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@media (max-width: 1280px) {
+  .review-progress-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+  }
+}
+
+@media (max-width: 960px) {
+  .review-progress-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
 .members-filter {
   grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(120px, 1fr)) auto;
 }

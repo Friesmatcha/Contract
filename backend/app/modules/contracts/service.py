@@ -19,7 +19,8 @@ from backend.app.modules.contracts.schemas import (
     CreateContractRequest,
     UpdateContractRequest,
 )
-from backend.app.modules.identity.models import OrganizationMembership, User
+from backend.app.modules.identity.models import Organization, OrganizationMembership, User
+from backend.app.modules.reviews.models import ACTIVE_REVIEW_STATUSES, ReviewTask
 from backend.app.shared.audit import append_audit_log
 from backend.app.shared.db import UnitOfWork
 from backend.app.shared.errors import ApplicationError, InvalidCursorError
@@ -106,6 +107,14 @@ def _file_summaries(session: Session, contract: Contract) -> list[dict[str, Any]
 
 def _empty_file_and_review(session: Session, contract: Contract) -> dict[str, Any]:
     files = _file_summaries(session, contract)
+    latest_review = session.scalar(
+        select(ReviewTask)
+        .where(
+            ReviewTask.organization_id == contract.organization_id,
+            ReviewTask.contract_id == contract.id,
+        )
+        .order_by(ReviewTask.created_at.desc(), ReviewTask.id.desc())
+    )
     return {
         "id": contract.id,
         "display_no": contract.display_no,
@@ -115,7 +124,11 @@ def _empty_file_and_review(session: Session, contract: Contract) -> dict[str, An
         "owner_id": contract.owner_id,
         "current_file": next((file for file in files if file["is_current"]), None),
         "files": files,
-        "latest_review": None,
+        "latest_review": (
+            {"id": latest_review.id, "status": latest_review.status}
+            if latest_review is not None
+            else None
+        ),
         "created_at": contract.created_at,
         "updated_at": contract.updated_at,
         "version": contract.version,
@@ -423,6 +436,17 @@ def archive_contract(
     request_id: str,
 ) -> Contract:
     with UnitOfWork(session) as unit_of_work:
+        organization = session.scalar(
+            select(Organization)
+            .where(Organization.id == actor.organization_id)
+            .with_for_update()
+        )
+        if organization is None or organization.status != "active":
+            raise ApplicationError(
+                status_code=404,
+                code="ORGANIZATION_NOT_FOUND",
+                message="组织不存在。",
+            )
         contract = _contract_or_not_found(
             session,
             organization_id=actor.organization_id,
@@ -430,6 +454,21 @@ def archive_contract(
             for_update=True,
         )
         if contract.status == "active":
+            active_review = session.scalar(
+                select(ReviewTask.id)
+                .where(
+                    ReviewTask.organization_id == actor.organization_id,
+                    ReviewTask.contract_id == contract.id,
+                    ReviewTask.status.in_(ACTIVE_REVIEW_STATUSES),
+                )
+                .limit(1)
+            )
+            if active_review is not None:
+                raise ApplicationError(
+                    status_code=409,
+                    code="ACTIVE_REVIEW_EXISTS",
+                    message="合同存在正在处理的审核任务，暂不能归档。",
+                )
             contract.status = "archived"
             contract.archived_at = _now()
             contract.version += 1
