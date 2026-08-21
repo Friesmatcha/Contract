@@ -14,11 +14,11 @@
 
 ## Current Position
 
-- Last updated: `2026-08-20`
+- Last updated: `2026-08-21`
 - Branch: `main`
-- Verification baseline: `3c0a7ff` (Phase 11 implementation snapshot, based on the verified Phase 10 ledger baseline `df19383`) plus its immediately following Phase 11 ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 11 Git Snapshot: tracked source and documentation changes are committed; generated `test-results/` remains untracked and is preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 11 are `Completed`; Phase 12 through Phase 16 remain `Not Started`.
+- Verification baseline: `74d091e` (Phase 12 implementation snapshot, based on the verified Phase 11 ledger baseline `fd83a84`) plus its immediately following Phase 12 ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 12 Git Snapshot: tracked source and documentation changes are committed; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 12 are `Completed`; Phase 13 through Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -321,11 +321,29 @@
 - Known Issues / Pending Decisions: The current UI uses a reviewer ID reference input for assignment because Phase 11 exposes no reviewer-directory read API to non-admin reviewers; server-side same-organization active-reviewer validation remains authoritative. Notification delivery is in-app persistence in this Phase; automatic compensation/retry scheduling remains Phase 14B. Existing default `contract_test` pollution, Alembic drift and the pre-existing Windows pytest temp-directory permission issue were not changed; the final full suite used a temporary repository basetemp which was removed after verification. Real Qwen smoke was not run; automated model-path tests use Fake Model Gateway. `test-results/` remains untracked, preserved, and not submitted.
 - Git branch / HEAD / status / diff summary: `main`; Phase 11 implementation snapshot is `3c0a7ff`, containing the warning/notification backend, `0015` migration, contract/architecture/PRD clarifications, tests, and WARNING-001/WARNING-002/NOTIFY-001 frontend implementation. This ledger update is the immediately following documentation snapshot. After completion the tracked working tree is clean and only the preserved untracked `test-results/` remains.
 - Commit / Push: The user explicitly authorized the Git Snapshot and normal push. `3c0a7ff` (`feat(warnings): add warning and notification workflow`) and this following ledger snapshot are pushed to `origin/main`; no amend, force push, history rewrite, cleanup, or deletion was performed.
-- Next Phase and entry conditions: Phase 12 through Phase 16 remain `Not Started`; stop after this Phase 11 status update and do not enter Phase 12.
+- Next Phase and entry conditions: Phase 12 completed in the following implementation snapshot `74d091e`; Phase 13 through Phase 16 remain `Not Started`.
+
+## Phase 12: Human Review, Feedback and Completion
+
+- Status: `Completed`.
+- Completed at: `2026-08-20`。
+- Entry / Pending Decision review: 完整核对 `AGENTS.md`、`docs/phase-status.md`、`docs/development-plan.md` Phase 12/Testing/Pending Decisions、`docs/requirements.md`、`docs/architecture.md`、`docs/api-contract.md` 10.4、10.6-10.9、16.1-16.2，以及 UI README、frontend PRD、design system、REVIEW-003 全部人工编辑/冲突/阻塞/viewer/evidence 状态资产和 ADMIN-003 Feedback Summary 规范/资产。已关闭 P-11 的 Phase 12 最小模型补齐；P-12 批量审核保持 Future Work；UI-P10 明确不假造完整修订历史，只展示当前响应和本次会话修订。
+- Scope boundary: 完成分类、字段、风险、条款人工修订、不可变 ResultRevision、乐观锁、Evidence/SourceSpan 校验、Feedback 创建/幂等/租户统计、完成审核命令和 REVIEW-003/ADMIN-003 UI；未实现直接修改风险严重度、覆盖模型原值、自动训练、批量审核、报告或任何 Phase 13+ 功能。
+- Changes: 新增 `backend/app/modules/reviews/revisions/`、`backend/app/modules/feedback/`、Phase 12 API/Schema/Service/测试和 `20260820_0016_phase12_human_review.py`；补齐 ReviewTask `completed_by/completed_at`、结果 `edited_by/edited_at` 和 API 投影；新增 REVIEW-003 编辑/409 冲突/阻塞/viewer/evidence 状态、ADMIN-003 反馈统计、API Client、类型和 Playwright；修复文档预览页 1280px 负边距导致的 4px 横向溢出，并补齐 Phase 12 文档证据 mock。
+- API Contract / OpenAPI: 先更新并 review 10.4、10.6-10.9、16.1-16.2，冻结完成审核必须人工项：classification/field `needs_confirmation`、risk `pending_review`、clause `uncertain` 和无当前锁定文档合法 SourceSpan 的风险；`confirmed` 风险仍必须有证据。修订接口保持 before/after、version、reason、evidence ID 和状态语义；severity/source、model 原值和证据关联不可由修订请求改写。Feedback subject 必须属于当前任务和组织，`modified` 显式提供 corrected value；OpenAPI 路径投影测试通过，且完成命令非法状态按契约返回 409。
+- ORM / Migration: `20260820_0016` 线性继承 `20260820_0015`，新增 `result_revisions`、`feedback`、完成/编辑元数据、复合 tenant 外键、版本 CHECK、索引和追加事实边界。独立 PostgreSQL `contract_phase12_test` 核对 `20260820_0016 (head)`，完成 `head -> downgrade -1 -> upgrade head`；默认 `contract_test` 未修改。
+- Frontend / UI Page IDs: REVIEW-003 `/reviews/:reviewTaskId/results` 覆盖分类/字段/风险/条款编辑、model/current 对照、版本冲突刷新、阻塞列表、viewer 只读、证据跳转和本次会话修订记录；不渲染假造的完整 history feed。ADMIN-003 `/feedback/summary` 覆盖筛选、统计、loading/error/empty/forbidden/retry 和 1440px/1280px 无横向溢出。
+- Tests: 独立库 `.venv\Scripts\python.exe -m pytest backend/tests/integration/human_review -q` -> `6 passed`；同库后端全量 -> `212 passed`，1 个 pytest cache permission warning；`.venv\Scripts\python.exe -m ruff check backend`、`.venv\Scripts\python.exe -m mypy backend/app` -> passed。前端 `npm --prefix frontend run test -- --run` -> `21 files / 76 tests passed`；`npm --prefix frontend run typecheck`、`npm --prefix frontend run build`、`npm --prefix frontend run lint` -> exit 0，lint 为 0 errors/348 existing formatting warnings，build 保留既有 chunk-size warning。`npm --prefix frontend run e2e -- phase12.spec.ts --workers=1` -> `4 passed`（Chromium 1440px/1280px）；Phase 7/10/11 直接相关历史 E2E -> `8 passed`。`git diff --check` -> passed；OpenAPI projection、migration downgrade/upgrade -> passed。
+- Review / Re-review: 独立 review 检查 requirements/API Contract、P-11/P-12/UI-P10、tenant/RBAC/viewer、乐观锁/事务、before/after、evidence、model/current 边界、Feedback 幂等与统计、Migration、OpenAPI 和 UI 响应式。发现并修复完成命令 `INVALID_STATE_TRANSITION` 应返回 409 的阻塞 finding；修复后 Phase 12 集成、后端全量、前端门禁和相关 E2E 已重跑通过。
+- Regression / scope: 后端 212 tests、前端 76 tests/质量门禁、Phase 12 两桌面视口 E2E、Phase 7/10/11 相关 E2E、OpenAPI 和 Migration 往返均在最终修改后通过；未实现 Phase 13 报告或任何后续 Phase。
+- Known Issues / Pending Decisions: 默认 `contract_test` 仍有历史 `invited_at` Migration 污染，未修改；pytest cache 权限 warning、Vue lint 格式 warning、Vite chunk-size warning 和 Windows Playwright/Vite 子进程收尾问题均为非阻塞。真实 Qwen smoke 未执行，自动化模型路径使用 Fake Model Gateway。`test-results/` 保持未跟踪、保留且未提交。
+- Git branch / HEAD / status / diff summary: `main`；Phase 12 实现快照为 `74d091e`，包含后端修订/反馈/完成审核服务、`0016` Migration、契约与测试、REVIEW-003 和 ADMIN-003 前端实现；本台账更新作为紧随其后的文档快照。完成后 tracked 工作区干净，仅保留未跟踪 `test-results/`，未覆盖、删除或纳入提交。
+- Commit / Push: 用户已明确授权；`74d091e`（`feat(human-review): add revisions feedback and completion`）和本台账快照已正常提交并推送到 `origin/main`；未执行 amend、force push 或历史重写。
+- Next Phase and entry conditions: Phase 13、Phase 14A、Phase 14B、Phase 15、Phase 16 均保持 `Not Started`；本次在 Phase 12 台账更新后停止，不进入任何后续功能。
 
 ## Remaining Phases
 
-Phase 12-16 均为 `Not Started`。Phase 11 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
+Phase 13-16 均为 `Not Started`。Phase 12 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
