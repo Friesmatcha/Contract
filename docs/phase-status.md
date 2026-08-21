@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-21`
 - Branch: `main`
-- Verification baseline: `74d091e` (Phase 12 implementation snapshot, based on the verified Phase 11 ledger baseline `fd83a84`) plus its immediately following Phase 12 ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 12 Git Snapshot: tracked source and documentation changes are committed; generated `test-results/` remains untracked and is preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 12 are `Completed`; Phase 13 through Phase 16 remain `Not Started`.
+- Verification baseline: `31ae93f` (Phase 13 implementation snapshot, based on the verified Phase 12 ledger baseline `ac2ccf5`) plus its immediately following Phase 13 ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 13 Git Snapshot: tracked source and documentation changes are committed; generated `test-results/` remains untracked and is preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 13 are `Completed`; Phase 14A, Phase 14B, Phase 15 and Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -341,9 +341,28 @@
 - Commit / Push: 用户已明确授权；`74d091e`（`feat(human-review): add revisions feedback and completion`）和本台账快照已正常提交并推送到 `origin/main`；未执行 amend、force push 或历史重写。
 - Next Phase and entry conditions: Phase 13、Phase 14A、Phase 14B、Phase 15、Phase 16 均保持 `Not Started`；本次在 Phase 12 台账更新后停止，不进入任何后续功能。
 
+## Phase 13: Immutable HTML/PDF Reports
+
+- Status: `Completed`。
+- Completed at: `2026-08-21`。
+- Current completion boundary: 完成报告生成、状态查询、HTML 在线预览和 HTML/PDF 安全下载；状态固定为 `generating|ready|failed|expired`。报告在创建事务中冻结合同文件版本、组织报告设置、审核任务、分类/字段/风险/条款结果及证据、人工修订/反馈/完成记录和免责声明到不可变 `snapshot_json`；后续结果变化只影响新报告记录。失败使用新幂等键再次 POST，不增加报告专用 retry API；报告历史列表不实现。
+- Entry / Pending Decision review: 已读取并核对本 Phase 要求的 `AGENTS.md`、`docs/phase-status.md`、`docs/development-plan.md` Phase 13/测试边界/Pending Decisions、`docs/requirements.md`、`docs/architecture.md`、`docs/api-contract.md` 15.1-15.3，以及 `docs/ui/README.md`、`docs/ui/frontend-prd.md`、`docs/ui/design-system.md`、REPORT-001 全部适用状态资产和 REVIEW-003 报告入口。P-06 已关闭：明确四状态、同幂等键同 fingerprint 重放、同任务/格式已有 generating 返回 `REPORT_ALREADY_GENERATING`、ready/failed/expired 用新幂等键创建新记录、`now >= expires_at` 过期、`expires_at = generated_at + retention_days`、无专用 retry API。UI-P11 已执行，不实现历史列表 feed。
+- Changes: 新增 `backend/app/modules/reports/` 的 Report ORM/Schema/Service/API、版本化 Jinja2 模板、Fake/Chromium renderer；新增 `backend/app/worker/reports.py` 和 lease recovery/定时补偿；接入 `backend/app/main.py`、`backend/app/worker/celery_app.py`、`backend/migrations/env.py`、本地 FileStore 和 Docker Chromium 边界；新增 `frontend/src/api/reports.ts`、REPORT-001 页面/路由、REVIEW-003 生成入口、类型和样式；新增报告集成/快照测试及 `frontend/e2e/phase13.spec.ts`。
+- API / authorization / security: 已同步 API Contract 15.1-15.3 的 Method、Path、状态、幂等、并发、过期、下载授权和稳定错误码。组织行锁和 generating 部分唯一索引保护并发；viewer 每次下载重新校验合同 read grant；组织成员按可信 tenant scope 访问；平台支持授权和平台管理员禁止下载并隐藏为 `404`。模板默认 HTML escaping；PDF 只由固定 Chromium CLI renderer 从同一版本 HTML 生成；响应设置安全 Content-Type、Content-Disposition、CSP、`no-store` 和 `nosniff`；不信任模型 HTML，不公开内部 renderer/FileStore 错误。
+- ORM / Migration: 新增线性 Migration `backend/migrations/versions/20260821_0017_phase13_reports.py`，新增 `reports`、display sequence、复合 tenant 外键、状态/生命周期 CHECK、generating 唯一索引、并发/租约索引和 FileObject 复合外键；增加数据库触发器保护 Report identity、format、template version、snapshot_json 和 created_at 不可变。独立 PostgreSQL `contract_phase13_test` 完成 `20260821_0017 -> downgrade -1 -> upgrade head`，最终 head 为 `20260821_0017`。默认 `contract_test` 的历史 `invited_at` Migration 污染未修改。
+- Frontend / UI Page IDs: REVIEW-003 报告创建入口支持 `html|pdf` 和新幂等键；REPORT-001 `/reports/:reportId` 覆盖 loading、generating polling、ready inline HTML/download、failed safe error/重新生成入口、expired/disabled download、forbidden safe state；没有报告历史列表或专用 retry API。Phase 13 Playwright 在 Chromium 1440px/1280px 下验证上述页面状态且无横向溢出。
+- Tests: 独立 PostgreSQL `$env:TEST_DATABASE_URL=postgresql+psycopg://contract:replace-me@127.0.0.1:5432/contract_phase13_test; $env:REDIS_URL=redis://127.0.0.1:6379/15; .venv\Scripts\python.exe -m pytest backend/tests -q --basetemp .pytest-phase13-final-tmp` -> `219 passed`，1 个 Windows pytest cache permission warning；报告专项 `backend/tests/integration/reports backend/tests/snapshot/reports` -> `7 passed`，1 个同类 warning；`.venv\Scripts\python.exe -m ruff check backend`、`.venv\Scripts\python.exe -m mypy backend/app`、`git diff --check` -> passed；`npm --prefix frontend run test -- --run` -> `21 files / 76 tests passed`；`npm --prefix frontend run lint` -> exit 0，0 errors/386 warnings；`npm --prefix frontend run typecheck`、`npm --prefix frontend run build` -> exit 0，保留既有 Vite chunk-size warning；独立 Vite 服务下 `npx playwright test phase13.spec.ts --workers=1` -> `8 passed (13.7s)`，覆盖 Chromium 1440px/1280px；报告 OpenAPI 投影包含在专项测试并通过。
+- Migration / OpenAPI: `.venv\Scripts\alembic.exe heads` 和 `history` 显示唯一 `20260821_0017 (head)`；独立库完成 migration downgrade/upgrade 往返；`test_report_openapi_projects_phase13_contract` 检查 15.1-15.3 路由、状态码、Idempotency-Key header 和下载错误投影通过。
+- Review / Re-review: 独立只读复核覆盖 P-06、snapshot 不可变边界、HTML/PDF 同源模板、Chromium/FileStore、租约/重复投递/并发、REPORT_EXPIRED、tenant/viewer/support 下载授权、escaping/CSP/Content-Disposition、UI 状态和 UI-P11。修复了重复 Report import、幂等重放被 renderer 可用性提前阻断、snapshot 数据库保护，以及已过期报告重复下载错误返回 `409` 而非契约要求 `410 REPORT_EXPIRED`；修复后专项、全量和前端回归通过，无剩余当前 Phase blocking finding。
+- Regression / scope: 未修改历史报告、未信任模型 HTML、未允许平台支持下载、未实现审计运营/保留期物理清理/通知补偿/报告专用 retry API/历史列表，也未进入 Phase 14 或后续功能。普通自动化继续使用 Fake Model Gateway；未执行真实 Qwen 或付费外部服务 smoke。
+- Known Issues / Pending Decisions: 默认 `contract_test` 仍有既有 `invited_at` Migration 污染，未修改；`.pytest-phase10-tmp/` 保留且未清理；根目录 `test-results/` 及 Playwright 生成物保持未跟踪、不提交；pytest cache permission warning、Vue lint formatting warnings、Vite chunk-size warning 和 Windows Playwright/Vite 子进程收尾问题均非阻塞。提交前 `git fetch origin` 已成功，基线 `HEAD...origin/main` 为 `0 0`。
+- Git branch / HEAD / status / diff summary: `main` / `31ae93f`；提交前 `origin/main=ac2ccf5` 且无远端分叉；Phase 13 源码、Migration、契约、测试和前端变更已形成实现快照，`test-results/` 保持未跟踪。用户原有 Phase 13 实现与本次审查修复均保留，未恢复、覆盖或清理无关文件。
+- Commit / Push: 用户已明确授权；`31ae93f`（`feat(reports): add immutable HTML and PDF reports`）已正常提交，本台账更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未执行 amend、force push 或历史重写。
+- Next Phase and entry conditions: Phase 14A、Phase 14B、Phase 15、Phase 16 均保持 `Not Started`。本次在 Phase 13 台账更新后停止；进入任何后续 Phase 前必须重新读取 Source of Truth 并获得单独授权。
+
 ## Remaining Phases
 
-Phase 13-16 均为 `Not Started`。Phase 12 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
+Phase 14A、Phase 14B、Phase 15、Phase 16 均为 `Not Started`。Phase 13 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
