@@ -32,6 +32,10 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
                 "task": "reviews.requeue_orphaned_tasks",
                 "schedule": 60.0,
             },
+            "reports-recover-expired-leases": {
+                "task": "reports.recover_expired_leases",
+                "schedule": 60.0,
+            },
         },
     )
     return application
@@ -41,4 +45,5 @@ celery_app = create_celery_app()
 
 # Register task modules for a worker started with this module as its app.
 from backend.app.worker import compensation as _review_compensation  # noqa: E402,F401
+from backend.app.worker import reports as _reports  # noqa: E402,F401
 from backend.app.worker import review_tasks as _review_tasks  # noqa: E402,F401

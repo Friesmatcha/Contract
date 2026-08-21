@@ -32,6 +32,7 @@ from backend.app.modules.identity.models import (
     SupportAccessGrant,
     User,
 )
+from backend.app.modules.reports.models import Report
 from backend.app.modules.reviews.models import ModelCall, ReviewStageRun, ReviewTask
 from backend.app.modules.reviews.results.models import (
     ClauseComparison,
@@ -94,6 +95,8 @@ _registered_models = (
     ClauseComparison,
     ClauseComparisonEvidence,
     ResultRevision,
+    Report,
+    Report,
     Feedback,
     Warning,
     WarningEvent,

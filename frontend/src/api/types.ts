@@ -346,6 +346,30 @@ export interface RetryReviewTaskResponse {
   resumed_from_stage: ReviewStage
 }
 
+export type ReportFormat = 'html' | 'pdf'
+export type ReportStatus = 'generating' | 'ready' | 'failed' | 'expired'
+
+export interface ReportCreateResponse {
+  id: string
+  review_task_id: string
+  format: ReportFormat
+  status: ReportStatus
+}
+
+export interface Report {
+  id: string
+  display_no: string
+  review_task_id: string
+  format: ReportFormat
+  status: ReportStatus
+  template_version: string
+  created_at: string
+  generated_at: string | null
+  expires_at: string | null
+  download_available: boolean
+  error_code: string | null
+}
+
 export type DocumentKind = 'docx' | 'pdf' | 'image'
 export type SourceKind = 'pdf_page' | 'image_page' | 'docx_paragraph' | 'docx_table_cell'
 

@@ -13,6 +13,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { ApiError, toSafeDisplayError } from '@/api/client'
+import { createReport } from '@/api/reports'
 import {
   completeReviewTask,
   reviseClassification,
@@ -32,6 +33,7 @@ import type {
   RiskSeverity,
   ReviewResults,
   ReviewTask,
+  ReportFormat,
   SourceLocator,
 } from '@/api/types'
 import PageState from '@/components/PageState.vue'
@@ -65,6 +67,9 @@ const editError = ref('')
 const editSaving = ref(false)
 const completeSaving = ref(false)
 const completeError = ref('')
+const reportFormat = ref<ReportFormat>('html')
+const reportCreating = ref(false)
+const reportError = ref('')
 const feedbackTarget = ref<{ type: 'classification' | 'extracted_field' | 'risk_finding' | 'clause_comparison'; id: string } | null>(null)
 const feedbackLabel = ref<'correct' | 'incorrect' | 'modified' | 'ignored'>('correct')
 const feedbackNote = ref('')
@@ -145,6 +150,10 @@ const orderedFields = computed(() => {
 const hasFilters = computed(() => Boolean(riskSeverity.value || riskStatus.value || clauseStatus.value))
 const resultReadyStatuses = new Set<ReviewTask['status']>(['pending_review', 'completed', 'archived'])
 const canEdit = computed(() => task.value?.status === 'pending_review' && ['org_admin', 'reviewer'].includes(currentOrganizationMembership.value?.role ?? ''))
+const canGenerateReport = computed(() => Boolean(
+  task.value && ['pending_review', 'completed'].includes(task.value.status)
+  && ['org_admin', 'reviewer'].includes(currentOrganizationMembership.value?.role ?? ''),
+))
 const completionBlockers = computed(() => results.value?.completion_blockers ?? [])
 
 function setLoadError(error: unknown): void {
@@ -425,6 +434,24 @@ async function complete(): Promise<void> {
   }
 }
 
+async function generateReport(): Promise<void> {
+  if (!task.value || !canGenerateReport.value) return
+  reportCreating.value = true
+  reportError.value = ''
+  try {
+    const created = await createReport(
+      task.value.id,
+      reportFormat.value,
+      `report-${task.value.id}-${reportFormat.value}-${Date.now()}`,
+    )
+    await router.push(`/reports/${created.id}`)
+  } catch (error) {
+    reportError.value = toSafeDisplayError(error).message
+  } finally {
+    reportCreating.value = false
+  }
+}
+
 onMounted(() => {
   void load()
 })
@@ -465,9 +492,25 @@ onMounted(() => {
         </div>
         <div class="review-result-heading-actions">
           <ElTag :type="workflowStatusType(task.status)">{{ taskStatusLabels[task.status] }}</ElTag>
+          <div v-if="canGenerateReport" class="report-create-actions">
+            <ElSelect v-model="reportFormat" aria-label="报告格式" class="report-format-select">
+              <ElOption label="HTML 报告" value="html" />
+              <ElOption label="PDF 报告" value="pdf" />
+            </ElSelect>
+            <ElButton :icon="Document" type="primary" :loading="reportCreating" @click="generateReport">生成报告</ElButton>
+          </div>
           <ElButton v-if="canEdit" type="primary" :loading="completeSaving" @click="complete">完成审核</ElButton>
         </div>
       </div>
+
+      <ElAlert
+        v-if="reportError"
+        title="报告未生成"
+        :description="reportError"
+        type="warning"
+        :closable="false"
+        show-icon
+      />
 
       <ElAlert
         v-if="completeError"

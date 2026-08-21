@@ -7,7 +7,10 @@ WORKDIR /app
 
 COPY pyproject.toml ./
 COPY backend ./backend
-RUN python -m pip install --no-cache-dir .
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends chromium \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --no-cache-dir .
 
 RUN addgroup --system app \
     && adduser --system --ingroup app app \

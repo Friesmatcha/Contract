@@ -1402,7 +1402,7 @@ frontend/src/features/reports/
 
 ### 前端任务
 
-- 格式选择、生成状态轮询、失败重试、HTML inline 预览、PDF/HTML 下载和历史报告列表入口。
+- 格式选择、生成状态轮询、失败后用新幂等键再次 POST、HTML inline 预览、PDF/HTML 下载；不实现报告历史列表（当前契约没有历史列表 API）。
 - 展示免责声明、版本、人工修订、失败/过期/无权限状态。
 
 ### API Contract
@@ -1958,13 +1958,20 @@ Stable Baseline
 | P-03（已关闭） | `result_status` 缺少 `found`，但 10.5 示例和 10.7 请求使用 `found` | Phase 9C，已决策 | 保留公共 `detected`；10.5 示例和 10.7 请求统一使用 `detected`，不新增并列状态。 |
 | P-04（已关闭） | 多个已发布规则集时，省略 `rule_bundle_version_id` 如何选默认？ | Phase 8A/9A，已决策 | 每组织一个默认规则集；首个成功发布自动成为默认；后续由组织管理员通过 11.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_RISK_RULE_BUNDLE_NOT_CONFIGURED`。 |
 | P-05（已关闭） | 同合同类型/业务场景存在多个模板时，省略 `clause_template_version_id` 如何选默认？ | Phase 8B/9A，已决策 | 每组织+合同类型+规范化场景一个默认模板；缺省场景为 `standard`；首个成功发布自动成为默认；后续由组织管理员通过 12.4 `is_default: true` 显式切换；默认发布新版本自动跟随；当前默认先切换后停用；缺少默认返回 `409 DEFAULT_CLAUSE_TEMPLATE_NOT_CONFIGURED`。 |
-| P-06 | 报告完整状态枚举、失败后再次生成、`REPORT_EXPIRED` 的时间条件和“重新生成”是否创建新记录未定义 | Phase 13，阻塞 | 定义 generating/ready/failed/expired 及再次 POST 的新记录/幂等行为 |
+| P-06 | 报告完整状态枚举、失败后再次生成、`REPORT_EXPIRED` 的时间条件和“重新生成”是否创建新记录未定义 | Phase 13，已关闭（2026-08-21） | 采用 `generating|ready|failed|expired`；相同幂等键同 fingerprint 重放同一记录；同任务/格式已有 generating 时新键返回 `REPORT_ALREADY_GENERATING`；ready/failed/expired 使用新键创建新不可变记录；`now >= expires_at` 时 ready 转 expired，`expires_at = generated_at + retention_days`；无专用 retry API |
 | P-07（9A 已关闭） | review `archived` 如何进入/恢复？合同归档是否级联；架构提到 cancel 但无 API | Phase 9A，已决策 | active `pending|parsing|reviewing|pending_review` 任务阻止合同归档并返回 `409 ACTIVE_REVIEW_EXISTS`；合同归档不级联任务状态；terminal/history 任务保持只读和可追溯；未有契约依据不实现 cancel、任务归档/恢复接口或新的状态迁移 |
 | P-08（已关闭） | 密码最小长度/复杂度/历史限制，以及邀请和重置令牌 TTL 未定义 | Phase 2，已决策 | 采用 API Contract 3.1：密码 12-128 字符、不强制字符类别；密码重置 Token 30 分钟、邀请 Token 7 天；Token 至少 256 位随机值且数据库只保存哈希。历史密码限制首期不做。 |
 | P-09（已关闭） | SMTP 发件人、公开前端基址、投递失败可观测性和重试上限未完整冻结 | Phase 2/4，已决策 | 采用 API Contract 3.5：配置由环境注入；缺配置时在账号查询前统一返回 `503 SMTP_NOT_CONFIGURED`；首期后台投递只尝试 1 次且自动重试上限为 0，失败写不含邮箱/Token/完整 URL 的安全结构化日志/指标。当前实现仍须补失败捕获和测试，P-09 关闭不等于 Phase 2 完成。 |
 | P-10（已关闭） | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B，已决策 | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；架构说明已同步 |
-| P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review；Phase 11 补齐 Warning/WarningEvent/Notification；Phase 12 补齐结果 `edited_by/edited_at`、ReviewTask `completed_by/completed_at`、ResultRevision/Feedback 及其租户/版本约束 |
+| P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review；Phase 11 补齐 Warning/WarningEvent/Notification；Phase 12 补齐结果 `edited_by/edited_at`、ReviewTask `completed_by/completed_at`、ResultRevision/Feedback 及其租户/版本约束；Phase 13 补齐 Report 生命周期时间、过期和错误字段，报告历史列表继续由 UI-P11 排除 |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
+
+### Decision Record: P-06 Report Lifecycle and Regeneration（2026-08-21）
+
+- `reports.status` 只允许 `generating|ready|failed|expired`；创建后先为 `generating`，成功写入同一快照生成的文件后为 `ready`，渲染/Worker 失败为 `failed`，`now >= expires_at` 时由查询或下载事务投影为 `expired`。
+- 同一组织、同一幂等键和同一 fingerprint 重放原 `report_id`，仍返回 `202`；同键不同请求返回 `409 IDEMPOTENCY_KEY_REUSED`。同任务同格式已有 `generating` 时，新幂等键返回 `409 REPORT_ALREADY_GENERATING`。
+- `ready`、`failed` 或 `expired` 不阻止使用新幂等键创建新不可变报告；失败恢复不新增报告专用 retry API，调用方使用新的幂等键再次 POST；“重新生成”永远不修改旧记录。
+- `expires_at = generated_at + retention_days`，其中 `retention_days` 来自创建时冻结的组织报告设置；报告历史列表不实现，因为当前 API Contract 没有列表接口（UI-P11）。
 
 ### Decision Record: P-03 Result Status Canonical Value（2026-08-20）
 

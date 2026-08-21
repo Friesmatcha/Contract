@@ -1439,6 +1439,8 @@ Request Example：`GET /api/v1/notifications/unread-count`
 
 `POST /api/v1/review-tasks/{review_task_id}/reports`。权限：`Org Admin | Reviewer`；任务至少为 `pending_review` 或 `completed`。需要 `Idempotency-Key`。
 
+报告状态固定为 `generating | ready | failed | expired`。创建事务会把任务、合同文件版本、组织报告设置、审核结果、证据、人工修订/完成记录和免责声明完整复制到不可变 `snapshot_json`；后续审核结果变化不得修改该快照。`format` 是报告记录的不可变属性，HTML 和 PDF 均由同一版本化 Jinja2 HTML 模板渲染；PDF 再由固定 Chromium renderer 从该 HTML 生成。
+
 Request Body：`format: html|pdf`（必填）。HTML 在线报告和 PDF 导出均为第一阶段必备能力，使用同一份不可变报告快照。
 
 Request Example：`{ "format": "html" }`
@@ -1449,7 +1451,11 @@ Success `202 Accepted`：
 { "id": "caef1f5b-7ae1-48ad-bb8e-1b12f311c58f", "review_task_id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "format": "html", "status": "generating" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 REPORT_ALREADY_GENERATING`、`429 CONCURRENCY_LIMIT_EXCEEDED`、`503 REPORT_RENDERER_UNAVAILABLE`。
+幂等语义：相同组织、相同幂等键和相同 fingerprint 重放同一个 `report_id`，响应仍为 `202` 但状态反映该记录当前状态；同键不同格式或不同请求返回 `409 IDEMPOTENCY_KEY_REUSED`。同一任务、同一格式已有 `generating` 记录时，新的幂等键返回 `409 REPORT_ALREADY_GENERATING`。已有 `ready`、`failed` 或 `expired` 记录不阻止使用新幂等键生成新的不可变记录；“重新生成”永远不修改旧记录。`failed` 没有报告专用 retry API，必须使用新的幂等键再次 POST。
+
+服务端在组织行锁内按 `concurrent_review_limit` 限制本组织 `generating` 报告数；达到上限返回 `429 CONCURRENCY_LIMIT_EXCEEDED`。PDF renderer 不可用时返回 `503 REPORT_RENDERER_UNAVAILABLE`，不创建报告记录。
+
+主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 REVIEW_TASK_NOT_READY`、`409 REPORT_ALREADY_GENERATING`、`409 IDEMPOTENCY_KEY_REUSED`、`422 VALIDATION_ERROR`、`429 CONCURRENCY_LIMIT_EXCEEDED`、`503 REPORT_RENDERER_UNAVAILABLE`。
 
 ### 15.2 获取报告
 
@@ -1462,10 +1468,10 @@ Request Example：`GET /api/v1/reports/{report_id}`
 Success `200 OK`：
 
 ```json
-{ "id": "caef1f5b-7ae1-48ad-bb8e-1b12f311c58f", "display_no": "RPT-20260817-000009", "review_task_id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "format": "html", "status": "ready", "template_version": "report-v1", "generated_at": "2026-08-17T05:20:00Z", "download_available": true, "error_code": null }
+{ "id": "caef1f5b-7ae1-48ad-bb8e-1b12f311c58f", "display_no": "RPT-20260817-000009", "review_task_id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "format": "html", "status": "ready", "template_version": "report-v1", "created_at": "2026-08-17T05:19:58Z", "generated_at": "2026-08-17T05:20:00Z", "expires_at": "2027-02-16T05:20:00Z", "download_available": true, "error_code": null }
 ```
 
-主要错误：`404 REPORT_NOT_FOUND`、`403 FORBIDDEN`。
+GET 对 `generating`、`failed` 和 `expired` 返回 `200` 元数据；`ready` 在 `now >= expires_at` 时在同一事务内投影为 `expired`，并返回 `download_available: false`。失败响应只暴露稳定的 `error_code`，不暴露 renderer、文件系统或模型异常详情。主要错误：`404 REPORT_NOT_FOUND`、`403 FORBIDDEN`。
 
 ### 15.3 下载/在线预览报告
 
@@ -1477,7 +1483,7 @@ Request Example：`GET /api/v1/reports/{report_id}/download?disposition=inline`
 
 Success `200 OK`：返回 HTML 或 PDF 二进制流，并设置安全 `Content-Type`、`Content-Disposition` 和 CSP；服务端使用不可变报告快照。
 
-主要错误：`404 REPORT_NOT_FOUND`、`409 REPORT_NOT_READY`、`410 REPORT_EXPIRED`、`429 DOWNLOAD_RATE_LIMITED`。
+只允许业务组织成员或具有该合同 `read` grant 的 viewer 下载；每次请求重新执行 tenant、合同资源和 viewer grant 授权。带 `X-Support-Access-Grant` 的平台支持请求以及平台管理员身份均禁止下载，并按隐藏资源返回 `404 REPORT_NOT_FOUND`。`generating` 或 `failed` 返回 `409 REPORT_NOT_READY`；`expired` 返回 `410 REPORT_EXPIRED`。HTML 使用 `text/html; charset=utf-8`，PDF 使用 `application/pdf`；文件名经过 CR/LF 清理并通过安全 `Content-Disposition` 返回，响应设置 `Cache-Control: private, no-store`、`X-Content-Type-Options: nosniff` 和 `Content-Security-Policy: default-src 'none'`。主要错误：`404 REPORT_NOT_FOUND`、`409 REPORT_NOT_READY`、`410 REPORT_EXPIRED`、`429 DOWNLOAD_RATE_LIMITED`。
 
 ## 16. Feedback APIs
 

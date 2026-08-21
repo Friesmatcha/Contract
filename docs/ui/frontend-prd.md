@@ -438,7 +438,7 @@ Review Result (pending_review or completed)
 -> inline HTML preview or authorized download
 ```
 
-失败后的再次生成、过期条件和完整报告状态仍受 Pending Decision `P-06` 约束；当前 UI 不发明专用 retry API。
+失败后的再次生成、过期条件和完整报告状态已按 P-06 固定：页面使用新幂等键再次 POST，不发明专用 retry API；当前契约没有报告历史列表 API，UI 不假造历史 feed。
 
 ## 8. Page Specifications
 
@@ -2336,13 +2336,13 @@ Loading：metadata skeleton；Empty：N/A；Error：request retry or safe render
 
 #### Confirmation / Destructive Actions
 
-N/A。重新生成/失败重试不在本页发明按钮，等待 P-06 定义再次 POST 语义。
+ N/A。重新生成/失败重试使用创建入口和新幂等键，不在本页发明专用 retry API；当前契约没有报告历史列表 API，不渲染历史 feed。
 
 #### Traceability
 
 - Related Requirements：FR-RP、报告安全与不可变要求。
 - Related APIs：`GET /reports/{report_id}`, `GET /reports/{report_id}/download`; creation `POST /review-tasks/{review_task_id}/reports`。
-- Related Phase：Phase 13；Pending P-06。
+- Related Phase：Phase 13；P-06 已关闭。
 - Pending gap：Phase 13 计划提到历史报告列表，但当前 API 没有按任务/合同列出报告的接口；不设计虚构历史列表。
 
 ### RULE-001 Risk Rule Bundle List / 风险规则集
@@ -3493,7 +3493,7 @@ Prototype Frame (Page ID)
 | UI-P02（已关闭） | `found` 是否属于 `result_status` | 不加入 `found`；公共结果状态统一使用 `detected`，原型中的 TODO 以该语义实现 | Closed 2026-08-20 |
 | UI-P03 | 规则集默认版本选择 | 已采用 P-04：每组织一个默认规则集，首个发布自动默认，后续显式切换，无默认时 409 | Closed 2026-08-19 |
 | UI-P04 | 模板默认版本/业务场景选择 | 已采用 P-05：按组织+合同类型+规范化场景精确选择默认，无匹配时 409 | Closed 2026-08-19 |
-| UI-P05 | 报告完整状态、失败重试、过期和再次生成 | 等待 P-06；只设计 generating/ready 的确认部分和通用失败容器 | Phase 13 |
+| UI-P05 | 报告完整状态、失败重试、过期和再次生成 | 已按 P-06 固定完整状态和新幂等键再次 POST；只实现契约定义的生成入口，不发明专用 retry API | Phase 13 |
 | UI-P06 | Review `archived` 来源与恢复 | 等待 P-07；只读展示，不创建 archive/restore/cancel 控件 | Phase 9A |
 | UI-P07 | 密码策略和 token TTL | 已采用 API Contract 3.1：密码 12-128 字符、重置 Token 30 分钟、邀请 Token 7 天 | Closed 2026-08-18; boundary tests required |
 | UI-P08 | 合同已有 viewer 授权如何读取 | 当前没有 grant list/contract grant summary；需要先补契约或明确嵌入字段 | Phase 5 UI completeness |

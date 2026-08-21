@@ -24,6 +24,12 @@ from backend.app.modules.documents.api import router as documents_router
 from backend.app.modules.feedback.api import router as feedback_router
 from backend.app.modules.identity.api import router as identity_router
 from backend.app.modules.identity.organization_api import router as organization_router
+from backend.app.modules.reports.api import router as reports_router
+from backend.app.modules.reports.renderer import (
+    ChromiumPdfRenderer,
+    FakeReportRenderer,
+    ReportRenderer,
+)
 from backend.app.modules.reviews.api import contract_reviews_router
 from backend.app.modules.reviews.api import result_router as review_result_router
 from backend.app.modules.reviews.api import router as reviews_router
@@ -39,6 +45,7 @@ def create_app(
     database_check: Callable[[], None] | None = None,
     file_store: LocalFileStore | None = None,
     antivirus_scanner: ClamAVScanner | None = None,
+    report_renderer: ReportRenderer | None = None,
 ) -> FastAPI:
     configuration_error: SettingsConfigurationError | None = None
     if settings is None:
@@ -59,6 +66,9 @@ def create_app(
                 host=settings.clamav_host,
                 port=settings.clamav_port,
                 timeout_seconds=settings.clamav_timeout_seconds,
+            )
+            app.state.report_renderer = report_renderer or (
+                FakeReportRenderer() if settings.app_env == "test" else ChromiumPdfRenderer()
             )
         try:
             yield
@@ -108,6 +118,7 @@ def create_app(
         app.include_router(warning_router, prefix="/api/v1")
         app.include_router(notification_router, prefix="/api/v1")
         app.include_router(feedback_router, prefix="/api/v1")
+        app.include_router(reports_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:
