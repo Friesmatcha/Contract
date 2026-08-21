@@ -8,6 +8,7 @@ from fastapi import Request, Response
 
 from backend.app.errors import error_response
 from backend.app.logging import bind_request_id, reset_request_id
+from backend.app.observability.metrics import observe_http_request
 
 _REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{1,64}$")
 logger = logging.getLogger(__name__)
@@ -39,6 +40,13 @@ async def request_context_middleware(
             )
         duration_ms = round((time.perf_counter() - started) * 1000, 2)
         request.state.duration_ms = duration_ms
+        route = getattr(request.scope.get("route"), "path", request.url.path)
+        observe_http_request(
+            method=request.method,
+            route=route,
+            status_code=response.status_code,
+            duration_ms=duration_ms,
+        )
         logger.info(
             "http_request_completed",
             extra={

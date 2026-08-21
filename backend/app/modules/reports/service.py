@@ -26,6 +26,7 @@ from backend.app.modules.reports.renderer import (
 from backend.app.modules.reviews.models import ReviewTask
 from backend.app.modules.reviews.results.service import get_review_results
 from backend.app.modules.reviews.revisions.models import ResultRevision
+from backend.app.observability.metrics import observe_report_outcome
 from backend.app.shared.audit import append_audit_log
 from backend.app.shared.db import UnitOfWork
 from backend.app.shared.errors import ApplicationError
@@ -533,6 +534,7 @@ def _fail_report(session: Session, report_id: UUID, owner: str, code: str) -> No
         )
         if report is not None and report.status == "generating":
             report.status = "failed"
+            observe_report_outcome("failed")
             report.error_code = code
             report.error_message = "报告生成失败，请使用新的幂等键重新生成。"
             report.finished_at = _now()
@@ -593,6 +595,7 @@ def process_report(
                 session.add(file_object)
                 report.file_object_id = file_object.id
                 report.status = "ready"
+                observe_report_outcome("ready")
                 report.generated_at = now
                 report.expires_at = now + timedelta(days=retention_days)
                 report.finished_at = now

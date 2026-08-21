@@ -29,6 +29,7 @@ from backend.app.modules.reviews.models import (
 )
 from backend.app.modules.reviews.schemas import CreateReviewTaskRequest, RetryReviewTaskRequest
 from backend.app.modules.risks.rules.models import RiskRuleBundle, RiskRuleBundleVersion
+from backend.app.observability.metrics import observe_review_stage
 from backend.app.shared.audit import append_audit_log
 from backend.app.shared.db import UnitOfWork
 from backend.app.shared.errors import ApplicationError
@@ -992,6 +993,15 @@ def complete_stage(session: Session, *, stage_run_id: UUID, lease_owner: str) ->
         )
         run.status = "succeeded"
         run.finished_at = now
+        observe_review_stage(
+            stage=run.stage,
+            status=run.status,
+            duration_ms=(
+                round((now - run.started_at).total_seconds() * 1000)
+                if run.started_at is not None
+                else None
+            ),
+        )
         run.lease_owner = None
         run.lease_expires_at = None
         run.heartbeat_at = now
@@ -1054,6 +1064,15 @@ def fail_stage(
         )
         run.status = "failed"
         run.finished_at = now
+        observe_review_stage(
+            stage=run.stage,
+            status=run.status,
+            duration_ms=(
+                round((now - run.started_at).total_seconds() * 1000)
+                if run.started_at is not None
+                else None
+            ),
+        )
         run.lease_owner = None
         run.lease_expires_at = None
         run.heartbeat_at = now

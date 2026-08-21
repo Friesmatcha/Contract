@@ -17,6 +17,7 @@ from backend.app.integrations.notifications.smtp import create_mailer
 from backend.app.integrations.storage.local import LocalFileStore
 from backend.app.logging import configure_logging
 from backend.app.middleware import request_context_middleware
+from backend.app.modules.audit.api import router as audit_router
 from backend.app.modules.clauses.templates.api import router as clause_templates_router
 from backend.app.modules.contracts.api import file_router
 from backend.app.modules.contracts.api import router as contracts_router
@@ -24,6 +25,7 @@ from backend.app.modules.documents.api import router as documents_router
 from backend.app.modules.feedback.api import router as feedback_router
 from backend.app.modules.identity.api import router as identity_router
 from backend.app.modules.identity.organization_api import router as organization_router
+from backend.app.modules.operations.api import router as operations_router
 from backend.app.modules.reports.api import router as reports_router
 from backend.app.modules.reports.renderer import (
     ChromiumPdfRenderer,
@@ -35,6 +37,7 @@ from backend.app.modules.reviews.api import result_router as review_result_route
 from backend.app.modules.reviews.api import router as reviews_router
 from backend.app.modules.risks.rules.api import router as risk_rules_router
 from backend.app.modules.warnings.api import notification_router, warning_router
+from backend.app.observability.metrics import metrics_response
 from backend.app.shared.errors import ApplicationError
 
 logger = logging.getLogger(__name__)
@@ -104,6 +107,7 @@ def create_app(
 
     app.middleware("http")(request_context_middleware)
     app.include_router(health_router, prefix="/api/v1")
+    app.add_api_route("/metrics", metrics_response, methods=["GET"], include_in_schema=False)
     if settings is not None:
         app.include_router(identity_router, prefix="/api/v1")
         app.include_router(organization_router, prefix="/api/v1")
@@ -119,6 +123,8 @@ def create_app(
         app.include_router(notification_router, prefix="/api/v1")
         app.include_router(feedback_router, prefix="/api/v1")
         app.include_router(reports_router, prefix="/api/v1")
+        app.include_router(audit_router, prefix="/api/v1")
+        app.include_router(operations_router, prefix="/api/v1")
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:

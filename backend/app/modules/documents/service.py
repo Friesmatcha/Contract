@@ -30,6 +30,7 @@ from backend.app.modules.documents.models import (
 )
 from backend.app.modules.identity.models import Organization
 from backend.app.modules.identity.organization import DEFAULT_PAGE_LIMIT, organization_settings
+from backend.app.observability.metrics import observe_ocr_page
 from backend.app.shared.db import UnitOfWork
 
 PARSER_VERSION = "2026-08-19-2"
@@ -631,6 +632,7 @@ def _persist_document(
 ) -> None:
     block_rows: list[tuple[DocumentBlock, ParsedBlock, UUID | None]] = []
     for parsed_page in parsed.pages:
+        observe_ocr_page(parsed_page.ocr_status)
         image_file_id = source_file.id if parsed.parser_name == "image" else _store_page_image(
             session,
             organization_id=organization_id,

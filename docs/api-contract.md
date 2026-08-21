@@ -1578,6 +1578,8 @@ Success `200 OK`：
 { "from": "2026-08-01T00:00:00Z", "to": "2026-08-17T00:00:00Z", "review_count": 28, "completed_count": 23, "failed_count": 2, "average_duration_ms": 124000, "parse_failure_rate": 0.04, "model_failure_rate": 0.02, "manual_edit_rate": 0.31 }
 ```
 
+统计口径：`from` 包含、`to` 不包含（`[from, to)`），且必须带时区；审核范围按 `review_tasks.created_at` 过滤，`contract_type` 按关联合同的 `declared_type` 精确匹配。`review_count` 为范围内审核任务数；`completed_count`/`failed_count` 按任务当前状态统计；`average_duration_ms` 为范围内已结束任务（`completed|failed` 且同时有 `started_at`/`finished_at`）的平均耗时，无样本时为 `0`。`parse_failure_rate` 为关联解析阶段运行中 `status=failed` 的数量除以解析阶段运行总数；`model_failure_rate` 为关联模型调用中 `status=failed` 的数量除以模型调用总数；`manual_edit_rate` 为至少存在一条 `result_revisions` 的审核任务数除以 `review_count`。没有分母时三个比例均为 `0`。比例使用 `0..1` 小数，不返回百分号。
+
 主要错误：`403 ORG_ADMIN_REQUIRED`、`422 INVALID_DATE_RANGE`、`501 METRICS_NOT_ENABLED`。
 
 ### 17.4 预警运营统计
@@ -1593,6 +1595,8 @@ Success `200 OK`：
 ```json
 { "from": "2026-08-01T00:00:00Z", "to": "2026-08-17T00:00:00Z", "created_count": 35, "unprocessed_count": 7, "closed_count": 20, "closure_rate": 0.57, "false_positive_rate": 0.09, "average_unprocessed_duration_ms": 86400000, "by_risk_type": [{ "risk_type": "unlimited_liability", "count": 8 }] }
 ```
+
+统计口径：日期范围同 17.3，按 `warnings.triggered_at` 使用 `[from, to)` 过滤；`risk_type` 和 `severity` 为精确筛选。`created_count` 为范围内预警数；`unprocessed_count` 为当前状态为 `pending_confirmation|in_progress` 的范围内预警数；`closed_count` 为当前状态为 `closed` 的范围内预警数；`closure_rate` 为 `closed_count / created_count`；`false_positive_rate` 为关联预警事件中存在 `false_positive` 事件的范围内预警数除以 `created_count`；`average_unprocessed_duration_ms` 为当前未处理预警从 `triggered_at` 到当前时间的平均时长，无样本时为 `0`。没有分母时两个比例均为 `0`。`by_risk_type` 按关联风险发现的 `risk_type` 聚合；没有风险发现关联但属于范围的预警归入其 `trigger_type`，结果按 `risk_type` 升序返回。
 
 主要错误：`403 ORG_ADMIN_REQUIRED`、`422 INVALID_DATE_RANGE`、`501 METRICS_NOT_ENABLED`。
 

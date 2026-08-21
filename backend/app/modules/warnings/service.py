@@ -36,6 +36,7 @@ from backend.app.modules.warnings.schemas import (
     WarningEventRequest,
     WarningListQuery,
 )
+from backend.app.observability.metrics import observe_warning_event
 from backend.app.shared.audit import append_audit_log
 from backend.app.shared.db import UnitOfWork
 from backend.app.shared.errors import ApplicationError, ForbiddenError, InvalidCursorError
@@ -265,6 +266,7 @@ def _create_warning(
             },
         )
     )
+    observe_warning_event("created")
     title = f"发现{ {'high': '高', 'medium': '中', 'low': '低'}.get(severity, '') }风险预警"
     create_warning_notifications(
         session,
@@ -770,6 +772,7 @@ def create_warning_event(
             metadata_json=metadata,
         )
         session.add(event)
+        observe_warning_event(event_type)
         append_audit_log(
             session,
             actor=actor,

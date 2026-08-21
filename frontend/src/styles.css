@@ -1058,6 +1058,129 @@ select {
   overflow: hidden;
 }
 
+.audit-log-page,
+.operations-metrics-page {
+  max-width: 1440px;
+}
+
+.audit-filter {
+  grid-template-columns: repeat(3, minmax(150px, 1fr)) repeat(2, minmax(170px, 1fr)) auto auto;
+}
+
+.audit-table-panel {
+  overflow: hidden;
+}
+
+.audit-table-panel .el-table {
+  min-width: 1080px;
+}
+
+.audit-detail-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.audit-detail-list dd {
+  overflow-wrap: anywhere;
+}
+
+.audit-detail-wide {
+  grid-column: 1 / -1;
+}
+
+.audit-drawer-actions {
+  margin-top: 20px;
+}
+
+.audit-summary {
+  max-height: 220px;
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid #d7dee8;
+  background: #f8fafc;
+  color: #172033;
+  font: 12px/18px "JetBrains Mono", Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.operations-heading {
+  align-items: flex-end;
+}
+
+.operations-filter {
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(150px, 180px) minmax(150px, 1fr) minmax(140px, 180px) auto auto;
+}
+
+.metrics-section + .metrics-section {
+  margin-top: 28px;
+}
+
+.metrics-section .section-heading {
+  margin-bottom: 12px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: #d7dee8;
+}
+
+.warning-metric-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.metric-cell {
+  min-width: 0;
+  min-height: 104px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.metric-cell span {
+  color: #5f6b7a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.metric-cell strong {
+  display: block;
+  margin-top: 8px;
+  color: #172033;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 28px;
+  overflow-wrap: anywhere;
+}
+
+.metrics-breakdown-panel {
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.metrics-breakdown-panel .section-heading {
+  margin: 0;
+  padding: 16px;
+  border-bottom: 1px solid #d7dee8;
+  background: #f8fafc;
+}
+
+.metrics-breakdown-panel .section-heading h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.metrics-breakdown-panel .section-heading p {
+  margin: 4px 0 0;
+  color: #5f6b7a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
 .review-classification-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1841,6 +1964,11 @@ select {
   .review-results-filter {
     grid-template-columns: minmax(110px, 0.7fr) repeat(3, minmax(120px, 1fr)) auto auto;
   }
+
+  .audit-filter,
+  .operations-filter {
+    grid-template-columns: repeat(3, minmax(120px, 1fr)) auto auto;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1904,8 +2032,16 @@ select {
   }
 
   .review-results-filter,
-  .review-summary-grid {
+  .review-summary-grid,
+  .audit-filter,
+  .operations-filter {
     grid-template-columns: 1fr;
+  }
+
+  .audit-detail-list,
+  .metric-grid,
+  .warning-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .warning-filter,

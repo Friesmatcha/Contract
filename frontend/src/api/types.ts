@@ -9,6 +9,62 @@ export interface SafeDisplayError {
   requestId?: string
 }
 
+export interface AuditLog {
+  id: string
+  organization_id: string | null
+  action: string
+  resource_type: string
+  resource_id: string | null
+  actor_id: string | null
+  request_id: string
+  before_summary: Record<string, unknown> | null
+  after_summary: Record<string, unknown> | null
+  created_at: string
+}
+
+export interface AuditLogQuery {
+  organizationId?: string
+  action?: string
+  resourceType?: string
+  actorId?: string
+  organizationFilter?: string
+  createdFrom?: string
+  createdTo?: string
+  limit?: number
+  cursor?: string
+}
+
+export type AuditLogPage = CursorPage<AuditLog>
+
+export interface ReviewMetrics {
+  from: string
+  to: string
+  review_count: number
+  completed_count: number
+  failed_count: number
+  average_duration_ms: number
+  parse_failure_rate: number
+  model_failure_rate: number
+  manual_edit_rate: number
+}
+
+export interface WarningRiskTypeMetric {
+  risk_type: string
+  count: number
+}
+
+export interface WarningMetrics {
+  from: string
+  to: string
+  created_count: number
+  unprocessed_count: number
+  closed_count: number
+  closure_rate: number
+  false_positive_rate: number
+  average_unprocessed_duration_ms: number
+  by_risk_type: WarningRiskTypeMetric[]
+}
+
 export interface SessionUser {
   id: string
   email: string

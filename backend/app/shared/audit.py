@@ -18,7 +18,18 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from backend.app.shared.db import Base, UuidPrimaryKeyMixin
 from backend.app.shared.tenant import PlatformContext, TenantContext
 
-_SENSITIVE_KEY_PARTS = ("apikey", "authorization", "cookie", "csrf", "password", "secret", "token")
+_SENSITIVE_KEY_PARTS = (
+    "apikey",
+    "authorization",
+    "cookie",
+    "contracttext",
+    "csrf",
+    "password",
+    "prompt",
+    "rawresponse",
+    "secret",
+    "token",
+)
 
 
 class AuditLog(UuidPrimaryKeyMixin, Base):
@@ -42,6 +53,7 @@ class AuditLog(UuidPrimaryKeyMixin, Base):
         CheckConstraint("btrim(action) <> ''", name="action_not_blank"),
         CheckConstraint("btrim(resource_type) <> ''", name="resource_type_not_blank"),
         Index("ix_audit_logs_organization_created_at_id", "organization_id", "created_at", "id"),
+        Index("ix_audit_logs_created_at_id", "created_at", "id"),
     )
 
     organization_id: Mapped[UUID | None] = mapped_column(

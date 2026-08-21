@@ -77,6 +77,9 @@ const activeMenuPath = computed(() => {
   if (route.path.startsWith('/clause-templates')) return '/clause-templates'
   if (route.path.startsWith('/warnings')) return '/warnings'
   if (route.path.startsWith('/feedback')) return '/feedback/summary'
+  if (route.path.startsWith('/platform/audit-logs')) return '/platform/audit-logs'
+  if (route.path === '/audit-logs') return '/audit-logs'
+  if (route.path.endsWith('/metrics')) return route.path
   return route.path
 })
 const pageTitle = computed(() => (typeof route.meta.title === 'string' ? route.meta.title : '工作区'))
@@ -93,6 +96,7 @@ const breadcrumbs = computed(() => {
   if (route.path.startsWith('/clause-templates')) return ['知识配置', '条款模板', current]
   if (route.path.startsWith('/warnings')) return ['预警中心', current]
   if (route.path.startsWith('/feedback')) return ['组织管理', current]
+  if (route.path === '/audit-logs') return ['组织管理', current]
   return [current]
 })
 
@@ -219,6 +223,10 @@ onUnmounted(() => {
               <ElIcon><Operation /></ElIcon>
               <span>模型配置</span>
             </ElMenuItem>
+            <ElMenuItem index="/platform/audit-logs">
+              <ElIcon><Document /></ElIcon>
+              <span>平台审计</span>
+            </ElMenuItem>
           </ElMenu>
         </template>
 
@@ -251,6 +259,20 @@ onUnmounted(() => {
             >
               <ElIcon><Key /></ElIcon>
               <span>支持授权</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="currentMembership.role === 'org_admin'"
+              index="/audit-logs"
+            >
+              <ElIcon><Document /></ElIcon>
+              <span>组织审计</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="currentMembership.role === 'org_admin'"
+              :index="`/organizations/${currentMembership.organization_id}/metrics`"
+            >
+              <ElIcon><Operation /></ElIcon>
+              <span>运营指标</span>
             </ElMenuItem>
             <ElMenuItem
               index="/contracts"

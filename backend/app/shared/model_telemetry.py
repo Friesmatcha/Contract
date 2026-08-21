@@ -71,6 +71,7 @@ def persist_model_call(
     context: ModelCallContext,
 ) -> Any:
     from backend.app.modules.reviews.models import ModelCall
+    from backend.app.observability.metrics import observe_model_call
 
     if telemetry.capability != context.capability:
         raise ValueError("model call telemetry capability does not match its context")
@@ -100,6 +101,7 @@ def persist_model_call(
         repair_attempt=telemetry.repair_attempt,
     )
     session.add(row)
+    observe_model_call(telemetry)
     return row
 
 

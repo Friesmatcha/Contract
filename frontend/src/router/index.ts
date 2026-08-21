@@ -30,6 +30,8 @@ import ClauseTemplateVersionEditorPage from '@/pages/clauses/ClauseTemplateVersi
 import WarningListPage from '@/pages/warnings/WarningListPage.vue'
 import WarningDetailPage from '@/pages/warnings/WarningDetailPage.vue'
 import FeedbackSummaryPage from '@/pages/feedback/FeedbackSummaryPage.vue'
+import AuditLogPage from '@/pages/audit/AuditLogPage.vue'
+import OperationsMetricsPage from '@/pages/operations/OperationsMetricsPage.vue'
 import { defaultLandingPath, loadSession, sessionState } from '@/features/auth/session'
 
 export const routes: RouteRecordRaw[] = [
@@ -61,6 +63,13 @@ export const routes: RouteRecordRaw[] = [
         name: 'platform-model-configuration',
         component: PlatformModelConfigurationPage,
         meta: { title: '模型配置' },
+      },
+      {
+        path: 'platform/audit-logs',
+        name: 'platform-audit-logs',
+        component: AuditLogPage,
+        props: { scope: 'platform' },
+        meta: { title: '平台审计' },
       },
       {
         path: 'contracts',
@@ -169,6 +178,19 @@ export const routes: RouteRecordRaw[] = [
         name: 'feedback-summary',
         component: FeedbackSummaryPage,
         meta: { title: '反馈统计' },
+      },
+      {
+        path: 'audit-logs',
+        name: 'organization-audit-logs',
+        component: AuditLogPage,
+        props: { scope: 'organization' },
+        meta: { title: '组织审计' },
+      },
+      {
+        path: 'organizations/:organizationId/metrics',
+        name: 'organization-metrics',
+        component: OperationsMetricsPage,
+        meta: { title: '运营指标' },
       },
       {
         path: 'organizations/:organizationId/settings',
