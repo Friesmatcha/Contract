@@ -2051,7 +2051,7 @@ Stable Baseline
 
 ### Decision Record: P-13 Retention and Compensation Boundary（2026-08-21）
 
-- **Status**：Closed for Phase 14B implementation after user confirmation; Phase 14B remains `Not Started` until implementation and verification complete。
+- **Status**：Closed and implemented in Phase 14B after user confirmation; Phase 14B completed implementation, verification and Git Snapshot on 2026-08-21。
 - **P-11 review**：现有 `FileObject` 只有 `quarantine|stored|failed`，没有内容清理状态、持久化 cleanup lease/attempt/retry 或恢复事实；现有 `Notification` 有 `delivery_status/attempts/next_attempt_at/error_code`，但创建路径没有冻结 retryable、退避、上限和最终失败语义。两者不能在未更新模型/契约边界前直接编码。
 - **Reference review**：除复合外键外，`audit_logs.resource_id`、`ResultRevision.subject_id`、`Feedback.subject_id`、`Warning.revision_id` 和报告 `snapshot_json` 是隐式历史引用；解析页图像、报告二进制和原合同通过 `FileObject` 关联。所有清理实现必须同时检查直接 FK、这些隐式引用、活动任务/报告/通知补偿和租约状态。
 - **Failure boundary**：现有解析页图像和报告 worker 先写 FileStore、后提交数据库，进程在中间退出可能产生孤儿；Phase 14B 实现前必须补持久化 cleanup journal 或先持久化可恢复 FileObject 事实，并覆盖重复 scheduler、lease recovery、DB 状态提交失败和 FileStore 操作失败。
