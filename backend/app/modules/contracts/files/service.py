@@ -23,6 +23,10 @@ from backend.app.modules.contracts.models import (
 )
 from backend.app.modules.identity.models import Organization
 from backend.app.modules.identity.organization import organization_settings
+from backend.app.modules.retention.service import (
+    create_file_write_journal,
+    finalize_file_write_journal,
+)
 from backend.app.shared.audit import append_audit_log
 from backend.app.shared.db import UnitOfWork
 from backend.app.shared.errors import ApplicationError
@@ -277,6 +281,17 @@ def upload_contract_file(
                 "external_model_notice_acknowledged": True,
             },
         )
+        created_file_id = uuid4()
+        storage_key = file_storage_key(
+            organization_id=actor.organization_id,
+            contract_id=contract_id,
+            file_id=created_file_id,
+        )
+        write_operation_id = create_file_write_journal(
+            session,
+            organization_id=actor.organization_id,
+            storage_key=storage_key,
+        )
         with UnitOfWork(session) as unit_of_work:
             contract = session.scalar(
                 select(Contract)
@@ -298,12 +313,6 @@ def upload_contract_file(
                     code="CONTRACT_ARCHIVED",
                     message="归档合同不可上传文件。",
                 )
-            created_file_id = uuid4()
-            storage_key = file_storage_key(
-                organization_id=actor.organization_id,
-                contract_id=contract_id,
-                file_id=created_file_id,
-            )
             created: ContractFile | None = None
 
             def operation() -> IdempotencyResult:
@@ -354,6 +363,11 @@ def upload_contract_file(
                 file_store.promote(quarantine_path, storage_key)
                 promoted_key = storage_key
                 file_object.storage_status = "stored"
+                finalize_file_write_journal(
+                    session,
+                    operation_id=write_operation_id,
+                    file_object_id=file_object.id,
+                )
                 contract.updated_at = _now()
                 append_audit_log(
                     session,
@@ -394,6 +408,11 @@ def upload_contract_file(
                 created = session.get(ContractFile, result.resource_id)
                 if created is None:
                     raise RuntimeError("file idempotency resource is missing")
+                finalize_file_write_journal(
+                    session,
+                    operation_id=write_operation_id,
+                    file_object_id=created.file_object_id,
+                )
             unit_of_work.commit()
             committed = True
         if created is None:

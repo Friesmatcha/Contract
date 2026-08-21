@@ -55,7 +55,7 @@ class ContractFileSummary(BaseModel):
     media_type: str | None = None
     size_bytes: int | None = None
     scan_status: Literal["pending", "clean", "infected", "failed"] | None = None
-    storage_status: Literal["quarantine", "stored", "failed"] | None = None
+    storage_status: Literal["quarantine", "stored", "deleting", "deleted", "failed"] | None = None
     created_at: datetime | None = None
     external_model_notice_acknowledged_at: datetime | None = None
 
@@ -67,7 +67,7 @@ class FileObjectResponse(BaseModel):
     size_bytes: int
     sha256: str
     scan_status: Literal["pending", "clean", "infected", "failed"]
-    storage_status: Literal["quarantine", "stored", "failed"]
+    storage_status: Literal["quarantine", "stored", "deleting", "deleted", "failed"]
     created_at: datetime
 
 

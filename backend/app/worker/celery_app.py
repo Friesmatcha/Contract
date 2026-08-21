@@ -36,6 +36,14 @@ def create_celery_app(settings: Settings | None = None) -> Celery:
                 "task": "reports.recover_expired_leases",
                 "schedule": 60.0,
             },
+            "retention-run-cleanup": {
+                "task": "retention.run_cleanup",
+                "schedule": 300.0,
+            },
+            "notifications-retry-failed": {
+                "task": "notifications.retry_failed",
+                "schedule": 60.0,
+            },
         },
     )
     return application
@@ -46,4 +54,5 @@ celery_app = create_celery_app()
 # Register task modules for a worker started with this module as its app.
 from backend.app.worker import compensation as _review_compensation  # noqa: E402,F401
 from backend.app.worker import reports as _reports  # noqa: E402,F401
+from backend.app.worker import retention as _retention  # noqa: E402,F401
 from backend.app.worker import review_tasks as _review_tasks  # noqa: E402,F401

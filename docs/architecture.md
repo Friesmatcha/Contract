@@ -172,7 +172,7 @@ Phase 9A 的 `ReviewTask` 最多允许 3 次显式 retry；达到上限后保持
 - 枚举在数据库使用受约束的短字符串，便于迁移；高频过滤列使用普通 B-tree 索引。
 - JSONB 只用于结构可变的模型值、定位信息和请求快照；权限、状态、版本和关联关系必须是关系列。
 - 版本表一经发布即不可更新。修改操作复制草稿并发布新版本，历史审核只引用原版本。
-- 审计、人工修订、预警事件和模型调用记录为追加写，应用不提供物理删除接口。
+- 审计、人工修订、预警事件、反馈、模型调用、审核结果和报告快照为历史事实，追加写且应用不提供物理删除接口；保留期清理不得删除这些记录。
 
 ### 6.2 身份与租户
 
@@ -190,7 +190,7 @@ Phase 9A 的 `ReviewTask` 最多允许 3 次显式 retry；达到上限后保持
 | 表 | 关键字段 | 关键约束/说明 |
 | --- | --- | --- |
 | `contracts` | `organization_id`, `display_no`, `title`, `declared_type`, `status`, `owner_id`, `archived_at` | 展示编号在组织内唯一；不存原始文件路径 |
-| `file_objects` | `organization_id`, `storage_key`, `original_name`, `media_type`, `size_bytes`, `sha256`, `scan_status`, `storage_status` | `storage_key` 全局唯一；保存校验和，不保存正文 |
+| `file_objects` | `organization_id`, `storage_key`, `original_name`, `media_type`, `size_bytes`, `sha256`, `scan_status`, `storage_status` | `storage_key` 全局唯一；保存校验和，不保存正文；`storage_status` 为 `quarantine|stored|deleting|deleted|failed`，`deleted` 只表示内容 tombstone |
 | `contract_files` | `organization_id`, `contract_id`, `file_object_id`, `version_no`, `is_current` | 一个合同可有多个原文件版本；审核任务引用确定版本 |
 | `document_versions` | `organization_id`, `contract_file_id`, `parser_name`, `parser_version`, `text_sha256`, `ocr_status`, `page_count`, `status` | 输入文件和解析配置相同可复用成功结果 |
 | `document_pages` | `organization_id`, `document_version_id`, `page_no`, `width`, `height`, `text`, `image_file_id`, `ocr_confidence` | PDF/图片按页保存；DOCX 的逻辑页可为空 |
@@ -241,6 +241,7 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 | `feedback` | `organization_id`, `review_task_id`, `subject_type`, `subject_id`, `label`, `original_json`, `corrected_json`, `note`, `created_by` | 标签为 `correct/incorrect/modified/ignored`；不自动用于线上训练 |
 | `idempotency_records` | `scope`, `operation_key`, `idempotency_key`, `request_fingerprint`, `response_status`, `resource_type`, `resource_id`, `expires_at` | `scope` 仅由服务端生成，格式为 `organization:<organization_id>` 或 `platform:<authenticated_user_id>`；`(scope, idempotency_key)` 唯一；相同键不同 fingerprint 返回冲突 |
 | `audit_logs` | `organization_id`, `actor_id`, `actor_membership_id`, `action`, `resource_type`, `resource_id`, `request_id`, `ip`, `user_agent`, `before_summary_json`, `after_summary_json`, `created_at` | 组织成员事件以 `(organization_id, actor_membership_id, actor_id)` 复合外键同时约束组织、membership 和用户归因；平台/系统事件允许 membership 为空；记录只追加，正文、密码、令牌、密钥不得写入 |
+| `file_cleanup_operations` | `organization_id`, `file_object_id`, `storage_key`, `operation_type`, `status`, `attempts`, `next_attempt_at`, `lease_owner`, `lease_expires_at`, `error_code`, `created_at`, `updated_at`, `finished_at` | 持久化 FileStore 写入/内容清理事实；租约竞争使用数据库锁；`FileObject` 元数据不删除，孤儿写入由无 `file_object_id` 的 journal 恢复 |
 
 ### 6.7 主要关系
 
@@ -417,7 +418,7 @@ erDiagram
 2. 校验扩展名、MIME、文件签名、组织配额和病毒扫描。
 3. 通过后移动到正式随机键，例如 `org/{organization_uuid}/contracts/{contract_uuid}/{file_uuid}`；原文件名只作为数据库元数据。
 4. 解析和报告仅通过 `FileStore` 读取/写入，业务表不拼接本地绝对路径。
-5. 软删除进入待清理状态；定时清理任务在保留期和引用检查通过后物理删除，并写审计日志。
+5. 内容进入待清理状态；定时清理任务在保留期、租约和引用检查通过后只物理删除 FileStore 内容，并保留 `FileObject` 元数据 tombstone 和安全审计。历史业务数据库行不因 `retention_days` 物理删除。
 
 `FileStore` 首期只需要 `put/open/delete/exists` 和可选的短时下载能力。本地实现使用 Docker 命名卷；迁移到 S3 兼容对象存储时启用服务端加密和生命周期策略。数据库备份与文件快照必须属于同一个恢复点说明，避免只恢复元数据。
 
@@ -427,6 +428,14 @@ erDiagram
 - 下载必须先查询业务资源并重新执行组织/合同授权，不能公开静态目录。
 - 生产由磁盘加密或对象存储服务端加密提供静态加密；传输只允许 TLS。
 - 合同、页面图片、报告和临时文件遵循同一组织保留期。临时隔离文件采用更短 TTL。
+
+### 11.3 保留清理与文件补偿边界
+
+`Organization.retention_days` 是内容保留期，不是历史事实删除授权。Phase 14B 默认永久保留合同、`ContractFile`、`DocumentVersion/Page/Block/SourceSpan`、审核任务和阶段运行、模型调用、结果及证据、人工修订、反馈、预警及事件、报告快照、审计日志和 `FileObject` 元数据；合同通过既有 archive/restore 语义归档。只允许在没有活动任务、待生成报告、未完成通知补偿或其他保留阻塞时清理原合同文件、页面图像、报告二进制和隔离临时文件。
+
+文件清理必须有持久化 operation 状态和租约，至少区分 `pending -> claimed -> file_deleted -> finalized`，并支持 `retryable`、`skipped` 和 `final_failed`。状态记录必须保存组织、FileObject、尝试次数、下一次尝试时间、lease owner/expiry 和安全错误码；FileStore 删除必须幂等。数据库状态提交失败时不得把文件重新标记为可下载，文件已删除而数据库提交失败时恢复扫描应通过 `exists/delete` 幂等检查完成最终状态。两个 scheduler 使用 `FOR UPDATE SKIP LOCKED` 或等价租约竞争，重复执行不得重复删除、重复审计或创建孤儿。
+
+所有产生 FileStore 内容的路径必须先持久化可恢复的数据库事实或 cleanup journal，覆盖 Worker 在写入前、写入后和数据库提交前崩溃；孤儿扫描不得依赖用户文件名或未持久化的本地进程内列表。内容已清理时保留 FileObject 行，业务下载沿用 `FILE_NOT_READY` 安全边界，不增加清理命令或导出 API。
 
 ## 12. 日志、审计与可观测性
 
@@ -446,7 +455,9 @@ API、Worker 输出一行一个 JSON 到标准输出，由 Docker/部署平台�
 
 审计日志是业务证据，不与调试日志混用。登录、退出、失败登录、上传/下载、创建/重试/完成审核、人工修订、预警处置、规则/模板发布、用户角色变化、报告导出、归档和删除都写入 `audit_logs`。
 
-审计写入与业务变更处于同一数据库事务；只存必要摘要和前后差异，不存合同正文。应用账号无更新、删除审计行的接口权限。生产可按月分区并导出到只读归档存储。
+审计写入与业务变更处于同一数据库事务；只存必要摘要和前后差异，不存合同正文。应用账号无更新、删除审计行的接口权限。`365` 天是审计日志的最低保留期，不是删除授权；Phase 14B 不物理删除审计事实。生产可按月分区并导出到只读归档存储。
+
+清理、跳过、重试、租约恢复和最终失败均写安全审计，只记录资源 ID、操作类型、状态、尝试次数和稳定错误码，不记录文件名、邮箱、合同正文、FileStore 路径、Token、Secret、完整 prompt 或原始模型响应。
 
 ### 12.3 指标与告警
 

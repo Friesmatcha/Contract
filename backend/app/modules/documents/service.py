@@ -30,6 +30,10 @@ from backend.app.modules.documents.models import (
 )
 from backend.app.modules.identity.models import Organization
 from backend.app.modules.identity.organization import DEFAULT_PAGE_LIMIT, organization_settings
+from backend.app.modules.retention.service import (
+    create_file_write_journal,
+    finalize_file_write_journal,
+)
 from backend.app.observability.metrics import observe_ocr_page
 from backend.app.shared.db import UnitOfWork
 
@@ -730,20 +734,30 @@ def _store_page_image(
 ) -> UUID:
     file_id = uuid4()
     storage_key = f"org/{organization_id}/documents/{document_id}/pages/{file_id}"
+    write_operation_id = create_file_write_journal(
+        session,
+        organization_id=organization_id,
+        storage_key=storage_key,
+    )
     size_bytes, sha256 = file_store.put(io.BytesIO(image_bytes), storage_key)
     stored_keys.append(storage_key)
-    session.add(
-        FileObject(
-            id=file_id,
-            organization_id=organization_id,
-            storage_key=storage_key,
-            original_name=f"document-page-{page_no}.png",
-            media_type="image/png",
-            size_bytes=size_bytes,
-            sha256=sha256,
-            scan_status="clean",
-            storage_status="stored",
-        )
+    file_object = FileObject(
+        id=file_id,
+        organization_id=organization_id,
+        storage_key=storage_key,
+        original_name=f"document-page-{page_no}.png",
+        media_type="image/png",
+        size_bytes=size_bytes,
+        sha256=sha256,
+        scan_status="clean",
+        storage_status="stored",
+    )
+    session.add(file_object)
+    session.flush()
+    finalize_file_write_journal(
+        session,
+        operation_id=write_operation_id,
+        file_object_id=file_object.id,
     )
     return file_id
 

@@ -248,7 +248,7 @@ export interface ContractFileSummary {
   media_type?: string | null
   size_bytes?: number | null
   scan_status?: 'pending' | 'clean' | 'infected' | 'failed' | null
-  storage_status?: 'quarantine' | 'stored' | 'failed' | null
+  storage_status?: 'quarantine' | 'stored' | 'deleting' | 'deleted' | 'failed' | null
   created_at?: string | null
   external_model_notice_acknowledged_at?: string | null
 }
@@ -260,7 +260,7 @@ export interface FileObject {
   size_bytes: number
   sha256: string
   scan_status: 'pending' | 'clean' | 'infected' | 'failed'
-  storage_status: 'quarantine' | 'stored' | 'failed'
+  storage_status: 'quarantine' | 'stored' | 'deleting' | 'deleted' | 'failed'
   created_at: string
 }
 

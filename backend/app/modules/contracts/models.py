@@ -129,7 +129,7 @@ class FileObject(UuidPrimaryKeyMixin, TimestampMixin, Base):
             name="scan_status_valid",
         ),
         CheckConstraint(
-            "storage_status IN ('quarantine', 'stored', 'failed')",
+            "storage_status IN ('quarantine', 'stored', 'deleting', 'deleted', 'failed')",
             name="storage_status_valid",
         ),
         Index("ix_file_objects_organization_sha256", "organization_id", "sha256"),

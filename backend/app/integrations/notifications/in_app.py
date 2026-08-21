@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from sqlalchemy import select
@@ -6,6 +7,9 @@ from sqlalchemy.orm import Session
 
 from backend.app.modules.identity.models import OrganizationMembership
 from backend.app.modules.warnings.models import Notification, Warning
+
+NOTIFICATION_MAX_ATTEMPTS = 3
+NOTIFICATION_RETRY_DELAYS_SECONDS = (60, 300)
 
 
 def create_warning_notifications(
@@ -70,6 +74,8 @@ def create_warning_notifications(
                 body=body,
                 delivery_status="failed",
                 attempts=1,
+                next_attempt_at=datetime.now(UTC)
+                + timedelta(seconds=NOTIFICATION_RETRY_DELAYS_SECONDS[0]),
                 error_code="IN_APP_DELIVERY_FAILED",
             )
             session.add(notification)
@@ -77,4 +83,8 @@ def create_warning_notifications(
     return notifications
 
 
-__all__ = ["create_warning_notifications"]
+__all__ = [
+    "NOTIFICATION_MAX_ATTEMPTS",
+    "NOTIFICATION_RETRY_DELAYS_SECONDS",
+    "create_warning_notifications",
+]

@@ -1965,6 +1965,7 @@ Stable Baseline
 | P-10（已关闭） | 架构 `model_configurations`/prompt 版本按组织设计，但 API 已确认组织不能覆盖且无 prompt 管理接口 | Phase 3/9B，已决策 | 以 API 为准：平台/部署级模型与基线 prompt 版本，组织无覆盖；架构说明已同步 |
 | P-11 | API 要求的 `support_access_grants`、邀请投递字段、通知 title/body、多个资源 version 等未完整出现在架构表 | Phase 1-14 | 批准按 API 最小补齐模型，并在每个首次 Migration 中 Review；Phase 11 补齐 Warning/WarningEvent/Notification；Phase 12 补齐结果 `edited_by/edited_at`、ReviewTask `completed_by/completed_at`、ResultRevision/Feedback 及其租户/版本约束；Phase 13 补齐 Report 生命周期时间、过期和错误字段，报告历史列表继续由 UI-P11 排除 |
 | P-12 | 需求/架构提到批量审核，但 API 无入口、请求/响应/权限/幂等定义 | Future Work | 当前 Release 排除；产品需要时先新增 API Contract 和独立 Phase |
+| P-13（已关闭） | `retention_days`、审计 365 天与历史事实不可删除的边界，以及清理是否物理删除数据库行未冻结 | Phase 14B entry review，已决策（2026-08-21） | `retention_days` 只控制 FileStore 内容；永久保留不可变审核/结果/报告快照/修订/预警事件/反馈/模型调用/审计和 FileObject 元数据，只清理经引用与活动状态检查通过的 blob/临时文件；Phase 14B 不物理删除历史数据库行。 |
 
 ### Decision Record: P-06 Report Lifecycle and Regeneration（2026-08-21）
 
@@ -2047,6 +2048,16 @@ Stable Baseline
 - **Event minimum**：`warning_events` 追加保存组织、预警、事件类型、from/to 状态、操作者、说明、受控 metadata 和时间；首个 created 事件保存触发条件与规则版本摘要，不保存合同正文或模型原始响应。
 - **Notification minimum**：`notifications` 保存组织、当前用户、预警、`in_app` channel、API 所需 `title/body`、独立 `delivery_status`、attempts、next attempt、read_at 和安全 error_code。API 的 `read/unread` 由 `read_at` 投影，投递失败事实不改变预警事务。
 - **Boundary**：Phase 11 不新增外部通知、自动补偿、手工重试接口、履约提醒、结果人工修订或新的资源 version；Phase 14B 只能在后续 contract/migration review 后使用已有 retry facts 实现补偿。
+
+### Decision Record: P-13 Retention and Compensation Boundary（2026-08-21）
+
+- **Status**：Closed for Phase 14B implementation after user confirmation; Phase 14B remains `Not Started` until implementation and verification complete。
+- **P-11 review**：现有 `FileObject` 只有 `quarantine|stored|failed`，没有内容清理状态、持久化 cleanup lease/attempt/retry 或恢复事实；现有 `Notification` 有 `delivery_status/attempts/next_attempt_at/error_code`，但创建路径没有冻结 retryable、退避、上限和最终失败语义。两者不能在未更新模型/契约边界前直接编码。
+- **Reference review**：除复合外键外，`audit_logs.resource_id`、`ResultRevision.subject_id`、`Feedback.subject_id`、`Warning.revision_id` 和报告 `snapshot_json` 是隐式历史引用；解析页图像、报告二进制和原合同通过 `FileObject` 关联。所有清理实现必须同时检查直接 FK、这些隐式引用、活动任务/报告/通知补偿和租约状态。
+- **Failure boundary**：现有解析页图像和报告 worker 先写 FileStore、后提交数据库，进程在中间退出可能产生孤儿；Phase 14B 实现前必须补持久化 cleanup journal 或先持久化可恢复 FileObject 事实，并覆盖重复 scheduler、lease recovery、DB 状态提交失败和 FileStore 操作失败。
+- **Retention interpretation**：需求/API 的 `retention_days` 与审计不可变语义存在张力；已确认采用保守边界：保留历史数据库事实和 FileObject 元数据，只清理通过引用保护的 FileStore 内容；审计 365 天解释为最低保留期，不授权删除审计事实。
+- **Notification compensation**：只处理已有 `delivery_status=failed` 的投递事实；最多 3 次（含首次），第 2/3 次分别在前次失败后 1 分钟/5 分钟执行；达到上限后保持 `failed`、清空 `next_attempt_at` 并写最终失败审计；补偿不回滚 Warning，不提供手工重试 API。
+- **P-12**：保持 `Future Work`，批量审核不进入 Phase 14B，也不阻塞本 entry review 之外的规范整理。
 
 ### Just-in-Time Closing Order
 

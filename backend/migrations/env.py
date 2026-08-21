@@ -33,6 +33,7 @@ from backend.app.modules.identity.models import (
     User,
 )
 from backend.app.modules.reports.models import Report
+from backend.app.modules.retention.models import FileCleanupOperation
 from backend.app.modules.reviews.models import ModelCall, ReviewStageRun, ReviewTask
 from backend.app.modules.reviews.results.models import (
     ClauseComparison,
@@ -97,6 +98,7 @@ _registered_models = (
     ResultRevision,
     Report,
     Report,
+    FileCleanupOperation,
     Feedback,
     Warning,
     WarningEvent,

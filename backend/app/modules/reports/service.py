@@ -23,6 +23,10 @@ from backend.app.modules.reports.renderer import (
     ReportRendererError,
     render_html,
 )
+from backend.app.modules.retention.service import (
+    create_file_write_journal,
+    finalize_file_write_journal,
+)
 from backend.app.modules.reviews.models import ReviewTask
 from backend.app.modules.reviews.results.service import get_review_results
 from backend.app.modules.reviews.revisions.models import ResultRevision
@@ -567,6 +571,11 @@ def process_report(
             report_id=report_id,
             report_format=report_format,
         )
+        write_operation_id = create_file_write_journal(
+            session,
+            organization_id=organization_id,
+            storage_key=storage_key,
+        )
         size_bytes, sha256 = file_store.put(BytesIO(content), storage_key)
         with UnitOfWork(session) as unit_of_work:
             report = session.scalar(
@@ -593,6 +602,12 @@ def process_report(
                     storage_status="stored",
                 )
                 session.add(file_object)
+                session.flush()
+                finalize_file_write_journal(
+                    session,
+                    operation_id=write_operation_id,
+                    file_object_id=file_object.id,
+                )
                 report.file_object_id = file_object.id
                 report.status = "ready"
                 observe_report_outcome("ready")
