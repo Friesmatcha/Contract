@@ -25,6 +25,32 @@ from backend.app.integrations.model.schemas import ModelCapability, ModelRequest
 DEFAULT_QWEN_ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 MAX_PROVIDER_RESPONSE_BYTES = 4 * 1024 * 1024
 
+_OUTPUT_CONTRACTS: dict[ModelCapability, str] = {
+    "classification": (
+        'Return exactly this JSON shape: {"category":"<string>","confidence":0.0,'
+        '"evidence":[{"source_span_id":"<id>","quote":"<text>"}]}. '
+        "Allowed root keys are category, confidence, evidence; evidence must contain "
+        "at least one item."
+    ),
+    "extraction": (
+        'Return exactly this JSON shape: {"fields":[{"field_key":"<string>",'
+        '"value":null,"confidence":0.0,"evidence":[]}],"evidence":[]}. '
+        "Allowed root keys are fields and evidence; fields must contain at least one item."
+    ),
+    "risk_analysis": (
+        'Return exactly this JSON shape: {"findings":[{"risk_type":"<string>",'
+        '"severity":"low","title":"<string>","basis":"<string>",'
+        '"evidence":[{"source_span_id":"<id>","quote":"<text>"}]}],"evidence":[]}. '
+        "Allowed root keys are findings and evidence; severity must be high, medium, or low."
+    ),
+    "clause_comparison": (
+        'Return exactly this JSON shape: {"comparisons":[{"clause_key":"<string>",'
+        '"result":"match","explanation":"<string>","evidence":[]}],"evidence":[]}. '
+        "Allowed root keys are comparisons and evidence; result must be match, deviation, "
+        "missing, uncertain, or not_applicable."
+    ),
+}
+
 
 class _Response(Protocol):
     headers: Any
@@ -152,11 +178,16 @@ class QwenModelGateway(ModelGateway):
     ) -> list[dict[str, str]]:
         instruction = (
             f"Capability: {capability}. Return only a JSON object that matches the "
-            "requested schema. "
+            "requested schema. Return exactly one JSON object, with no Markdown, commentary, "
+            "or extra keys. "
+            f"{_OUTPUT_CONTRACTS[capability]} "
             f"Prompt version: {request.prompt_version}. Schema version: {request.schema_version}."
         )
         if repair:
-            instruction += " Repair the previous output: include at least one valid evidence item."
+            instruction += (
+                " The previous response failed strict validation. Regenerate it from scratch, "
+                "remove every unknown key, and use only the allowed keys above."
+            )
         return [
             {"role": "system", "content": instruction},
             {

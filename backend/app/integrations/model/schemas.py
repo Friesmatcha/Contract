@@ -9,7 +9,7 @@ ModelCapability = Literal[
     "clause_comparison",
 ]
 
-DEFAULT_PROMPT_VERSION = "platform-baseline-v1"
+DEFAULT_PROMPT_VERSION = "platform-baseline-v2"
 DEFAULT_SCHEMA_VERSION = "model-schema-v1"
 DEFAULT_SANITIZATION_POLICY_VERSION = "sanitization-v1"
 

@@ -268,6 +268,10 @@ def test_qwen_adapter_contract_is_offline_and_records_provider_usage() -> None:
     assert request.data is not None
     request_body = json.loads(request.data.decode("utf-8"))
     assert request_body["messages"][0]["content"].startswith("Capability: classification.")
+    assert "Allowed root keys are category, confidence, evidence" in (
+        request_body["messages"][0]["content"]
+    )
+    assert "no Markdown, commentary, or extra keys" in request_body["messages"][0]["content"]
     assert captured
 
 
