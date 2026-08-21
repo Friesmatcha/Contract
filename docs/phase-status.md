@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-21`
 - Branch: `main`
-- Verification baseline: `31ae93f` (Phase 13 implementation snapshot, based on the verified Phase 12 ledger baseline `ac2ccf5`) plus its immediately following Phase 13 ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 13 Git Snapshot: tracked source and documentation changes are committed; generated `test-results/` remains untracked and is preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 13 are `Completed`; Phase 14A, Phase 14B, Phase 15 and Phase 16 remain `Not Started`.
+- Verification baseline: `102b50d` (Phase 14A implementation snapshot, based on the verified Phase 13 ledger baseline `e798387`) plus its immediately following Phase 14A ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 14A Git Snapshot: tracked source and documentation changes are committed; generated `.pytest-phase14a-tmp/` and `test-results/` remain untracked and are preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 14A are `Completed`; Phase 14B, Phase 15 and Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -360,9 +360,28 @@
 - Commit / Push: 用户已明确授权；`31ae93f`（`feat(reports): add immutable HTML and PDF reports`）已正常提交，本台账更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未执行 amend、force push 或历史重写。
 - Next Phase and entry conditions: Phase 14A、Phase 14B、Phase 15、Phase 16 均保持 `Not Started`。本次在 Phase 13 台账更新后停止；进入任何后续 Phase 前必须重新读取 Source of Truth 并获得单独授权。
 
+## Phase 14A: Audit and Observability
+
+- Status: `Completed`。
+- Completed at: `2026-08-21`。
+- Current completion boundary: 完成 17.1-17.4 组织/平台审计查询、审核/预警运营统计、内部 Prometheus `/metrics`、敏感日志过滤和 ADMIN-001、ADMIN-002、PLATFORM-004 管理页面；审计日志保持只读、不可变查询边界，本阶段未执行物理清理、通知补偿、对象存储迁移、批量审核、Grafana 部署或审计导出。
+- Entry / Pending Decision review: 已完整核对 `AGENTS.md`、`docs/phase-status.md`、Phase 14A 计划/测试边界/Pending Decisions、`docs/requirements.md` FR-A04/FR-O、`docs/architecture.md` 审计/日志/指标/权限/tenant/事务边界、`docs/api-contract.md` 17.1-17.4、UI README/PRD/design system 及 PLATFORM-004、ADMIN-001、ADMIN-002 原型。P-06 已关闭；P-11 清理引用字段 Review 保持 Phase 14B 边界；P-12 批量审核保持 Future Work。未发现阻塞当前 Phase 的 Source of Truth 冲突；model cost 通过内部 `/metrics` 暴露，不新增未定义业务 API。
+- Changes: 新增 `backend/app/modules/audit/`、`backend/app/modules/operations/` 和 `backend/app/observability/`；接入 HTTP/review/OCR/model/warning/report 指标、ModelGateway telemetry、日志脱敏和关键业务审计覆盖；新增前后端 API 类型/client、ADMIN-001 组织/平台审计页、ADMIN-002 运营指标页、路由/导航/响应式样式及 Phase 14A Unit/Integration/Playwright 测试。运营页按路由中的 `organizationId` 和对应 membership 请求，避免多组织用户的 tenant 请求错位。
+- API Contract / OpenAPI: 补充 17.3/17.4 的时区、`[from,to)`、分母和聚合口径；实现组织审计、平台审计、审核指标和预警指标 4 个契约接口。`/metrics` 为内部部署端点，`include_in_schema=False`，不进入公网业务 API/OpenAPI；未新增审计修改、删除或导出接口。
+- ORM / Migration: 审计模型增加全局 `(created_at, id)` 查询索引；新增线性 Migration `backend/migrations/versions/20260821_0018_phase14a_audit_observability.py`。独立 PostgreSQL `contract_phase14a_verify` 完成 `upgrade head -> downgrade -1 -> upgrade head`，最终 `20260821_0018 (head)`；未删除业务行或文件。
+- Frontend / UI Page IDs: PLATFORM-004 `/platform/audit-logs`、ADMIN-001 `/audit-logs` 和 ADMIN-002 `/organizations/:organizationId/metrics` 覆盖 loading、empty、error、forbidden、retry、disabled/501、无效日期和 endpoint-local 指标错误状态；仅展示安全审计摘要和契约字段，无正文、Secret、Token、完整 prompt 或原始模型响应。
+- Tests: 后端全量 `.venv\Scripts\python.exe -m pytest backend/tests -q --basetemp .pytest-phase14a-tmp` -> `226 passed`；Phase 14A 专项 `.venv\Scripts\python.exe -m pytest backend/tests/integration/operations backend/tests/unit/observability -q --basetemp .pytest-phase14a-tmp` -> `7 passed`，1 个 pytest cache permission warning；`.venv\Scripts\python.exe -m ruff check backend`、`.venv\Scripts\python.exe -m mypy backend/app` -> passed；前端 `npm --prefix frontend run test -- --run` -> `22 files / 81 tests passed`；`npm --prefix frontend run lint` -> exit 0，0 errors/386 warnings；`npm --prefix frontend run typecheck`、`npm --prefix frontend run build` -> exit 0，保留既有 Vite chunk-size warning；`npm --prefix frontend run e2e -- phase14a.spec.ts --workers=1` -> `4 passed`（Chromium 1440px/1280px）；`git diff --check` -> passed（仅 LF/CRLF 工作树提示）。
+- Migration / OpenAPI: `.venv\Scripts\alembic.exe heads`/`history` 显示唯一 head `20260821_0018`；operations integration OpenAPI 投影确认 17.1-17.4 路由存在且 `/metrics` 不在 OpenAPI，内部 `/metrics` 返回 Prometheus 指标。
+- Review / Re-review: 完成 entry review、contract/schema/index review、后端/观测/前端只读 diff review 和回归复核。重点检查 trusted tenant、Platform Admin 权限、审计不可变/敏感摘要、审计覆盖、指标事实来源、低基数 labels、代理暴露边界和三个 UI 的状态矩阵；发现并修复运营页使用全局组织而非路由组织参数的多组织 tenant 风险，修复后无剩余当前 Phase blocking finding。
+- Regression / scope: 后端全量与前端全量门禁均通过；普通测试继续使用 Fake Model Gateway，未执行真实 Qwen、付费公网服务或 Grafana smoke。未进入 Phase 14B、15、16。
+- Known Issues / Pending Decisions: `.pytest-phase10-tmp/` 历史权限目录保留且未删除；`.pytest-phase14a-tmp/` 和根目录 `test-results/` 为测试生成物，未纳入提交；pytest cache permission warning、Vue lint formatting warnings、Vite chunk-size warning 和 Windows Playwright/Vite 子进程收尾风险均非阻塞。提交前 `git fetch origin` 成功，基线 `HEAD...origin/main` 为 `0/0`。
+- Git branch / HEAD / status / diff summary: `main`；Phase 14A 实现 snapshot 为 `102b50d`，包含后端审计/运营/可观测性、`0018` Migration、契约与测试、ADMIN-001/002 和 PLATFORM-004 前端实现；本台账更新作为紧随其后的文档 snapshot。`test-results/`、`.pytest-phase14a-tmp/` 和受保护的 `.pytest-phase10-tmp/` 均未纳入提交、覆盖或清理。
+- Commit / Push: 用户已明确授权；`102b50d`（`feat(operations): add audit and observability`）已正常提交，本台账更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未执行 amend、force push 或历史重写。
+- Next Phase and entry conditions: Phase 14B、Phase 15、Phase 16 仍为 `Not Started`；进入下一 Phase 前需获得新的明确授权并重新进行对应 entry review。
+
 ## Remaining Phases
 
-Phase 14A、Phase 14B、Phase 15、Phase 16 均为 `Not Started`。Phase 13 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
+Phase 14B、Phase 15、Phase 16 均为 `Not Started`。Phase 14A 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
