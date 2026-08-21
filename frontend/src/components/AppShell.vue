@@ -76,6 +76,7 @@ const activeMenuPath = computed(() => {
   }
   if (route.path.startsWith('/clause-templates')) return '/clause-templates'
   if (route.path.startsWith('/warnings')) return '/warnings'
+  if (route.path.startsWith('/feedback')) return '/feedback/summary'
   return route.path
 })
 const pageTitle = computed(() => (typeof route.meta.title === 'string' ? route.meta.title : '工作区'))
@@ -91,6 +92,7 @@ const breadcrumbs = computed(() => {
   }
   if (route.path.startsWith('/clause-templates')) return ['知识配置', '条款模板', current]
   if (route.path.startsWith('/warnings')) return ['预警中心', current]
+  if (route.path.startsWith('/feedback')) return ['组织管理', current]
   return [current]
 })
 
@@ -259,6 +261,13 @@ onUnmounted(() => {
             <ElMenuItem index="/warnings">
               <ElIcon><Warning /></ElIcon>
               <span>预警中心</span>
+            </ElMenuItem>
+            <ElMenuItem
+              v-if="currentMembership.role === 'org_admin'"
+              index="/feedback/summary"
+            >
+              <ElIcon><Document /></ElIcon>
+              <span>反馈统计</span>
             </ElMenuItem>
             <ElMenuItem
               v-if="canReadRiskRules"

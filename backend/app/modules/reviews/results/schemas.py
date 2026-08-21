@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
@@ -45,6 +46,9 @@ class ContractClassificationResponse(ResultResponse):
     status: ResultStatus
     evidence: list[SourceLocatorResponse]
     version: int
+    edited_by: UUID | None = None
+    edited_at: datetime | None = None
+    revision_id: UUID | None = None
 
 
 class ExtractedFieldResponse(ResultResponse):
@@ -56,6 +60,9 @@ class ExtractedFieldResponse(ResultResponse):
     confidence: float
     evidence: list[SourceLocatorResponse]
     version: int
+    edited_by: UUID | None = None
+    edited_at: datetime | None = None
+    revision_id: UUID | None = None
 
 
 class RiskFindingResponse(ResultResponse):
@@ -71,6 +78,9 @@ class RiskFindingResponse(ResultResponse):
     status: RiskFindingStatus
     evidence: list[SourceLocatorResponse]
     version: int
+    edited_by: UUID | None = None
+    edited_at: datetime | None = None
+    revision_id: UUID | None = None
 
 
 class ClauseComparisonResponse(ResultResponse):
@@ -83,6 +93,9 @@ class ClauseComparisonResponse(ResultResponse):
     suggestion: str
     evidence: list[SourceLocatorResponse]
     version: int
+    edited_by: UUID | None = None
+    edited_at: datetime | None = None
+    revision_id: UUID | None = None
 
 
 class ReviewResultsSummary(ResultResponse):
@@ -92,6 +105,17 @@ class ReviewResultsSummary(ResultResponse):
     low: int
     warning_total: int
     unresolved_count: int
+    required_manual_count: int
+
+
+class CompletionBlockerResponse(ResultResponse):
+    subject_type: Literal[
+        "classification", "extracted_field", "risk_finding", "clause_comparison"
+    ]
+    subject_id: UUID
+    code: str
+    status: str
+    version: int
 
 
 class ReviewResultsResponse(ResultResponse):
@@ -101,6 +125,7 @@ class ReviewResultsResponse(ResultResponse):
     risk_findings: list[RiskFindingResponse]
     clause_comparisons: list[ClauseComparisonResponse]
     summary: ReviewResultsSummary
+    completion_blockers: list[CompletionBlockerResponse]
 
 
 __all__ = [

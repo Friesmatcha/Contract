@@ -74,6 +74,12 @@ class ReviewTask(UuidPrimaryKeyMixin, TimestampMixin, Base):
             name="fk_review_tasks_creator_tenant",
             ondelete="RESTRICT",
         ),
+        ForeignKeyConstraint(
+            ["organization_id", "completed_by"],
+            ["organization_memberships.organization_id", "organization_memberships.user_id"],
+            name="fk_review_tasks_completed_by_tenant",
+            ondelete="RESTRICT",
+        ),
         CheckConstraint(
             "status IN ("
             "'pending', 'parsing', 'reviewing', 'pending_review', "
@@ -141,6 +147,8 @@ class ReviewTask(UuidPrimaryKeyMixin, TimestampMixin, Base):
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_by: Mapped[UUID | None] = mapped_column()
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class ReviewStageRun(UuidPrimaryKeyMixin, TimestampMixin, Base):

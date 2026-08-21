@@ -7,6 +7,10 @@ import type {
   RiskFindingStatus,
   RiskSeverity,
   ReviewResults,
+  ContractClassificationResult,
+  ExtractedFieldResult,
+  RiskFindingResult,
+  ClauseComparisonResult,
 } from '@/api/types'
 
 const API_BASE = '/api/v1'
@@ -25,6 +29,10 @@ export type ReviewApiErrorCode =
   | 'REVIEW_TASK_NOT_FOUND'
   | 'RESULTS_NOT_READY'
   | 'VERSION_NOT_PUBLISHED'
+  | 'RESOURCE_VERSION_CONFLICT'
+  | 'UNRESOLVED_REQUIRED_FINDINGS'
+  | 'EVIDENCE_REQUIRED'
+  | 'RESULT_STATUS_INVALID'
 
 function reviewTaskPath(reviewTaskId: string): string {
   return `${API_BASE}/review-tasks/${encodeURIComponent(reviewTaskId)}`
@@ -88,4 +96,56 @@ export function getReviewResults(
   if (resolvedOptions.riskStatus) query.set('risk_status', resolvedOptions.riskStatus)
   if (resolvedOptions.clauseStatus) query.set('clause_status', resolvedOptions.clauseStatus)
   return apiFetch(`${reviewTaskPath(reviewTaskId)}/results?${query.toString()}`)
+}
+
+export function completeReviewTask(
+  reviewTaskId: string,
+  note: string | undefined,
+  idempotencyKey: string,
+): Promise<ReviewTask> {
+  return apiFetch(`${reviewTaskPath(reviewTaskId)}/complete`, {
+    method: 'POST',
+    headers: { 'Idempotency-Key': idempotencyKey },
+    body: JSON.stringify({ note }),
+  })
+}
+
+export function reviseClassification(
+  classificationId: string,
+  body: { current_value: string; status: 'confirmed' | 'corrected' | 'needs_confirmation'; reason?: string; version: number },
+): Promise<ContractClassificationResult> {
+  return apiFetch(`${API_BASE}/contract-classifications/${encodeURIComponent(classificationId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}
+
+export function reviseExtractedField(
+  fieldId: string,
+  body: { current_value: unknown; status: 'not_found' | 'needs_confirmation' | 'confirmed' | 'corrected'; reason?: string; version: number },
+): Promise<ExtractedFieldResult> {
+  return apiFetch(`${API_BASE}/extracted-fields/${encodeURIComponent(fieldId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}
+
+export function reviseRiskFinding(
+  findingId: string,
+  body: { status: 'pending_review' | 'confirmed' | 'false_positive' | 'processed'; title?: string; description?: string; suggestion?: string; reason?: string; version: number },
+): Promise<RiskFindingResult> {
+  return apiFetch(`${API_BASE}/risk-findings/${encodeURIComponent(findingId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+}
+
+export function reviseClauseComparison(
+  comparisonId: string,
+  body: { status: 'matched' | 'deviated' | 'missing' | 'uncertain'; difference_summary?: string; suggestion?: string; reason?: string; version: number },
+): Promise<ClauseComparisonResult> {
+  return apiFetch(`${API_BASE}/clause-comparisons/${encodeURIComponent(comparisonId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
 }

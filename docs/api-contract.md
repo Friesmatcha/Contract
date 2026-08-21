@@ -958,17 +958,30 @@ Success `202 Accepted`：
 
 `POST /api/v1/review-tasks/{review_task_id}/complete`。权限：`Org Admin | Reviewer`；仅 `pending_review` 可调用。
 
-Request Body：`{ "note?: string" }`；若仍有无证据风险或未处理的必须人工项，服务端拒绝完成。
+需要 `Idempotency-Key` 和 CSRF。Request Body：`{ "note?: string" }`。
+
+完成审核的必须人工项由服务端按当前结果事实逐项计算，不由客户端提交或覆盖：
+
+- `classification.status=needs_confirmation`；
+- 任一 `extracted_field.status=needs_confirmation`；
+- 任一 `risk_finding.status=pending_review`；
+- 任一 `clause_comparison.status=uncertain`；
+- 任一风险发现没有至少一个属于当前锁定文档、且能通过 SourceSpan 校验的证据。
+
+`confirmed` 风险也必须已有合法证据；风险严重度、来源和证据关联不属于完成命令的隐式修订范围。
+阻塞时返回 `409 UNRESOLVED_REQUIRED_FINDINGS`，`error.details.blockers` 为数组，每项包含
+`subject_type`、`subject_id`、`code`、`status` 和 `version`，不返回合同正文。`finished_at` 是机器阶段结束时间；
+人工完成事实使用 `completed_by` 和 `completed_at`。
 
 Request Example：`{ "note": "已完成人工复核" }`
 
-Success `200 OK`：返回 `ReviewTask`，`status=completed`，并保留完成操作者和时间。
+Success `200 OK`：返回 `ReviewTask`，`status=completed`，并保留完成操作者和时间。重复使用相同幂等键返回同一完成结果。
 
 ```json
-{ "id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "status": "completed", "completed_by": "8b2f8a68-5e4a-4b0a-b6a2-6dce4e0f5a11", "finished_at": "2026-08-17T05:10:00Z" }
+{ "id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "status": "completed", "completed_by": "8b2f8a68-5e4a-4b0a-b6a2-6dce4e0f5a11", "finished_at": "2026-08-17T05:00:00Z", "completed_at": "2026-08-17T05:10:00Z" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 INVALID_STATE_TRANSITION`、`409 UNRESOLVED_REQUIRED_FINDINGS`。
+主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 INVALID_STATE_TRANSITION`、`409 UNRESOLVED_REQUIRED_FINDINGS`、`409 IDEMPOTENCY_KEY_REUSED`。
 
 ### 10.5 获取审核结果
 
@@ -987,9 +1000,14 @@ Success `200 OK`：
   "extracted_fields": [{ "id": "0a47b8d3-6df8-46c4-a5cb-4c277f7c1c2e", "field_key": "contract_amount", "model_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "current_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "status": "detected", "confidence": 0.91, "evidence": [{ "source_span_id": "7f8e9a0b-1c2d-4e3f-9a45-6789abcdef01", "document_version_id": "2c5b0b5d-6c3c-46aa-a9d1-75c5a817d4b1", "kind": "pdf_page", "page_no": 2, "quote": "合同总价为含税人民币壹拾万元" }], "version": 1 }],
   "risk_findings": [{ "id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "risk_type": "unlimited_liability", "severity": "high", "title": "责任范围不封顶", "description": "...", "basis": "责任条款未设置上限", "suggestion": "建议约定责任上限。", "confidence": 0.88, "source": "model", "status": "pending_review", "evidence": [{ "kind": "pdf_page", "page_no": 3, "quote": "乙方承担全部且无限的责任" }], "version": 1 }],
   "clause_comparisons": [{ "id": "f2b55477-b6a5-4f31-a5c5-bb58b5ca9138", "clause_key": "payment", "status": "deviated", "contract_text": "验收后付款", "difference_summary": "缺少付款期限", "severity": "medium", "suggestion": "补充付款期限。", "evidence": [{ "kind": "pdf_page", "page_no": 4, "quote": "验收后付款" }], "version": 1 }],
-  "summary": { "risk_total": 1, "high": 1, "medium": 0, "low": 0, "warning_total": 1, "unresolved_count": 1 }
+  "summary": { "risk_total": 1, "high": 1, "medium": 0, "low": 0, "warning_total": 1, "unresolved_count": 1, "required_manual_count": 1 },
+  "completion_blockers": [{ "subject_type": "risk_finding", "subject_id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "code": "RISK_PENDING_REVIEW", "status": "pending_review", "version": 1 }]
 }
 ```
+
+结果资源还返回 `edited_by` 和 `edited_at`（未修订时为 `null`）。`unresolved_count` 保持结果页的待处理聚合；
+`required_manual_count` 和 `completion_blockers` 使用 10.4 的完成判定。契约不提供完整 `ResultRevision` 历史读取接口，
+前端只能展示当前响应和本次会话内由写接口返回的变更，不得假造历史 feed。
 
 主要错误：`403 FORBIDDEN`、`404 REVIEW_TASK_NOT_FOUND`、`409 RESULTS_NOT_READY`。
 
@@ -997,19 +1015,23 @@ Success `200 OK`：
 
 `PATCH /api/v1/contract-classifications/{classification_id}`。权限：`Org Admin | Reviewer`；viewer 不允许。
 
-Request Body：`current_value: contract_type`, `status?: confirmed|corrected|needs_confirmation`, `reason?: string`, `version: integer`。必须保留模型原值；没有证据时不能将风险结果确认。
+Request Body：`current_value: contract_type`, `status: confirmed|corrected|needs_confirmation`, `reason?: string`, `version: integer`。
+`confirmed` 表示当前值与模型值一致，`corrected` 表示当前值与模型值不同，`needs_confirmation` 保留待人工判定；
+状态与值不一致时返回 `422 RESULT_STATUS_INVALID`。证据关联只读，修订不能新增、删除或替换证据；模型原值永不覆盖。
 
 Request Example：`{ "current_value": "sales", "status": "corrected", "reason": "人工核对合同标题", "version": 1 }`
 
 Success `200 OK`：返回分类及 `version=2`、`edited_by`、`edited_at`。
 
-主要错误：`403 FORBIDDEN`、`404 CLASSIFICATION_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 INVALID_CONTRACT_TYPE`。
+主要错误：`403 FORBIDDEN`、`404 CLASSIFICATION_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 INVALID_CONTRACT_TYPE`、`422 RESULT_STATUS_INVALID`。
 
 ### 10.7 修订抽取字段
 
 `PATCH /api/v1/extracted-fields/{field_id}`。权限：`Org Admin | Reviewer`。
 
-Request Body：`current_value: object|null`, `status: detected|not_found|needs_confirmation|confirmed|corrected`, `reason?: string`, `version: integer`。值必须符合该 `field_key` 的 JSON Schema。
+Request Body：`current_value: JSON value|null`, `status: not_found|needs_confirmation|confirmed|corrected`, `reason?: string`, `version: integer`。
+值必须符合该 `field_key` 的 JSON Schema；`not_found` 必须使用 `null`，`confirmed` 表示当前值与模型值一致，
+`corrected` 表示不同，`needs_confirmation` 表示仍需人工判定。证据关联只读，模型原值永不覆盖。
 
 Request Example：`{ "current_value": { "amount": "120000.00", "currency": "CNY", "tax_included": true }, "status": "corrected", "reason": "补录附件金额", "version": 1 }`
 
@@ -1019,35 +1041,39 @@ Success `200 OK`：返回字段、模型值、当前值、证据和新版本。
 { "id": "0a47b8d3-6df8-46c4-a5cb-4c277f7c1c2e", "field_key": "contract_amount", "model_value": { "amount": "100000.00", "currency": "CNY", "tax_included": true }, "current_value": { "amount": "120000.00", "currency": "CNY", "tax_included": true }, "status": "corrected", "version": 2 }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 FIELD_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 FIELD_SCHEMA_INVALID`。
+主要错误：`403 FORBIDDEN`、`404 FIELD_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 FIELD_SCHEMA_INVALID`、`422 RESULT_STATUS_INVALID`。
 
 ### 10.8 修订风险发现
 
 `PATCH /api/v1/risk-findings/{finding_id}`。权限：`Org Admin | Reviewer`。
 
-Request Body：`status: pending_review|confirmed|false_positive|processed`, `title?: string`, `description?: string`, `suggestion?: string`, `reason?: string`, `version: integer`。`confirmed` 必须有证据；严重度和来源不可由客户端任意改写。
+Request Body：`status: pending_review|confirmed|false_positive|processed`, `title?: string`, `description?: string`, `suggestion?: string`, `reason?: string`, `version: integer`。
+`confirmed` 必须有合法证据；证据关联只读。严重度和来源不可由客户端任意改写，`source` 继续表示原始规则/模型来源，
+人工动作由 `edited_by`、`edited_at` 和 `ResultRevision` 表示，不把来源伪装为 `human`。
 
 Request Example：`{ "status": "confirmed", "reason": "已核对原文", "version": 1 }`
 
 Success `200 OK`：返回风险发现及修订后的 `version`。
 
 ```json
-{ "id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "status": "confirmed", "source": "human", "evidence_count": 1, "version": 2 }
+{ "id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "status": "confirmed", "source": "model", "evidence_count": 1, "version": 2, "edited_by": "8b2f8a68-5e4a-4b0a-b6a2-6dce4e0f5a11", "edited_at": "2026-08-17T05:20:00Z" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 RISK_FINDING_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 EVIDENCE_REQUIRED`。
+主要错误：`403 FORBIDDEN`、`404 RISK_FINDING_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 EVIDENCE_REQUIRED`、`422 RESULT_STATUS_INVALID`。
 
 ### 10.9 修订条款比对
 
 `PATCH /api/v1/clause-comparisons/{comparison_id}`。权限：`Org Admin | Reviewer`。
 
-Request Body：`status: matched|deviated|missing|uncertain`, `difference_summary?: string`, `suggestion?: string`, `reason?: string`, `version: integer`。`uncertain` 必须进入人工复核，不能自动视为匹配或缺失。
+Request Body：`status: matched|deviated|missing|uncertain`, `difference_summary?: string`, `suggestion?: string`, `reason?: string`, `version: integer`。
+`uncertain` 必须进入人工复核，不能自动视为匹配或缺失；`matched` 或 `deviated` 必须保留合法证据，`missing` 可以没有合同定位。
+证据关联只读，修订不能替换证据。
 
 Request Example：`{ "status": "deviated", "difference_summary": "付款期限未明确", "version": 1 }`
 
 Success `200 OK`：返回比对结果、证据和新版本。
 
-主要错误：`403 FORBIDDEN`、`404 CLAUSE_COMPARISON_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 EVIDENCE_REQUIRED`。
+主要错误：`403 FORBIDDEN`、`404 CLAUSE_COMPARISON_NOT_FOUND`、`409 RESOURCE_VERSION_CONFLICT`、`422 EVIDENCE_REQUIRED`、`422 RESULT_STATUS_INVALID`。
 
 ## 11. Risk Rule APIs
 
@@ -1467,7 +1493,7 @@ Request Body：
 | `subject_type` | `classification|extracted_field|risk_finding|clause_comparison` | 是 | 被标注对象类型 |
 | `subject_id` | UUID | 是 | 被标注对象 |
 | `label` | `feedback_label` | 是 | 正确/错误/修改/忽略 |
-| `corrected_value` | object|null | `modified` 时必填 | 人工结果 |
+| `corrected_value` | JSON value|null | `modified` 时必填 | 人工结果；按 subject 的值 Schema 校验 |
 | `note` | string | 否 | 说明 |
 
 Request Example：`{ "review_task_id": "67f0ab0d-cf70-470c-b5e7-92a18d6d73a5", "subject_type": "risk_finding", "subject_id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "label": "incorrect", "note": "责任条款有上限" }`
@@ -1478,20 +1504,24 @@ Success `201 Created`：
 { "id": "e7dc3492-1d5f-4b6e-a762-5232471c8a12", "subject_type": "risk_finding", "subject_id": "b7c6a5d4-3210-4fed-8abc-1234567890ab", "label": "incorrect", "created_by": "8b2f8a68-5e4a-4b0a-b6a2-6dce4e0f5a11", "created_at": "2026-08-17T05:30:00Z" }
 ```
 
-主要错误：`403 FORBIDDEN`、`404 SUBJECT_NOT_FOUND`、`409 SUBJECT_ORGANIZATION_MISMATCH`、`422 FEEDBACK_SCHEMA_INVALID`。
+`corrected_value` 的 JSON `null` 也是合法值，但 `modified` 必须显式提供该字段。Feedback 是追加事实，不能直接改变结果资源；
+subject 必须属于请求中的任务和当前组织。
+
+主要错误：`403 FORBIDDEN`、`404 SUBJECT_NOT_FOUND`、`409 SUBJECT_ORGANIZATION_MISMATCH`、`409 IDEMPOTENCY_KEY_REUSED`、`422 FEEDBACK_SCHEMA_INVALID`。
 
 ### 16.2 反馈统计
 
 `GET /api/v1/feedback/summary`。权限：`Org Admin`。
 
 Request Query：`contract_type?`, `rule_bundle_version_id?`, `model_version?`, `created_from?`, `created_to?`；支持通用分页不适用，返回聚合结果。
+过滤均作用于当前组织内、Feedback 所属审核任务创建时锁定的合同类型、规则版本和模型版本；`model_version` 是任务模型快照中的 `model` 字段。
 
 Request Example：`GET /api/v1/feedback/summary?contract_type=purchase`
 
 Success `200 OK`：
 
 ```json
-{ "filters": { "contract_type": "purchase" }, "counts": { "correct": 42, "incorrect": 5, "modified": 9, "ignored": 3 }, "by_risk_type": [{ "risk_type": "unlimited_liability", "incorrect": 2, "modified": 1 }] }
+{ "filters": { "contract_type": "purchase", "rule_bundle_version_id": null, "model_version": null, "created_from": null, "created_to": null }, "counts": { "correct": 42, "incorrect": 5, "modified": 9, "ignored": 3 }, "by_risk_type": [{ "risk_type": "unlimited_liability", "correct": 0, "incorrect": 2, "modified": 1, "ignored": 0 }] }
 ```
 
 主要错误：`403 ORG_ADMIN_REQUIRED`、`422 INVALID_FILTER`。

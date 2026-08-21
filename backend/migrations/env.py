@@ -21,6 +21,7 @@ from backend.app.modules.documents.models import (
     DocumentVersion,
     SourceSpan,
 )
+from backend.app.modules.feedback.models import Feedback
 from backend.app.modules.identity.models import (
     AuthOneTimeToken,
     AuthRateLimit,
@@ -42,6 +43,7 @@ from backend.app.modules.reviews.results.models import (
     RiskFinding,
     RiskFindingEvidence,
 )
+from backend.app.modules.reviews.revisions.models import ResultRevision
 from backend.app.modules.risks.rules.models import RiskRule, RiskRuleBundle, RiskRuleBundleVersion
 from backend.app.modules.warnings.models import Notification, Warning, WarningEvent
 from backend.app.shared.audit import AuditLog
@@ -91,6 +93,8 @@ _registered_models = (
     RiskFindingEvidence,
     ClauseComparison,
     ClauseComparisonEvidence,
+    ResultRevision,
+    Feedback,
     Warning,
     WarningEvent,
     Notification,

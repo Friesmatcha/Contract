@@ -1992,7 +1992,7 @@ Descriptions、Tabs/Anchor、Statistic、Table、Tag、Collapse、Drawer/Split P
 
 #### Form
 
-分类：`current_value`, optional `status`, optional `reason`, `version`。字段：`current_value`, `status`, optional `reason`, `version`。风险：`status`, optional `title/description/suggestion/reason`, `version`；`severity` 和 `source` 不可编辑。条款：`status`, optional `difference_summary/suggestion/reason`, `version`。反馈：`review_task_id`, `subject_type`, `subject_id`, `label`, `corrected_value` when modified, optional `note`。完成：optional `note`。报告：`format=html|pdf`。
+分类：`current_value`, `status`, optional `reason`, `version`。字段：`current_value`, `status`, optional `reason`, `version`。风险：`status`, optional `title/description/suggestion/reason`, `version`；`severity` 和 `source` 不可编辑。条款：`status`, optional `difference_summary/suggestion/reason`, `version`。反馈：`review_task_id`, `subject_type`, `subject_id`, `label`, `corrected_value` when modified, optional `note`。完成：optional `note`。报告：`format=html|pdf`。
 
 所有写表单提交中禁用；修订成功局部更新并保留 model/current 对照；`409` 不覆盖服务器新版本。现有 API 将 reason 定义为可选，UI 可鼓励填写，但不得当作服务端强制事实。
 
@@ -2961,7 +2961,7 @@ N/A。
 6. Clause Comparison：匹配、偏差、缺失、无法判断，展示合同文本、差异和建议。
 7. Warnings：链接到预警详情和处置时间线；不把预警与风险列表混为同一状态机。
 8. Evidence：与当前选中结果联动的原文上下文。
-9. Human Revisions and Feedback：原值/当前值、修改历史入口、反馈表单。
+9. Human Revisions and Feedback：原值/当前值、本次会话修订记录、反馈表单；完整历史不由前端假造。
 10. Report：选择格式、生成状态、预览/下载入口。
 
 ### 10.2 Risk Presentation
@@ -2970,7 +2970,7 @@ N/A。
 
 - `severity`：高/中/低，使用颜色 + 文本 + 图标/形状，不只依赖颜色。
 - `status`：待复核/已确认/误报/已处理，与 severity 分列显示。
-- `source`：规则/模型/人工，以来源标签呈现但不制造供应商字段。
+- `source`：规则/模型原始来源；人工动作通过 `edited_by`、`edited_at` 和本次会话修订记录呈现，不把原始来源改为人工。
 - `title`, `description`, `basis`, `suggestion`：标题优先，依据与建议清楚分区。
 - `confidence`：仅当 API 返回时显示为数值或辅助 meter；不改写为 `risk_score`，不用于重新排序业务优先级。
 - `evidence[]`：显示 quote、定位类型和跳转入口；confirmed 风险必须有证据。
@@ -3498,7 +3498,7 @@ Prototype Frame (Page ID)
 | UI-P07 | 密码策略和 token TTL | 已采用 API Contract 3.1：密码 12-128 字符、重置 Token 30 分钟、邀请 Token 7 天 | Closed 2026-08-18; boundary tests required |
 | UI-P08 | 合同已有 viewer 授权如何读取 | 当前没有 grant list/contract grant summary；需要先补契约或明确嵌入字段 | Phase 5 UI completeness |
 | UI-P09 | DOCX 逻辑块如何通过浏览器 API 读取 | 已采用 API Contract 9.10 `GET /documents/{document_version_id}/blocks`；物理页仍使用 9.9 | Closed 2026-08-19 |
-| UI-P10 | 完整修订历史如何读取 | API 保证修订事实但没有独立读取接口；先不设计完整 history feed | Phase 12 UI completeness |
+| UI-P10 | 完整修订历史如何读取 | API 保证修订事实但没有独立读取接口；仅展示当前响应和本次会话追加的修订，不假造完整 history feed | Phase 12 UI completeness |
 | UI-P11 | 报告历史列表来源 | 当前无报告列表 API；不实现前端假列表 | Phase 13 UI completeness |
 | UI-P12 | 邀请接受如何预判新用户/已有用户 | 无 invitation preflight API；先采用提交后字段反馈，或先更新契约 | Phase 2 UX |
 

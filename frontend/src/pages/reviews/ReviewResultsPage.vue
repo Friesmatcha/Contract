@@ -2,7 +2,9 @@
 import {
   ArrowLeft,
   Document,
+  Edit,
   Filter,
+  ChatLineRound,
   Refresh,
   View,
   WarningFilled,
@@ -11,6 +13,14 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { ApiError, toSafeDisplayError } from '@/api/client'
+import {
+  completeReviewTask,
+  reviseClassification,
+  reviseClauseComparison,
+  reviseExtractedField,
+  reviseRiskFinding,
+} from '@/api/reviews'
+import { createFeedback } from '@/api/feedback'
 import { getReviewResults, getReviewTask } from '@/api/reviews'
 import type {
   ClauseComparisonStatus,
@@ -25,6 +35,7 @@ import type {
   SourceLocator,
 } from '@/api/types'
 import PageState from '@/components/PageState.vue'
+import { currentOrganizationMembership } from '@/features/auth/session'
 
 const route = useRoute()
 const router = useRouter()
@@ -42,6 +53,25 @@ const processing = ref(false)
 const riskSeverity = ref<RiskSeverity | ''>('')
 const riskStatus = ref<RiskFindingStatus | ''>('')
 const clauseStatus = ref<ClauseComparisonStatus | ''>('')
+const editTarget = ref<{ type: 'classification' | 'extracted_field' | 'risk_finding' | 'clause_comparison'; id: string; version: number } | null>(null)
+const editStatus = ref('')
+const editValue = ref('')
+const editTitle = ref('')
+const editDescription = ref('')
+const editSuggestion = ref('')
+const editDifferenceSummary = ref('')
+const editReason = ref('')
+const editError = ref('')
+const editSaving = ref(false)
+const completeSaving = ref(false)
+const completeError = ref('')
+const feedbackTarget = ref<{ type: 'classification' | 'extracted_field' | 'risk_finding' | 'clause_comparison'; id: string } | null>(null)
+const feedbackLabel = ref<'correct' | 'incorrect' | 'modified' | 'ignored'>('correct')
+const feedbackNote = ref('')
+const feedbackCorrection = ref('')
+const feedbackSaving = ref(false)
+const feedbackError = ref('')
+const sessionRevisions = ref<Array<{ type: string; id: string; revisionId?: string; version: number }>>([])
 
 const fieldOrder: ExtractedFieldKey[] = [
   'parties',
@@ -114,6 +144,8 @@ const orderedFields = computed(() => {
 
 const hasFilters = computed(() => Boolean(riskSeverity.value || riskStatus.value || clauseStatus.value))
 const resultReadyStatuses = new Set<ReviewTask['status']>(['pending_review', 'completed', 'archived'])
+const canEdit = computed(() => task.value?.status === 'pending_review' && ['org_admin', 'reviewer'].includes(currentOrganizationMembership.value?.role ?? ''))
+const completionBlockers = computed(() => results.value?.completion_blockers ?? [])
 
 function setLoadError(error: unknown): void {
   const safe = toSafeDisplayError(error)
@@ -244,6 +276,155 @@ function fieldStatus(field: ExtractedFieldResult): string {
   return statusLabels[field.status]
 }
 
+function openEdit(target: { type: 'classification' | 'extracted_field' | 'risk_finding' | 'clause_comparison'; id: string; version: number }): void {
+  if (!results.value || !canEdit.value) return
+  editTarget.value = target
+  editError.value = ''
+  editReason.value = ''
+  editStatus.value = ''
+  editValue.value = ''
+  editTitle.value = ''
+  editDescription.value = ''
+  editSuggestion.value = ''
+  editDifferenceSummary.value = ''
+  if (target.type === 'classification') {
+    editValue.value = results.value.classification.current_value
+    editStatus.value = results.value.classification.status === 'detected' ? 'confirmed' : results.value.classification.status
+  } else if (target.type === 'extracted_field') {
+    const field = results.value.extracted_fields.find((item) => item.id === target.id)
+    if (!field) return
+    editValue.value = field.current_value === null ? 'null' : JSON.stringify(field.current_value, null, 2)
+    editStatus.value = field.status === 'detected' ? 'confirmed' : field.status
+  } else if (target.type === 'risk_finding') {
+    const finding = results.value.risk_findings.find((item) => item.id === target.id)
+    if (!finding) return
+    editStatus.value = finding.status
+    editTitle.value = finding.title
+    editDescription.value = finding.description
+    editSuggestion.value = finding.suggestion
+  } else {
+    const comparison = results.value.clause_comparisons.find((item) => item.id === target.id)
+    if (!comparison) return
+    editStatus.value = comparison.status
+    editDifferenceSummary.value = comparison.difference_summary || ''
+    editSuggestion.value = comparison.suggestion
+  }
+}
+
+function closeEdit(): void {
+  if (!editSaving.value) editTarget.value = null
+}
+
+function recordRevision(type: string, id: string, response: { revision_id?: string; version: number }): void {
+  sessionRevisions.value.push({ type, id, revisionId: response.revision_id, version: response.version })
+}
+
+async function submitEdit(): Promise<void> {
+  if (!editTarget.value || !results.value) return
+  editSaving.value = true
+  editError.value = ''
+  try {
+    const target = editTarget.value
+    if (target.type === 'classification') {
+      const response = await reviseClassification(target.id, {
+        current_value: editValue.value as ContractCategory,
+        status: editStatus.value as 'confirmed' | 'corrected' | 'needs_confirmation',
+        reason: editReason.value || undefined,
+        version: target.version,
+      })
+      recordRevision(target.type, target.id, response)
+    } else if (target.type === 'extracted_field') {
+      let value: unknown
+      try { value = JSON.parse(editValue.value) } catch { throw new Error('字段值必须是合法 JSON。') }
+      const response = await reviseExtractedField(target.id, {
+        current_value: value,
+        status: editStatus.value as 'not_found' | 'needs_confirmation' | 'confirmed' | 'corrected',
+        reason: editReason.value || undefined,
+        version: target.version,
+      })
+      recordRevision(target.type, target.id, response)
+    } else if (target.type === 'risk_finding') {
+      const response = await reviseRiskFinding(target.id, {
+        status: editStatus.value as 'pending_review' | 'confirmed' | 'false_positive' | 'processed',
+        title: editTitle.value,
+        description: editDescription.value,
+        suggestion: editSuggestion.value,
+        reason: editReason.value || undefined,
+        version: target.version,
+      })
+      recordRevision(target.type, target.id, response)
+    } else {
+      const response = await reviseClauseComparison(target.id, {
+        status: editStatus.value as ClauseComparisonStatus,
+        difference_summary: editDifferenceSummary.value,
+        suggestion: editSuggestion.value,
+        reason: editReason.value || undefined,
+        version: target.version,
+      })
+      recordRevision(target.type, target.id, response)
+    }
+    editTarget.value = null
+    await loadResults()
+  } catch (error) {
+    if (error instanceof ApiError && error.code === 'RESOURCE_VERSION_CONFLICT') {
+      editError.value = '结果已被其他审核员更新，已刷新服务器版本。请重新打开编辑。'
+      await load()
+    } else {
+      editError.value = error instanceof Error ? error.message : toSafeDisplayError(error).message
+    }
+  } finally {
+    editSaving.value = false
+  }
+}
+
+function openFeedback(type: 'classification' | 'extracted_field' | 'risk_finding' | 'clause_comparison', id: string): void {
+  if (!canEdit.value) return
+  feedbackTarget.value = { type, id }
+  feedbackLabel.value = 'correct'
+  feedbackNote.value = ''
+  feedbackCorrection.value = ''
+  feedbackError.value = ''
+}
+
+async function submitFeedback(): Promise<void> {
+  if (!feedbackTarget.value) return
+  feedbackSaving.value = true
+  feedbackError.value = ''
+  try {
+    const body: Parameters<typeof createFeedback>[0] = {
+      review_task_id: reviewTaskId.value,
+      subject_type: feedbackTarget.value.type,
+      subject_id: feedbackTarget.value.id,
+      label: feedbackLabel.value,
+      note: feedbackNote.value || undefined,
+    }
+    if (feedbackLabel.value === 'modified') {
+      try { body.corrected_value = JSON.parse(feedbackCorrection.value) } catch { throw new Error('反馈修改值必须是合法 JSON。') }
+    }
+    await createFeedback(body, `feedback-${feedbackTarget.value.id}-${Date.now()}`)
+    feedbackTarget.value = null
+  } catch (error) {
+    feedbackError.value = toSafeDisplayError(error).message
+  } finally {
+    feedbackSaving.value = false
+  }
+}
+
+async function complete(): Promise<void> {
+  if (!task.value || !canEdit.value) return
+  completeSaving.value = true
+  completeError.value = ''
+  try {
+    task.value = await completeReviewTask(task.value.id, undefined, `complete-${task.value.id}-${Date.now()}`)
+    await loadResults()
+  } catch (error) {
+    completeError.value = toSafeDisplayError(error).message
+    if (error instanceof ApiError && error.code === 'UNRESOLVED_REQUIRED_FINDINGS') await loadResults()
+  } finally {
+    completeSaving.value = false
+  }
+}
+
 onMounted(() => {
   void load()
 })
@@ -282,8 +463,20 @@ onMounted(() => {
           <h1>审核结果与人工复核</h1>
           <p>分类、字段、风险和条款结果均来自当前审核任务的持久化版本。</p>
         </div>
-        <ElTag :type="workflowStatusType(task.status)">{{ taskStatusLabels[task.status] }}</ElTag>
+        <div class="review-result-heading-actions">
+          <ElTag :type="workflowStatusType(task.status)">{{ taskStatusLabels[task.status] }}</ElTag>
+          <ElButton v-if="canEdit" type="primary" :loading="completeSaving" @click="complete">完成审核</ElButton>
+        </div>
       </div>
+
+      <ElAlert
+        v-if="completeError"
+        title="审核尚未完成"
+        :description="completeError"
+        type="warning"
+        :closable="false"
+        show-icon
+      />
 
       <ElAlert
         v-if="task.status === 'failed'"
@@ -330,6 +523,18 @@ onMounted(() => {
       </ElAlert>
 
       <template v-if="results">
+        <section v-if="completionBlockers.length > 0" class="summary-panel review-result-section review-blocker-panel">
+          <div class="section-heading"><div><h2>完成审核前必须处理</h2><p>以下项目仍处于契约定义的人工阻塞状态。</p></div><ElTag type="warning">{{ completionBlockers.length }} 项</ElTag></div>
+          <ul class="review-blocker-list">
+            <li v-for="blocker in completionBlockers" :key="`${blocker.subject_type}-${blocker.subject_id}-${blocker.code}`">
+              <span>{{ blocker.code }}</span><span class="technical-value">{{ blocker.subject_id }}</span><span>版本 {{ blocker.version }}</span>
+            </li>
+          </ul>
+        </section>
+        <section v-if="sessionRevisions.length > 0" class="summary-panel review-result-section">
+          <div class="section-heading"><div><h2>本次会话修订</h2><p>完整修订历史没有独立读取接口，这里只显示本次会话收到的写入结果。</p></div></div>
+          <ul class="review-session-revision-list"><li v-for="revision in sessionRevisions" :key="`${revision.id}-${revision.version}`"><span>{{ revision.type }}</span><span class="technical-value">{{ revision.id }}</span><span>版本 {{ revision.version }}</span></li></ul>
+        </section>
         <section class="summary-panel review-result-section review-summary-panel">
           <div class="section-heading">
             <div><h2>结果摘要</h2><p>风险统计和待处理数量随当前筛选条件更新。</p></div>
@@ -370,6 +575,10 @@ onMounted(() => {
             <div><span class="result-label">当前分类</span><strong class="result-value">{{ categoryLabel(results.classification.current_value) }}</strong></div>
             <div><span class="result-label">置信度</span><strong class="result-value">{{ confidenceLabel(results.classification.confidence) }}</strong></div>
           </div>
+          <div v-if="canEdit" class="result-action-row">
+            <ElButton :icon="Edit" @click="openEdit({ type: 'classification', id: results.classification.id, version: results.classification.version })">编辑分类</ElButton>
+            <ElButton :icon="ChatLineRound" @click="openFeedback('classification', results.classification.id)">提交反馈</ElButton>
+          </div>
           <div class="evidence-list">
             <div v-for="evidence in results.classification.evidence" :key="evidence.source_span_id" class="evidence-row">
               <blockquote>{{ evidence.quote }}</blockquote>
@@ -402,6 +611,10 @@ onMounted(() => {
                 </div>
                 <span v-if="field.evidence.length === 0" class="muted-text">无证据定位</span>
               </div>
+              <div v-if="canEdit" class="result-action-row">
+                <ElButton :icon="Edit" @click="openEdit({ type: 'extracted_field', id: field.id, version: field.version })">编辑字段</ElButton>
+                <ElButton :icon="ChatLineRound" @click="openFeedback('extracted_field', field.id)">提交反馈</ElButton>
+              </div>
             </article>
           </div>
         </section>
@@ -423,7 +636,7 @@ onMounted(() => {
                   <td class="result-table-copy">{{ finding.suggestion }}</td>
                   <td><ElTag size="small" type="info">{{ finding.source === 'rule' ? '规则' : '模型' }}</ElTag><ElTag size="small" :type="riskStatusType(finding.status)">{{ riskStatusLabels[finding.status] }}</ElTag></td>
                   <td>{{ confidenceLabel(finding.confidence) }}</td>
-                  <td><div class="evidence-actions"><ElButton v-for="evidence in finding.evidence" :key="evidence.source_span_id" text :icon="View" :title="evidenceLocation(evidence)" @click="openEvidence(evidence)">{{ evidenceLocation(evidence) }}</ElButton><span v-if="finding.evidence.length === 0" class="muted-text">无定位</span></div></td>
+                  <td><div class="evidence-actions"><ElButton v-for="evidence in finding.evidence" :key="evidence.source_span_id" text :icon="View" :title="evidenceLocation(evidence)" @click="openEvidence(evidence)">{{ evidenceLocation(evidence) }}</ElButton><span v-if="finding.evidence.length === 0" class="muted-text">无定位</span><ElButton v-if="canEdit" :icon="Edit" @click="openEdit({ type: 'risk_finding', id: finding.id, version: finding.version })">编辑</ElButton><ElButton v-if="canEdit" :icon="ChatLineRound" @click="openFeedback('risk_finding', finding.id)">反馈</ElButton></div></td>
                 </tr>
               </tbody>
             </table>
@@ -447,7 +660,7 @@ onMounted(() => {
                   <td><ElTag :type="severityType(comparison.severity)">{{ severityLabels[comparison.severity] }}</ElTag></td>
                   <td><ElTag :type="clauseStatusType(comparison.status)">{{ clauseStatusLabels[comparison.status] }}</ElTag></td>
                   <td class="result-table-copy">{{ comparison.suggestion }}</td>
-                  <td><div class="evidence-actions"><ElButton v-for="evidence in comparison.evidence" :key="evidence.source_span_id" text :icon="View" :title="evidenceLocation(evidence)" @click="openEvidence(evidence)">{{ evidenceLocation(evidence) }}</ElButton><span v-if="comparison.evidence.length === 0" class="muted-text">无定位</span></div></td>
+                  <td><div class="evidence-actions"><ElButton v-for="evidence in comparison.evidence" :key="evidence.source_span_id" text :icon="View" :title="evidenceLocation(evidence)" @click="openEvidence(evidence)">{{ evidenceLocation(evidence) }}</ElButton><span v-if="comparison.evidence.length === 0" class="muted-text">无定位</span><ElButton v-if="canEdit" :icon="Edit" @click="openEdit({ type: 'clause_comparison', id: comparison.id, version: comparison.version })">编辑</ElButton><ElButton v-if="canEdit" :icon="ChatLineRound" @click="openFeedback('clause_comparison', comparison.id)">反馈</ElButton></div></td>
                 </tr>
               </tbody>
             </table>
@@ -455,5 +668,47 @@ onMounted(() => {
         </section>
       </template>
     </template>
+    <ElDialog
+      :model-value="editTarget !== null"
+      title="修订审核结果"
+      width="560px"
+      @close="closeEdit"
+    >
+      <ElAlert v-if="editError" title="修订未保存" :description="editError" type="warning" :closable="false" />
+      <template v-if="editTarget">
+        <ElForm label-position="top" class="review-edit-form">
+          <ElFormItem label="状态">
+            <ElSelect v-model="editStatus" aria-label="修订状态">
+              <template v-if="editTarget.type === 'classification'"><ElOption label="已确认" value="confirmed" /><ElOption label="人工修订" value="corrected" /><ElOption label="待确认" value="needs_confirmation" /></template>
+              <template v-else-if="editTarget.type === 'extracted_field'"><ElOption label="未发现" value="not_found" /><ElOption label="待确认" value="needs_confirmation" /><ElOption label="已确认" value="confirmed" /><ElOption label="人工修订" value="corrected" /></template>
+              <template v-else-if="editTarget.type === 'risk_finding'"><ElOption label="待复核" value="pending_review" /><ElOption label="已确认" value="confirmed" /><ElOption label="误报" value="false_positive" /><ElOption label="已处理" value="processed" /></template>
+              <template v-else><ElOption label="匹配" value="matched" /><ElOption label="存在偏差" value="deviated" /><ElOption label="缺失" value="missing" /><ElOption label="无法判断" value="uncertain" /></template>
+            </ElSelect>
+          </ElFormItem>
+          <ElFormItem v-if="editTarget.type === 'classification'" label="当前分类"><ElSelect v-model="editValue" aria-label="当前分类"><ElOption v-for="(label, value) in categoryLabels" :key="value" :label="label" :value="value" /></ElSelect></ElFormItem>
+          <ElFormItem v-else-if="editTarget.type === 'extracted_field'" label="当前字段值"><ElInput v-model="editValue" type="textarea" :rows="6" aria-label="当前字段值" /></ElFormItem>
+          <template v-else-if="editTarget.type === 'risk_finding'">
+            <ElFormItem label="标题"><ElInput v-model="editTitle" aria-label="风险标题" /></ElFormItem>
+            <ElFormItem label="说明"><ElInput v-model="editDescription" type="textarea" :rows="3" aria-label="风险说明" /></ElFormItem>
+            <ElFormItem label="建议"><ElInput v-model="editSuggestion" type="textarea" :rows="3" aria-label="风险建议" /></ElFormItem>
+          </template>
+          <template v-else>
+            <ElFormItem label="差异摘要"><ElInput v-model="editDifferenceSummary" type="textarea" :rows="3" aria-label="差异摘要" /></ElFormItem>
+            <ElFormItem label="建议"><ElInput v-model="editSuggestion" type="textarea" :rows="3" aria-label="条款建议" /></ElFormItem>
+          </template>
+          <ElFormItem label="修订原因"><ElInput v-model="editReason" type="textarea" :rows="2" aria-label="修订原因" /></ElFormItem>
+        </ElForm>
+      </template>
+      <template #footer><ElButton @click="closeEdit">取消</ElButton><ElButton type="primary" :loading="editSaving" @click="submitEdit">保存修订</ElButton></template>
+    </ElDialog>
+    <ElDialog :model-value="feedbackTarget !== null" title="提交反馈" width="480px" @close="feedbackTarget = null">
+      <ElAlert v-if="feedbackError" title="反馈未提交" :description="feedbackError" type="warning" :closable="false" />
+      <ElForm label-position="top">
+        <ElFormItem label="标注"><ElSelect v-model="feedbackLabel" aria-label="反馈标注"><ElOption label="正确" value="correct" /><ElOption label="错误" value="incorrect" /><ElOption label="修改" value="modified" /><ElOption label="忽略" value="ignored" /></ElSelect></ElFormItem>
+        <ElFormItem v-if="feedbackLabel === 'modified'" label="人工结果"><ElInput v-model="feedbackCorrection" type="textarea" :rows="4" aria-label="人工结果" /></ElFormItem>
+        <ElFormItem label="说明"><ElInput v-model="feedbackNote" type="textarea" :rows="3" aria-label="反馈说明" /></ElFormItem>
+      </ElForm>
+      <template #footer><ElButton @click="feedbackTarget = null">取消</ElButton><ElButton type="primary" :loading="feedbackSaving" @click="submitFeedback">提交反馈</ElButton></template>
+    </ElDialog>
   </section>
 </template>

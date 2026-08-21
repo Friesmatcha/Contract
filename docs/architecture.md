@@ -208,9 +208,9 @@ DOCX 不保证与办公软件分页完全一致，因此其权威定位是段落
 | `model_configurations` | `id`, `timeout_seconds`, `max_retries`, `usage_tracking_enabled`, `status`, `version` | 平台单例，只保存可通过 API 修改的非秘密运行参数；provider、model 和密钥只从部署环境读取，组织不能覆盖 |
 | `prompt_bundle_versions` | `id`, `version_no`, `status`, `classification_prompt`, `extraction_prompt`, `risk_prompt`, `comparison_prompt`, `schema_versions_json`, `change_note`, `published_by` | 平台基线提示词版本，发布后不可变；组织不复制或覆盖提示词版本 |
 | `model_calls` | `organization_id`, `review_task_id`, `stage_run_id`, `provider`, `model`, `prompt_version`, `request_fingerprint`, `provider_request_id`, `status`, `token_input`, `token_output`, `latency_ms`, `error_code`, `response_schema_version` | 不默认保存完整正文；必要快照加密且受保留策略控制 |
-| `contract_classifications` | `organization_id`, `review_task_id`, `model_value`, `current_value`, `confidence`, `status`, `evidence_span_id`, `edited_by` | 原始模型值和人工当前值并存；每任务一条当前分类 |
-| `extracted_fields` | `organization_id`, `review_task_id`, `field_key`, `model_value_json`, `current_value_json`, `raw_text`, `confidence`, `status`, `evidence_span_id`, `edited_by` | `(review_task_id, field_key)` 唯一；缺失值为 JSON `null` 并保存状态 |
-| `result_revisions` | `organization_id`, `subject_type`, `subject_id`, `before_json`, `after_json`, `reason`, `actor_id`, `created_at` | 记录分类、字段、风险和比对结果的人工修改；追加写 |
+| `contract_classifications` | `organization_id`, `review_task_id`, `model_value`, `current_value`, `confidence`, `status`, `evidence_span_id`, `edited_by`, `edited_at` | 原始模型值和人工当前值并存；每任务一条当前分类 |
+| `extracted_fields` | `organization_id`, `review_task_id`, `field_key`, `model_value_json`, `current_value_json`, `raw_text`, `confidence`, `status`, `evidence_span_id`, `edited_by`, `edited_at` | `(review_task_id, field_key)` 唯一；缺失值为 JSON `null` 并保存状态 |
+| `result_revisions` | `organization_id`, `review_task_id`, `subject_type`, `subject_id`, `before_json`, `after_json`, `version_before`, `version_after`, `reason`, `actor_id`, `created_at` | 记录分类、字段、风险和比对结果的人工修改；追加写，快照包含状态和证据 ID |
 
 分类、字段、风险和条款比对分别使用各自的 `*_evidence` 关联表连接一个或多个 `source_spans`，并记录顺序和主证据标记。结果表中的 `evidence_span_id` 是列表页使用的主证据快捷引用，不能代替完整证据关联。`subject_type/subject_id` 只用于不可变修订日志，不承担业务外键导航；写入时由服务层校验目标实体和组织，审计任务定期检查悬空引用。
 

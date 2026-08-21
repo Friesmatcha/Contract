@@ -323,6 +323,8 @@ export interface ReviewTask {
   created_at: string
   started_at: string | null
   finished_at: string | null
+  completed_by: string | null
+  completed_at: string | null
   stage_runs?: ReviewStageRun[]
 }
 
@@ -411,6 +413,9 @@ export interface ContractClassificationResult {
   status: ResultStatus
   evidence: SourceLocator[]
   version: number
+  edited_by: string | null
+  edited_at: string | null
+  revision_id?: string
 }
 
 export interface ExtractedFieldResult {
@@ -422,6 +427,9 @@ export interface ExtractedFieldResult {
   confidence: number
   evidence: SourceLocator[]
   version: number
+  edited_by: string | null
+  edited_at: string | null
+  revision_id?: string
 }
 
 export type RiskFindingStatus = 'pending_review' | 'confirmed' | 'false_positive' | 'processed'
@@ -442,6 +450,9 @@ export interface RiskFindingResult {
   status: RiskFindingStatus
   evidence: SourceLocator[]
   version: number
+  edited_by: string | null
+  edited_at: string | null
+  revision_id?: string
 }
 
 export interface ClauseComparisonResult {
@@ -454,6 +465,9 @@ export interface ClauseComparisonResult {
   suggestion: string
   evidence: SourceLocator[]
   version: number
+  edited_by: string | null
+  edited_at: string | null
+  revision_id?: string
 }
 
 export interface ReviewResultsSummary {
@@ -463,6 +477,17 @@ export interface ReviewResultsSummary {
   low: number
   warning_total: number
   unresolved_count: number
+  required_manual_count: number
+}
+
+export type ResultSubjectType = 'classification' | 'extracted_field' | 'risk_finding' | 'clause_comparison'
+
+export interface CompletionBlocker {
+  subject_type: ResultSubjectType
+  subject_id: string
+  code: string
+  status: string
+  version: number
 }
 
 export interface ReviewResults {
@@ -472,6 +497,34 @@ export interface ReviewResults {
   risk_findings: RiskFindingResult[]
   clause_comparisons: ClauseComparisonResult[]
   summary: ReviewResultsSummary
+  completion_blockers: CompletionBlocker[]
+}
+
+export interface FeedbackResponse {
+  id: string
+  subject_type: ResultSubjectType
+  subject_id: string
+  label: 'correct' | 'incorrect' | 'modified' | 'ignored'
+  created_by: string
+  created_at: string
+}
+
+export interface FeedbackSummary {
+  filters: {
+    contract_type: ContractCategory | null
+    rule_bundle_version_id: string | null
+    model_version: string | null
+    created_from: string | null
+    created_to: string | null
+  }
+  counts: Record<'correct' | 'incorrect' | 'modified' | 'ignored', number>
+  by_risk_type: Array<{
+    risk_type: string
+    correct: number
+    incorrect: number
+    modified: number
+    ignored: number
+  }>
 }
 
 export type WarningStatus =

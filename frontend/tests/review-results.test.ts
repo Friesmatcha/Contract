@@ -4,11 +4,15 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { afterEach, expect, test, vi } from 'vitest'
 
 import { getReviewResults } from '@/api/reviews'
+import { sessionState } from '@/features/auth/session'
 import ReviewResultsPage from '@/pages/reviews/ReviewResultsPage.vue'
 
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
+  sessionState.current = null
+  sessionState.loaded = false
+  localStorage.clear()
 })
 
 function response(body: unknown, status = 200): Response {
@@ -182,4 +186,89 @@ test('REVIEW-003 shows a safe forbidden state without exposing result data', asy
   await waitFor(() => expect(screen.getByText('无法访问审核结果')).toBeInTheDocument())
   expect(screen.getByText('请求 ID：req-404')).toBeInTheDocument()
   expect(screen.queryByText('责任范围不封顶')).not.toBeInTheDocument()
+})
+
+const reviewerSession = {
+  user: {
+    id: 'reviewer-1',
+    email: 'reviewer@example.com',
+    display_name: '审核员',
+    status: 'active' as const,
+    is_platform_admin: false,
+  },
+  memberships: [{
+    organization_id: 'org-1',
+    organization_name: '示例企业',
+    role: 'reviewer' as const,
+    status: 'active' as const,
+  }],
+  csrf_token: 'csrf-phase12',
+}
+
+const pendingTask = { ...task, status: 'pending_review' as const }
+const blockedResult = {
+  ...result,
+  summary: { ...result.summary, required_manual_count: 1 },
+  completion_blockers: [{
+    subject_type: 'risk_finding' as const,
+    subject_id: 'finding-1',
+    code: 'RISK_PENDING_REVIEW',
+    status: 'pending_review',
+    version: 1,
+  }],
+}
+
+test('REVIEW-003 keeps an edit conflict visible and refreshes the server state', async () => {
+  sessionState.current = reviewerSession
+  sessionState.loaded = true
+  vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(response(pendingTask))
+    .mockResolvedValueOnce(response(blockedResult))
+    .mockResolvedValueOnce(response({ error: { code: 'RESOURCE_VERSION_CONFLICT', message: '结果已更新。', request_id: 'req-conflict' } }, 409))
+    .mockResolvedValueOnce(response(pendingTask))
+    .mockResolvedValueOnce(response(blockedResult))
+
+  await renderPage()
+  await waitFor(() => expect(screen.getByRole('button', { name: '编辑分类' })).toBeInTheDocument())
+  await fireEvent.click(screen.getByRole('button', { name: '编辑分类' }))
+  await fireEvent.click(screen.getByRole('button', { name: '保存修订' }))
+
+  await waitFor(() => expect(screen.getByText('结果已被其他审核员更新，已刷新服务器版本。请重新打开编辑。')).toBeInTheDocument())
+  expect(screen.queryByText('请求 ID：req-conflict')).not.toBeInTheDocument()
+})
+
+test('REVIEW-003 displays server completion blockers after a rejected completion', async () => {
+  sessionState.current = reviewerSession
+  sessionState.loaded = true
+  vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(response(pendingTask))
+    .mockResolvedValueOnce(response(blockedResult))
+    .mockResolvedValueOnce(response({ error: { code: 'UNRESOLVED_REQUIRED_FINDINGS', message: '仍有必须人工处理的审核结果。', request_id: 'req-blocked' } }, 409))
+    .mockResolvedValueOnce(response(blockedResult))
+
+  await renderPage()
+  await waitFor(() => expect(screen.getByRole('button', { name: '完成审核' })).toBeInTheDocument())
+  await fireEvent.click(screen.getByRole('button', { name: '完成审核' }))
+
+  await waitFor(() => expect(screen.getByText('审核尚未完成')).toBeInTheDocument())
+  expect(screen.getByText('RISK_PENDING_REVIEW')).toBeInTheDocument()
+  expect(screen.getByText('完成审核前必须处理')).toBeInTheDocument()
+})
+
+test('REVIEW-003 keeps viewer actions read-only', async () => {
+  sessionState.current = {
+    ...reviewerSession,
+    user: { ...reviewerSession.user, id: 'viewer-1', display_name: '查看者' },
+    memberships: [{ ...reviewerSession.memberships[0]!, role: 'viewer' as const }],
+  }
+  sessionState.loaded = true
+  vi.spyOn(globalThis, 'fetch')
+    .mockResolvedValueOnce(response(task))
+    .mockResolvedValueOnce(response(result))
+
+  await renderPage()
+  await waitFor(() => expect(screen.getByRole('heading', { name: '风险发现' })).toBeInTheDocument())
+  expect(screen.queryByRole('button', { name: /编辑/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /反馈/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '完成审核' })).not.toBeInTheDocument()
 })

@@ -75,6 +75,8 @@ class ReviewTaskResponse(StrictRequest):
     created_at: datetime
     started_at: datetime | None = None
     finished_at: datetime | None = None
+    completed_by: UUID | None = None
+    completed_at: datetime | None = None
     stage_runs: list[ReviewStageRunResponse] | None = None
 
 

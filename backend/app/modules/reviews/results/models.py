@@ -1,8 +1,10 @@
+from datetime import datetime
 from typing import Any
 from uuid import UUID
 
 from sqlalchemy import (
     CheckConstraint,
+    DateTime,
     ForeignKeyConstraint,
     Index,
     Integer,
@@ -43,6 +45,12 @@ class ContractClassification(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, 
             ["organization_id", "review_task_id"],
             ["review_tasks.organization_id", "review_tasks.id"],
             name="fk_contract_classifications_review_task_tenant",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "edited_by"],
+            ["organization_memberships.organization_id", "organization_memberships.user_id"],
+            name="fk_contract_classifications_edited_by_tenant",
             ondelete="RESTRICT",
         ),
         ForeignKeyConstraint(
@@ -100,6 +108,8 @@ class ContractClassification(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, 
     current_value: Mapped[str] = mapped_column(String(32), nullable=False)
     confidence: Mapped[float] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
+    edited_by: Mapped[UUID | None] = mapped_column()
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     input_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     model_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     result_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -170,6 +180,12 @@ class ExtractedField(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
             ondelete="RESTRICT",
         ),
         ForeignKeyConstraint(
+            ["organization_id", "edited_by"],
+            ["organization_memberships.organization_id", "organization_memberships.user_id"],
+            name="fk_extracted_fields_edited_by_tenant",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
             ["organization_id", "document_version_id"],
             ["document_versions.organization_id", "document_versions.id"],
             name="fk_extracted_fields_document_version_tenant",
@@ -223,6 +239,8 @@ class ExtractedField(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
     current_value_json: Mapped[Any] = mapped_column(JSONB(none_as_null=False), nullable=False)
     confidence: Mapped[float] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
+    edited_by: Mapped[UUID | None] = mapped_column()
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     input_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     model_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     result_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -288,6 +306,12 @@ class RiskFinding(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
             ["organization_id", "review_task_id"],
             ["review_tasks.organization_id", "review_tasks.id"],
             name="fk_risk_findings_review_task_tenant",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "edited_by"],
+            ["organization_memberships.organization_id", "organization_memberships.user_id"],
+            name="fk_risk_findings_edited_by_tenant",
             ondelete="RESTRICT",
         ),
         ForeignKeyConstraint(
@@ -358,6 +382,8 @@ class RiskFinding(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
     confidence: Mapped[float] = mapped_column(nullable=False)
     source: Mapped[str] = mapped_column(String(16), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending_review")
+    edited_by: Mapped[UUID | None] = mapped_column()
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     input_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     model_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     result_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
@@ -417,6 +443,12 @@ class ClauseComparison(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
             ["organization_id", "review_task_id"],
             ["review_tasks.organization_id", "review_tasks.id"],
             name="fk_clause_comparisons_review_task_tenant",
+            ondelete="RESTRICT",
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "edited_by"],
+            ["organization_memberships.organization_id", "organization_memberships.user_id"],
+            name="fk_clause_comparisons_edited_by_tenant",
             ondelete="RESTRICT",
         ),
         ForeignKeyConstraint(
@@ -483,6 +515,8 @@ class ClauseComparison(UuidPrimaryKeyMixin, TimestampMixin, VersionMixin, Base):
     severity: Mapped[str] = mapped_column(String(16), nullable=False)
     suggestion: Mapped[str] = mapped_column(String(2000), nullable=False)
     confidence: Mapped[float] = mapped_column(nullable=False)
+    edited_by: Mapped[UUID | None] = mapped_column()
+    edited_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     input_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     model_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
     result_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)

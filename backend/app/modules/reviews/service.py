@@ -549,6 +549,104 @@ def _enqueue_review_task(task_id: UUID) -> None:
         )
 
 
+def complete_review_task(
+    session: Session,
+    *,
+    actor: TenantContext,
+    task_id: UUID,
+    note: str | None,
+    idempotency_key: str,
+    request_id: str,
+) -> ReviewTask:
+    from backend.app.modules.reviews.revisions.service import completion_blockers
+
+    fingerprint = request_fingerprint(
+        method="POST",
+        operation_key="POST /api/v1/review-tasks/{review_task_id}/complete",
+        path={"review_task_id": task_id},
+        body={"note": note},
+    )
+    completed: ReviewTask | None = None
+    with UnitOfWork(session) as unit_of_work:
+        def operation() -> IdempotencyResult:
+            nonlocal completed
+            task = _task_or_not_found(
+                session,
+                organization_id=actor.organization_id,
+                task_id=task_id,
+                for_update=True,
+            )
+            if task.status != "pending_review":
+                raise _error(
+                    "INVALID_STATE_TRANSITION",
+                    "仅等待人工复核的任务可以完成审核。",
+                    status_code=409,
+                )
+            blockers = completion_blockers(
+                session,
+                organization_id=actor.organization_id,
+                task_id=task.id,
+            )
+            if blockers:
+                raise ApplicationError(
+                    status_code=409,
+                    code="UNRESOLVED_REQUIRED_FINDINGS",
+                    message="仍有必须人工处理的审核结果。",
+                    details={
+                        "blockers": [
+                            {
+                                **blocker,
+                                "subject_id": str(blocker["subject_id"]),
+                            }
+                            for blocker in blockers
+                        ]
+                    },
+                )
+            now = _now()
+            task.status = "completed"
+            task.completed_by = actor.user_id
+            task.completed_at = now
+            task.error_code = None
+            task.error_message = None
+            append_audit_log(
+                session,
+                actor=actor,
+                action="review_task.completed",
+                resource_type="review_task",
+                resource_id=task.id,
+                request_id=request_id,
+                after={
+                    "status": task.status,
+                    "completed_by": str(actor.user_id),
+                    "completed_at": now.isoformat(),
+                    "has_note": bool(note and note.strip()),
+                },
+            )
+            completed = task
+            return IdempotencyResult(200, "review_task", task.id)
+
+        result = execute_idempotent(
+            session,
+            scope=organization_scope(actor),
+            idempotency_key=idempotency_key,
+            operation_key="POST /api/v1/review-tasks/{review_task_id}/complete",
+            fingerprint=fingerprint,
+            operation=operation,
+        )
+        if result.replayed:
+            if result.resource_id is None:
+                raise RuntimeError("review completion idempotency record has no resource")
+            completed = _task_or_not_found(
+                session,
+                organization_id=actor.organization_id,
+                task_id=result.resource_id,
+            )
+        unit_of_work.commit()
+    if completed is None:
+        raise RuntimeError("review completion returned no resource")
+    return completed
+
+
 def review_task_payload(
     session: Session, task: ReviewTask, *, include_stage_runs: bool = False
 ) -> dict[str, Any]:
@@ -569,6 +667,8 @@ def review_task_payload(
         "created_at": task.created_at,
         "started_at": task.started_at,
         "finished_at": task.finished_at,
+        "completed_by": task.completed_by,
+        "completed_at": task.completed_at,
     }
     if include_stage_runs:
         payload["stage_runs"] = [

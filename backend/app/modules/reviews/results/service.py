@@ -1358,6 +1358,8 @@ def get_review_results(
     clause_status: str | None = None,
     include_evidence: bool = True,
 ) -> dict[str, Any]:
+    from backend.app.modules.reviews.revisions.service import completion_blockers
+
     statement = select(ReviewTask).where(
         ReviewTask.organization_id == organization_id,
         ReviewTask.id == task_id,
@@ -1500,6 +1502,8 @@ def get_review_results(
             else []
         ),
         "version": classification.version,
+        "edited_by": classification.edited_by,
+        "edited_at": classification.edited_at,
     }
     unresolved_count = sum(finding.status == "pending_review" for finding in risk_findings) + sum(
         comparison.status in {"deviated", "missing", "uncertain"}
@@ -1531,6 +1535,8 @@ def get_review_results(
                     else []
                 ),
                 "version": field.version,
+                "edited_by": field.edited_by,
+                "edited_at": field.edited_at,
             }
             for field in fields
         ],
@@ -1557,6 +1563,8 @@ def get_review_results(
                     else []
                 ),
                 "version": finding.version,
+                "edited_by": finding.edited_by,
+                "edited_at": finding.edited_at,
             }
             for finding in risk_findings
         ],
@@ -1580,6 +1588,8 @@ def get_review_results(
                     else []
                 ),
                 "version": comparison.version,
+                "edited_by": comparison.edited_by,
+                "edited_at": comparison.edited_at,
             }
             for comparison in clause_comparisons
         ],
@@ -1592,7 +1602,19 @@ def get_review_results(
                 session, organization_id=organization_id, task_id=task.id
             ),
             "unresolved_count": unresolved_count,
+            "required_manual_count": len(
+                completion_blockers(
+                    session,
+                    organization_id=organization_id,
+                    task_id=task.id,
+                )
+            ),
         },
+        "completion_blockers": completion_blockers(
+            session,
+            organization_id=organization_id,
+            task_id=task.id,
+        ),
     }
 
 

@@ -838,6 +838,51 @@ select {
   align-items: flex-start;
 }
 
+.review-result-heading-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.result-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.review-blocker-list,
+.review-session-revision-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 16px 16px;
+  list-style: none;
+}
+
+.review-blocker-list li,
+.review-session-revision-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border-left: 3px solid #c88719;
+  background: #fff8eb;
+  color: #344054;
+  font-size: 13px;
+}
+
+.review-session-revision-list li {
+  border-left-color: #5c7fb8;
+  background: #f5f7fa;
+}
+
+.review-edit-form {
+  margin-top: 16px;
+}
+
 .review-results-filter {
   grid-template-columns: minmax(120px, 0.7fr) repeat(3, minmax(130px, 1fr)) auto auto;
   align-items: center;
@@ -976,6 +1021,41 @@ select {
 
 .review-result-section {
   margin-top: 16px;
+}
+
+.feedback-summary-page {
+  max-width: 1280px;
+}
+
+.feedback-summary-filters {
+  grid-template-columns: repeat(4, minmax(150px, 1fr)) auto auto;
+  align-items: center;
+}
+
+.feedback-count-panel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: #d7dee8;
+}
+
+.feedback-count {
+  min-width: 0;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.feedback-count strong {
+  display: block;
+  margin-top: 6px;
+  color: #172033;
+  font-size: 26px;
+  line-height: 32px;
+}
+
+.feedback-risk-panel {
+  margin-top: 16px;
+  overflow: hidden;
 }
 
 .review-classification-grid {
@@ -1769,6 +1849,10 @@ select {
     padding: 16px;
   }
 
+  .document-preview-page {
+    margin: -16px;
+  }
+
   .auth-panel {
     padding: 24px;
   }
@@ -2063,6 +2147,10 @@ h1 {
 }
 
 @media (max-width: 1280px) {
+  .document-preview-page {
+    margin: -20px;
+  }
+
   .document-toolbar {
     padding: 8px 20px;
   }
@@ -2084,5 +2172,11 @@ h1 {
   .document-context-panel {
     border-top: 1px solid #d7dee8;
     border-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .document-preview-page {
+    margin: -16px;
   }
 }

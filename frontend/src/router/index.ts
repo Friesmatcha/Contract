@@ -28,6 +28,7 @@ import ClauseTemplateDetailPage from '@/pages/clauses/ClauseTemplateDetailPage.v
 import ClauseTemplateVersionEditorPage from '@/pages/clauses/ClauseTemplateVersionEditorPage.vue'
 import WarningListPage from '@/pages/warnings/WarningListPage.vue'
 import WarningDetailPage from '@/pages/warnings/WarningDetailPage.vue'
+import FeedbackSummaryPage from '@/pages/feedback/FeedbackSummaryPage.vue'
 import { defaultLandingPath, loadSession, sessionState } from '@/features/auth/session'
 
 export const routes: RouteRecordRaw[] = [
@@ -155,6 +156,12 @@ export const routes: RouteRecordRaw[] = [
         name: 'warning-detail',
         component: WarningDetailPage,
         meta: { title: '预警详情' },
+      },
+      {
+        path: 'feedback/summary',
+        name: 'feedback-summary',
+        component: FeedbackSummaryPage,
+        meta: { title: '反馈统计' },
       },
       {
         path: 'organizations/:organizationId/settings',
