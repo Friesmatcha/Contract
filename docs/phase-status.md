@@ -16,9 +16,9 @@
 
 - Last updated: `2026-08-21`
 - Branch: `main`
-- Verification baseline: `102b50d` (Phase 14A implementation snapshot, based on the verified Phase 13 ledger baseline `e798387`) plus its immediately following Phase 14A ledger snapshot on `main`/`origin/main`.
-- Working tree after the Phase 14A Git Snapshot: tracked source and documentation changes are committed; generated `.pytest-phase14a-tmp/` and `test-results/` remain untracked and are preserved, not treated as source.
-- Current boundary: Phase 0 through Phase 14A are `Completed`; Phase 14B, Phase 15 and Phase 16 remain `Not Started`.
+- Verification baseline: `3b83f77` (Phase 14B implementation snapshot, based on the verified Phase 14A ledger baseline `65edccc`) plus its immediately following Phase 14B ledger snapshot on `main`/`origin/main`.
+- Working tree after the Phase 14B Git Snapshot: tracked source and documentation changes are committed; generated `.pytest-phase14a-tmp/`, `.pytest-phase14b-tmp/` and `test-results/` remain untracked and are preserved, not treated as source.
+- Current boundary: Phase 0 through Phase 14B are `Completed`; Phase 15 and Phase 16 remain `Not Started`.
 - Phase 3 entry review: API Contract 8.1-8.9 and the PLATFORM-001/002/003, ORG-001 and LAYOUT-001 mappings were reviewed. P-10 is closed by the API-first platform/deployment model boundary and the corresponding architecture synchronization.
 - Prototype/design documentation does not advance the implementation Phase by itself.
 
@@ -379,9 +379,28 @@
 - Commit / Push: 用户已明确授权；`102b50d`（`feat(operations): add audit and observability`）已正常提交，本台账更新作为后续 docs snapshot 正常提交，并将两者推送到 `origin/main`；未执行 amend、force push 或历史重写。
 - Next Phase and entry conditions: Phase 14B、Phase 15、Phase 16 仍为 `Not Started`；进入下一 Phase 前需获得新的明确授权并重新进行对应 entry review。
 
+## Phase 14B: Retention and Compensation
+
+- Status: `Completed`。
+- Completed at: `2026-08-21`。
+- Current completion boundary: 在不删除不可变数据库历史事实的前提下，完成 FileStore 内容保留期清理、文件写入孤儿恢复和站内通知失败补偿。`retention_days` 只控制 FileStore 内容；合同、文件、文档、审核、模型调用、结果、修订、预警/事件、反馈、报告快照和审计事实，以及 `FileObject` 元数据均保留。
+- Entry / Pending Decision review: 完成 P-11 清理引用字段 Review、完整引用图和 P-13 决策 Review。已同步 `docs/requirements.md`、`docs/architecture.md`、`docs/api-contract.md` 和 `docs/development-plan.md`；审计 `365` 天明确为最低保留期，不授权删除不可变审计事实。P-13 已按用户确认关闭；P-12 批量审核继续为 `Future Work`。
+- Changes: 新增 `file_cleanup_operations` 持久化 journal 和 `20260821_0019_phase14b_retention_compensation.py`；扩展 `FileObject.storage_status` 为 `quarantine|stored|deleting|deleted|failed`；合同上传、文档页图像和报告文件写入均记录 durable write journal。新增 retention service/worker，覆盖引用保护、活动任务/报告/通知补偿阻塞、`SKIP LOCKED`、lease、attempt、退避、final failure、worker 崩溃恢复、FileStore 幂等删除和数据库/FileStore 补偿；新增已有失败通知的有限补偿（最多 3 次，`1m/5m` 退避），不回滚 Warning，不增加手工重试 API。
+- API Contract / OpenAPI: 仅同步既有 `storage_status` 投影的 `deleting|deleted` 状态和保留期/失败语义；未新增业务 API、浏览器清理命令、审计导出 API 或通知手工重试 API。OpenAPI 投影和现有前端类型同步通过。
+- ORM / Migration: ORM 注册 `FileCleanupOperation`，增加 tenant 外键、状态/attempt/error 约束、claim 和组织查询索引；新增线性 Migration `20260821_0019`，不修改历史 revision。独立 PostgreSQL 完成 `upgrade -> downgrade -1 -> upgrade head`，最终唯一 Alembic head 为 `20260821_0019`。
+- Frontend / UI Page IDs: 无新业务页面或假数据；仅更新 `frontend/src/api/types.ts` 的文件状态投影。
+- Tests: `.venv\Scripts\python.exe -m pytest backend/tests/integration/retention -q` -> `8 passed`；独立 PostgreSQL 后端全量 `.venv\Scripts\python.exe -m pytest backend/tests -q --basetemp .pytest-phase14b-tmp` -> `234 passed in 92.73s`；`.venv\Scripts\python.exe -m ruff check backend`、`.venv\Scripts\python.exe -m mypy backend/app` -> passed；`npm --prefix frontend run test -- --run` -> `22 files / 81 tests passed`；`npm --prefix frontend run lint` -> exit 0，0 errors/386 existing warnings；`npm --prefix frontend run typecheck`、`npm --prefix frontend run build` -> exit 0，保留既有 Vite chunk-size warning；`git diff --check` -> passed（仅 LF/CRLF 工作树提示）。
+- Failure injection / recovery coverage: 覆盖引用跳过、两个 scheduler 竞争只删除一次、FileStore 删除失败重试及最终失败、文件已删除但数据库状态提交失败后的幂等恢复、过期 lease/Worker 崩溃恢复、孤儿 write journal 回收和通知补偿失败不回滚 Warning。
+- Review / Re-review: 完成 entry/P-11/P-13、Source of Truth、reference graph/schema、Migration、tenant/审计敏感字段、事务/锁顺序、lease/retry/idempotency、FileStore 安全边界和 scope 的独立只读复核；修复锁顺序和清理/写入恢复边界后，blocking findings 已关闭。清理、skip、retry、recovery 和 final failure 均写安全审计，审计和日志不记录合同正文、文件内容、邮箱、Token、Secret、完整 prompt 或原始模型响应。
+- Regression / scope: 后端、前端、Migration 和 OpenAPI 回归均通过；普通自动化继续使用 Fake Model Gateway，未执行真实 Qwen、付费公网服务或对象存储迁移。未实现新业务 API、审计导出、对象存储迁移、批量审核、Grafana 强制部署或 Phase 15/16 功能。
+- Known Issues / Pending Decisions: 默认 `contract_test` 仍有历史 `invited_at` Migration 污染，未修改；`.pytest-phase10-tmp/` 的历史权限目录未删除；`.pytest-phase14a-tmp/`、`.pytest-phase14b-tmp/` 和根目录 `test-results/` 为测试生成物，保留且不提交。pytest cache permission warning、Vue lint formatting warnings、Vite chunk-size warning 和 Windows Playwright/Vite 子进程收尾风险均非阻塞。P-12 仍为 `Future Work`。
+- Git branch / HEAD / status / diff summary: `main`；Phase 14B 实现快照为 `3b83f77`，包含 retention/notification compensation、`0019` Migration、Source of Truth 同步、测试和前端类型；本台账更新作为紧随其后的文档快照。用户要求保留的测试生成物和历史权限目录未覆盖、删除或纳入提交。
+- Commit / Push: 用户已明确授权；`3b83f77`（`feat(retention): add safe retention cleanup and compensation`）已正常提交，本台账快照作为后续提交并将两者正常推送到 `origin/main`；未执行 amend、force push 或历史重写。
+- Next Phase and entry conditions: Phase 15、Phase 16 仍为 `Not Started`；本次在 Phase 14B 完成记录后停止，进入后续 Phase 需再次明确授权并重新进行对应 entry review。
+
 ## Remaining Phases
 
-Phase 14B、Phase 15、Phase 16 均为 `Not Started`。Phase 14A 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
+Phase 15、Phase 16 均为 `Not Started`。Phase 14B 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 
