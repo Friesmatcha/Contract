@@ -13,6 +13,10 @@ frontend/node_modules/
 frontend/dist/
 frontend/coverage/
 frontend/test-results/
+evaluation/datasets/raw/*
+!evaluation/datasets/raw/.gitkeep
+evaluation/outputs/*
+!evaluation/outputs/.gitkeep
 frontend/vite.config.js
 frontend/vite.config.d.ts
 

@@ -398,9 +398,35 @@
 - Commit / Push: 用户已明确授权；`3b83f77`（`feat(retention): add safe retention cleanup and compensation`）已正常提交，本台账快照作为后续提交并将两者正常推送到 `origin/main`；未执行 amend、force push 或历史重写。
 - Next Phase and entry conditions: Phase 15、Phase 16 仍为 `Not Started`；本次在 Phase 14B 完成记录后停止，进入后续 Phase 需再次明确授权并重新进行对应 entry review。
 
+## Phase 15: Independent CUAD v1 evaluation asset batch
+
+- Status: `In Progress`（仅完成独立英文公开 Benchmark 资产批次，未完成 Phase 15）。
+- Completed at: `2026-08-21`（本批次资产与离线验证完成；正式 Phase 15 仍未完成）。
+- Current completion boundary: 接入固定版本 CUAD v1 下载器、供应链安全校验、SQuAD 适配器、合同级 split isolation、离线 span/classification metrics、`cuad-native` 与受限 `cuad-product-projection` CLI、mini fixture、schemas、归因和报告生成。未修改生产 API、数据库模型或 Migration，未改写官方 test，未启动完整 CUAD 正式评测。
+- Source / license / integrity: Contract Understanding Atticus Dataset v1，仓库 `https://github.com/The-Atticus-Project/cuad`，固定 repository commit `67faa0e6023b04fcaae6cc09497ab00e5d63a2a2`，data.zip Git blob SHA `1ae94ff0a9b70b2e3b9b8d215737c8bfae460ddc`，实际下载 SHA-256 `f8161d18bea4e9c05e78fa6dda61c19c846fb8087ea969c172753bc2f45b999a`，许可 CC BY 4.0，DOI `10.5281/zenodo.4595826`，语言 English。原始 ZIP、解压数据、真实模型输出和运行产物均由 `.gitignore` 排除，受保护的 raw/outputs 和用户测试生成物未删除、覆盖或纳入提交。
+- Data structure / counts: 已核对固定归档实际包含 `test.json`、`train_separate_questions.json`、`CUADv1.json`；test 为 102 contracts / 4,182 samples / 1,244 answer samples / 2,938 no-answer samples / 41 official categories；train 为 408 contracts / 22,450 samples / 11,180 answer samples / 11,270 no-answer samples / 41 official categories。类别全部来自官方 question category；没有内部 `no_answer`、`other` 或汇总类别。适配器保留 contract/document ID、question ID、category、context、gold text/offset，校验 offset、ID、无答案和合同级 split isolation；不修改官方 test。
+- Offline tests: `python -m pytest evaluation/tests` -> 13 passed；Qwen config/Gateway regression `.venv\Scripts\python.exe -m pytest backend/tests/test_config.py backend/tests/unit/model_gateway -q` -> 22 passed；`.venv\Scripts\python.exe -m ruff check evaluation backend` -> passed；`.venv\Scripts\python.exe -m mypy evaluation backend/app` -> `Success: no issues found in 137 source files`；`docker compose -f deploy/compose/compose.yml config --quiet` -> passed；`git diff --check` -> passed。pytest 仅有受控 duplicate ZIP fixture warning 和既有 Windows cache permission warning；Mypy 配置仅排除受保护 `evaluation/datasets/raw/` 与 `evaluation/outputs/`。
+- Qwen configuration review: 官方 QwenCloud 文档确认模型 `qwen3.8-max`、国际 OpenAI-compatible base URL `https://dashscope-intl.aliyuncs.com/compatible-mode/v1`、Bearer 鉴权和 `response_format={"type":"json_object"}`；现有 prompt 含 `JSON`，未设置 `max_tokens`。发现 `.env` 的 `MODEL_BASE_URL` 原先被 Settings 忽略，Worker/evaluation 会回退到 `dashscope.aliyuncs.com`；已补齐 Settings、Worker、评测 runner、Compose 和 `.env.example` 的配置传递。此配置修正未新增真实调用。
+- Controlled Qwen smoke: 已执行历史受控 smoke，1 contract、5 categories、最多 5 provider requests；run `evaluation/outputs/20260821T080216Z-46197ad3/`，模型 `qwen3.8-max`，历史 endpoint region `dashscope.aliyuncs.com`，5 requests / 4 provider request IDs，11,710 input tokens / 3,477 output tokens，费用因未配置 rate 不可用；5/5 provider failure（1 timeout、2 schema failure、1 request-budget exhaustion），provider failure rate 100%。该 smoke 发生在 endpoint 配置修正前，不能作为修正后连通性证据，也不是 Phase 15 通过/失败结论；修正后未追加真实 Qwen 请求。
+- Full-run estimate / gate: 官方 test 预计 102 contracts、4,182 requests、约 49,985,087 input tokens、501,840 output tokens；未配置 `MODEL_COST_PER_1K_INPUT`/`MODEL_COST_PER_1K_OUTPUT`，金额不可估算。完整正式 CUAD 尚未运行；后续必须单独确认请求预算、价格、Prompt/Schema 并批准预期费用。
+- Interpretation boundary: CUAD 是英文公开合同 Benchmark，存在大模型预训练污染风险；只能解除英文公开 Benchmark 资产缺口，不能证明六类中文合同分类、完整七字段或中国合同风险指标。`cuad-product-projection` 只报告显式 `exact`/`partial`/`unsupported` 映射支持范围，不输出虚假产品总 F1 或 Phase 15 通过结论。中文、授权、人工复核 gold set 仍是 Phase 15 正式指标必要条件。
+- API / ORM / Migration / UI: 未新增或修改业务 API、OpenAPI、ORM、数据库 Migration、前端页面；为修正实际 Qwen 配置，仅更新非 API 的 Settings、Worker Gateway wiring、Compose/env example 和评测 runner。
+- Review / regression / remaining: 已完成数据来源、许可、下载路径穿越/符号链接/重复路径/压缩比/解压大小、无答案/offset/ID/split、指标空集合和日志敏感信息边界复核；未执行完整 Phase 15 回归、中文产品 gold set、真实 Qwen 修正后 smoke 或正式 test。Phase 15 不得因 CUAD 接入标记 `Completed`。
+- Git snapshot: branch `main`，开始核对时 HEAD 与 `origin/main` 均为 `db7c90dd22c926611bc0d48e661cac362b470708`，`HEAD...origin/main` 为 `0 0`；工作区保留用户已有 `.pytest-phase14a-tmp/`、权限警告目录和 `test-results/`，本批次未执行 Commit、Push、amend、force push 或历史重写。建议提交范围仅为本批次明确新增/修改的 evaluation 资产、文档、配置传递和最小测试/pyproject 排除规则。
+
+### Phase 15 provider default update (2026-08-21)
+
+- Status: `In Progress`；已完成默认 Provider 配置、离线接线和一次受控真实 smoke，不代表真实模型正式评测完成或 Phase 15 Completed。
+- Changes: 新增 `DeepSeekModelGateway` 和统一 Provider factory；Settings 默认改为 `deepseek` / `deepseek-v4-flash` / `https://api.deepseek.com`，新增有界 `MODEL_MAX_TOKENS` 与 `MODEL_THINKING_MODE`；Worker、CUAD evaluation CLI、Compose 和 `.env.example` 使用同一配置链路；Qwen 实现和测试保留。
+- DeepSeek request boundary: `/chat/completions`、Bearer、JSON Object、显式 disabled thinking、配置 max tokens；四类 capability prompt 含 JSON 示例、prompt/schema version；响应 ID、usage、cache hit token（若提供）和安全错误字段由 Gateway 解析。
+- Tests / scope: `.venv\Scripts\python.exe -m pytest backend/tests/unit/model_gateway backend/tests/test_config.py -q` -> 51 passed；`.venv\Scripts\python.exe -m pytest evaluation/tests -q` -> 13 passed；`.venv\Scripts\python.exe -m ruff check backend evaluation`、`.venv\Scripts\python.exe -m mypy backend/app evaluation`、`docker compose -f deploy/compose/compose.yml config --quiet`、`git diff --check` -> passed；Fake mini CLI -> passed，manifest request_count=0。pytest 保留既有 Windows cache permission warning 和 duplicate ZIP fixture warning。本轮不修改业务 API、ORM、Migration 或前端，不运行完整 CUAD；真实 DeepSeek smoke 另见下条。
+- Configuration note: 仓库 `.env` 未被修改或输出，当前 smoke 仅确认 API Key configured 状态为 yes；费用因未配置价格保持 `Not Calculated - Pricing Not Configured`。
+- Controlled DeepSeek smoke: run `evaluation/outputs/smoke-deepseek-intl-20260821T000000Z/`，仅使用 Test 的 1 contract / 3 samples / 2 categories plus one no-answer sample，目标 `api.deepseek.com/chat/completions`，模型 `deepseek-v4-flash`；5/5 请求均在硬上限内（3 initial + 2 controlled repair，`max_retries=0`），2 samples completed、1 sample final `MODEL_EVIDENCE_MISSING`，provider failure rate 33.33%，14,218 input / 339 output / 14,557 total tokens。未观察到 authentication、DNS、TLS、429 或 5xx 错误，因此 endpoint connectivity passed，structured-output smoke partially passed。CLI 当前未持久化每次请求 latency 和逐次 JSON/schema counter，报告已明确标注该限制。
+- Next gate: 完整 CUAD test、正式指标和中文产品 gold set 仍未完成；后续必须单独确认全量请求预算、价格、Prompt/Schema 和预期费用，再启动正式评测。
+
 ## Remaining Phases
 
-Phase 15、Phase 16 均为 `Not Started`。Phase 14B 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
+正式 Phase 15 release evaluation 与 Phase 16 均为 `Not Started`。本批次仅完成 Phase 15 的独立 CUAD 资产准备，Phase 14B 已完成并停止于本状态记录；不得进入后续 Phase，范围、依赖和验收标准见 `docs/development-plan.md`，不得因原型已经存在而提前实现。
 
 ## Completion Record Template
 

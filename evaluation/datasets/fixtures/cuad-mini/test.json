@@ -1,0 +1,70 @@
+{
+  "version": "1.1",
+  "data": [
+    {
+      "title": "mini-party-1",
+      "paragraphs": [{
+        "context": "This Agreement is between Acme Corp. and Beta LLC. The parties agree to cooperate.",
+        "qas": [{
+          "id": "mini-party-1-q1",
+          "category": "Parties",
+          "question": "Highlight the parties to this contract.",
+          "is_impossible": false,
+              "answers": [{"text": "Acme Corp. and Beta LLC", "answer_start": 26}]
+        }]
+      }]
+    },
+    {
+      "title": "mini-law-1",
+      "paragraphs": [{
+        "context": "This Agreement is governed by the laws of New York.",
+        "qas": [{
+          "id": "mini-law-1-q1",
+          "category": "Governing Law",
+          "question": "Highlight the governing law.",
+          "is_impossible": false,
+              "answers": [{"text": "the laws of New York", "answer_start": 30}]
+        }]
+      }]
+    },
+    {
+      "title": "mini-date-1",
+      "paragraphs": [{
+        "context": "The effective date of this Agreement is January 1, 2026.",
+        "qas": [{
+          "id": "mini-date-1-q1",
+          "category": "Effective Date",
+          "question": "Highlight the effective date.",
+          "is_impossible": false,
+              "answers": [{"text": "January 1, 2026", "answer_start": 40}]
+        }]
+      }]
+    },
+    {
+      "title": "mini-conf-1",
+      "paragraphs": [{
+        "context": "Each party shall keep Confidential Information secret for three years.",
+        "qas": [{
+          "id": "mini-conf-1-q1",
+          "category": "Confidentiality",
+          "question": "Highlight the confidentiality obligation.",
+          "is_impossible": false,
+              "answers": [{"text": "keep Confidential Information secret", "answer_start": 17}]
+        }]
+      }]
+    },
+    {
+      "title": "mini-empty-1",
+      "paragraphs": [{
+        "context": "The parties may renew this Agreement only by a later written amendment.",
+        "qas": [{
+          "id": "mini-empty-1-q1",
+          "category": "Renewal Term",
+          "question": "Highlight an automatic renewal term.",
+          "is_impossible": true,
+          "answers": []
+        }]
+      }]
+    }
+  ]
+}

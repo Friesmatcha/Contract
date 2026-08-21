@@ -2,8 +2,8 @@ from uuid import UUID
 
 from backend.app.config import get_settings
 from backend.app.db import create_database_engine, create_session_factory
+from backend.app.integrations.model.factory import create_model_gateway
 from backend.app.integrations.model.fake import FakeModelGateway
-from backend.app.integrations.model.qwen import QwenModelGateway
 from backend.app.integrations.storage.local import LocalFileStore
 from backend.app.modules.reviews.results.worker import Phase9CStageExecutor
 from backend.app.modules.reviews.service import process_review_task
@@ -19,10 +19,7 @@ def run_review_task(task_id: str) -> None:
             gateway = (
                 FakeModelGateway()
                 if settings.app_env == "test"
-                else QwenModelGateway(
-                    api_key=settings.model_api_key,
-                    model=settings.model_name,
-                )
+                else create_model_gateway(settings)
             )
             process_review_task(
                 session,

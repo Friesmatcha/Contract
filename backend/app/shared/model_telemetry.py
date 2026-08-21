@@ -36,6 +36,8 @@ class ModelCallTelemetry:
     status: ModelCallStatus
     token_input: int | None = None
     token_output: int | None = None
+    token_total: int | None = None
+    cache_hit_tokens: int | None = None
     cost: Decimal | None = None
     latency_ms: int = 0
     error_code: str | None = None

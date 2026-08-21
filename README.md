@@ -35,7 +35,7 @@ API 默认监听 `http://localhost:8000`：
 - `GET /api/v1/health/live`
 - `GET /api/v1/health/ready`
 
-`live` 只检查进程。`ready` 检查关键配置与 PostgreSQL，不检查千问瞬时状态；失败响应不会返回连接串。
+`live` 只检查进程。`ready` 检查关键配置与 PostgreSQL，不检查模型 Provider 瞬时状态；失败响应不会返回连接串。
 
 Worker 和 Scheduler 使用同一个后端环境：
 
@@ -86,4 +86,4 @@ docker compose -f deploy/compose/compose.yml up --build
 
 反向代理只公开 `live`；Internal `ready` 仅供容器健康检查和受控运维网络使用，`http://localhost:8081/api/v1/health/ready` 会被拒绝。
 
-`.env` 只用于本地环境且已被 Git 忽略。普通自动化测试不得依赖真实千问、真实 SMTP、真实业务合同或不稳定公网服务。
+`.env` 只用于本地环境且已被 Git 忽略。默认真实 Provider 为 DeepSeek `deepseek-v4-flash`，Base URL 为 `https://api.deepseek.com`，使用 Bearer Token 和 JSON Output；Qwen 仍作为可选 Provider 保留。真实 API Key 只能在本地 Secret 环境配置。普通自动化测试不得依赖真实 DeepSeek/Qwen、真实 SMTP、真实业务合同或不稳定公网服务。

@@ -42,18 +42,26 @@ class ModelGatewayError(RuntimeError):
         retryable: bool = False,
         retry_after_seconds: float | None = None,
         provider_request_id: str | None = None,
+        http_status: int | None = None,
+        provider_error_code: str | None = None,
+        provider_message: str | None = None,
+        error_class: str | None = None,
     ) -> None:
         self.code = code
         self.retryable = retryable
         self.retry_after_seconds = retry_after_seconds
         self.provider_request_id = provider_request_id
+        self.http_status = http_status
+        self.provider_error_code = provider_error_code
+        self.provider_message = provider_message
+        self.error_class = error_class
         self.telemetry: tuple[ModelCallTelemetry, ...] = ()
         super().__init__(code)
 
 
 class ModelConfigurationError(ModelGatewayError):
-    def __init__(self) -> None:
-        super().__init__("MODEL_ENVIRONMENT_NOT_CONFIGURED")
+    def __init__(self, code: str = "MODEL_ENVIRONMENT_NOT_CONFIGURED") -> None:
+        super().__init__(code, error_class="configuration")
 
 
 class ModelOutputError(ModelGatewayError):
@@ -61,14 +69,38 @@ class ModelOutputError(ModelGatewayError):
 
 
 class ModelTimeoutError(ModelGatewayError):
-    def __init__(self, provider_request_id: str | None = None) -> None:
-        super().__init__("MODEL_TIMEOUT", retryable=True, provider_request_id=provider_request_id)
+    def __init__(
+        self,
+        provider_request_id: str | None = None,
+        *,
+        http_status: int | None = None,
+        provider_error_code: str | None = None,
+        provider_message: str | None = None,
+    ) -> None:
+        super().__init__(
+            "MODEL_TIMEOUT",
+            retryable=True,
+            provider_request_id=provider_request_id,
+            http_status=http_status,
+            provider_error_code=provider_error_code,
+            provider_message=provider_message,
+            error_class="timeout",
+        )
 
 
 class ModelConnectionError(ModelGatewayError):
-    def __init__(self, provider_request_id: str | None = None) -> None:
+    def __init__(
+        self,
+        provider_request_id: str | None = None,
+        *,
+        provider_message: str | None = None,
+    ) -> None:
         super().__init__(
-            "MODEL_CONNECTION_ERROR", retryable=True, provider_request_id=provider_request_id
+            "MODEL_CONNECTION_ERROR",
+            retryable=True,
+            provider_request_id=provider_request_id,
+            provider_message=provider_message,
+            error_class="connection",
         )
 
 
@@ -77,19 +109,40 @@ class ModelRateLimitError(ModelGatewayError):
         self,
         retry_after_seconds: float | None = None,
         provider_request_id: str | None = None,
+        *,
+        http_status: int | None = None,
+        provider_error_code: str | None = None,
+        provider_message: str | None = None,
     ) -> None:
         super().__init__(
             "MODEL_RATE_LIMITED",
             retryable=True,
             retry_after_seconds=retry_after_seconds,
             provider_request_id=provider_request_id,
+            http_status=http_status,
+            provider_error_code=provider_error_code,
+            provider_message=provider_message,
+            error_class="rate_limit",
         )
 
 
 class ModelServerError(ModelGatewayError):
-    def __init__(self, provider_request_id: str | None = None) -> None:
+    def __init__(
+        self,
+        provider_request_id: str | None = None,
+        *,
+        http_status: int | None = None,
+        provider_error_code: str | None = None,
+        provider_message: str | None = None,
+    ) -> None:
         super().__init__(
-            "MODEL_PROVIDER_5XX", retryable=True, provider_request_id=provider_request_id
+            "MODEL_PROVIDER_5XX",
+            retryable=True,
+            provider_request_id=provider_request_id,
+            http_status=http_status,
+            provider_error_code=provider_error_code,
+            provider_message=provider_message,
+            error_class="server",
         )
 
 
@@ -99,6 +152,8 @@ class RawModelResponse:
     provider_request_id: str | None = None
     token_input: int | None = None
     token_output: int | None = None
+    token_total: int | None = None
+    cache_hit_tokens: int | None = None
     cost: Decimal | None = None
 
 
@@ -269,6 +324,7 @@ class ModelGateway(ABC):
                             else "failed"
                         ),
                         error_code=exc.code,
+                        error_class=exc.error_class,
                         provider_request_id=exc.provider_request_id,
                         latency_ms=latency_ms,
                         context=context,
@@ -297,6 +353,8 @@ class ModelGateway(ABC):
                     provider_request_id=raw.provider_request_id,
                     token_input=raw.token_input,
                     token_output=raw.token_output,
+                    token_total=raw.token_total,
+                    cache_hit_tokens=raw.cache_hit_tokens,
                     cost=raw.cost,
                     latency_ms=latency_ms,
                     context=context,
@@ -307,6 +365,8 @@ class ModelGateway(ABC):
 
 
 def _parse_model_output[T: ModelResult](content: str, result_type: type[T]) -> T:
+    if not content.strip():
+        raise ModelOutputError("MODEL_EMPTY_RESPONSE")
     try:
         payload: Any = json.loads(content)
     except (TypeError, ValueError):
@@ -350,9 +410,12 @@ def _telemetry(
     repair: bool,
     status: ModelCallStatus,
     error_code: str | None = None,
+    error_class: str | None = None,
     provider_request_id: str | None = None,
     token_input: int | None = None,
     token_output: int | None = None,
+    token_total: int | None = None,
+    cache_hit_tokens: int | None = None,
     cost: Decimal | None = None,
     latency_ms: int = 0,
     context: ModelCallContext | None = None,
@@ -374,10 +437,12 @@ def _telemetry(
         status=status,
         token_input=token_input,
         token_output=token_output,
+        token_total=token_total,
+        cache_hit_tokens=cache_hit_tokens,
         cost=cost,
         latency_ms=latency_ms,
         error_code=error_code,
-        error_class=None,
+        error_class=error_class,
         attempt_no=attempt_no,
         repair_attempt=repair,
     )

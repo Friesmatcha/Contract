@@ -1,0 +1,127 @@
+mapping_version: cuad-product-mapping-v1
+dataset_id: cuad-v1
+disclaimer: CUAD projection is scoped to supported English clause evidence and is not a product acceptance metric.
+exact:
+  - cuad_category: Parties
+    product_target: extracted_field.parties
+    rationale: CUAD party spans match the product parties evidence target.
+partial:
+  - cuad_category: Effective Date
+    product_target: extracted_field.signing_date
+    rationale: An effective date is not necessarily the execution or signing date.
+  - cuad_category: Expiration Date
+    product_target: extracted_field.performance_period
+    rationale: An expiration date is only one possible representation of a performance period.
+  - cuad_category: Renewal Term
+    product_target: extracted_field.auto_renewal
+    rationale: Renewal term evidence does not establish the full renewal state or exit terms.
+  - cuad_category: Notice Period To Terminate Renewal
+    product_target: extracted_field.auto_renewal
+    rationale: Notice period is one component of automatic renewal.
+  - cuad_category: Governing Law
+    product_target: extracted_field.dispute_resolution
+    rationale: Governing law is not the complete dispute resolution field.
+  - cuad_category: Payment Terms
+    product_target: extracted_field.payment_terms
+    rationale: CUAD does not guarantee all payment nodes, proportions, or late-liability semantics.
+  - cuad_category: Termination For Convenience
+    product_target: risk.termination_or_change_right
+    rationale: A clause occurrence is not itself a product risk finding.
+  - cuad_category: Confidentiality
+    product_target: risk.confidentiality
+    rationale: Clause evidence does not establish whether the confidentiality obligation is risky.
+  - cuad_category: Intellectual Property
+    product_target: risk.intellectual_property
+    rationale: Clause evidence does not establish ownership, transfer, or risk direction.
+  - cuad_category: Force Majeure
+    product_target: risk.force_majeure
+    rationale: Clause evidence does not establish imbalance or missing protection.
+unsupported:
+  - cuad_category: Affiliate License-Licensee
+    rationale: No standalone product metric for affiliate licensee scope.
+  - cuad_category: Affiliate License-Licensor
+    rationale: No standalone product metric for affiliate licensor scope.
+  - cuad_category: Agreement Date
+    rationale: No exact product signing-date equivalence is assumed.
+  - cuad_category: Audit Rights
+    rationale: No standalone product metric for audit rights.
+  - cuad_category: Competitive Restriction Exception
+    rationale: No standalone product metric for competitive restriction exceptions.
+  - cuad_category: Document Name
+    rationale: No matching product gold field or risk metric.
+  - cuad_category: Non-Compete
+    rationale: No standalone product metric for this CUAD category.
+  - cuad_category: Exclusivity
+    rationale: No standalone product metric for this CUAD category.
+  - cuad_category: No-Solicit of Employees
+    rationale: No standalone product metric for this CUAD category.
+  - cuad_category: No-Solicit of Customers
+    rationale: No standalone product metric for this CUAD category.
+  - cuad_category: Competitive Restriction
+    rationale: No standalone product metric for this CUAD category.
+  - cuad_category: IP Ownership Assignment
+    rationale: No separate exact product field for this CUAD category.
+  - cuad_category: Ip Ownership Assignment
+    rationale: No separate exact product field for this CUAD category.
+  - cuad_category: Irrevocable Or Perpetual License
+    rationale: No standalone product metric for irrevocable or perpetual licenses.
+  - cuad_category: Joint Ip Ownership
+    rationale: No standalone product metric for joint IP ownership.
+  - cuad_category: License Grant
+    rationale: No standalone product metric for this CUAD category.
+  - cuad_category: Minimum Commitment
+    rationale: No standalone product field for minimum purchase commitments.
+  - cuad_category: Most Favored Nation
+    rationale: No standalone product metric for most favored nation clauses.
+  - cuad_category: Volume Rebates
+    rationale: No standalone product field for volume rebates.
+  - cuad_category: Price Restrictions
+    rationale: No standalone product field for price restrictions.
+  - cuad_category: Rofr/Rofo/Rofn
+    rationale: No standalone product metric for these rights.
+  - cuad_category: Source Code Escrow
+    rationale: No standalone product metric for source code escrow.
+  - cuad_category: Change Of Control
+    rationale: No standalone product metric for change of control.
+  - cuad_category: Anti-Assignment
+    rationale: No standalone product metric for anti-assignment.
+  - cuad_category: Revenue/Profit Sharing
+    rationale: No standalone product field for revenue or profit sharing.
+  - cuad_category: Commercial Space
+    rationale: No standalone product field for commercial space.
+  - cuad_category: Audited Financials
+    rationale: No standalone product field for audited financials.
+  - cuad_category: Insurance
+    rationale: No standalone product field for insurance.
+  - cuad_category: Covenant Not To Sue
+    rationale: No standalone product metric for covenant not to sue.
+  - cuad_category: Cap On Liability
+    rationale: No standalone product field for liability caps.
+  - cuad_category: Liquidated Damages
+    rationale: No standalone product field for liquidated damages.
+  - cuad_category: Warranty Duration
+    rationale: No standalone product field for warranty duration.
+  - cuad_category: Indemnification
+    rationale: No standalone product metric for indemnification.
+  - cuad_category: Third Party Beneficiary
+    rationale: No standalone product metric for third-party beneficiaries.
+  - cuad_category: Uncapped Liability
+    rationale: No standalone product metric for uncapped liability.
+  - cuad_category: Unlimited/All-You-Can-Eat-License
+    rationale: No standalone product metric for unlimited licenses.
+  - cuad_category: Volume Restriction
+    rationale: No standalone product metric for volume restrictions.
+  - cuad_category: Waiver Of Consequential Damages
+    rationale: No standalone product metric for this waiver.
+  - cuad_category: Attorneys' Fees
+    rationale: No standalone product field for attorneys' fees.
+  - cuad_category: Non-Disparagement
+    rationale: No standalone product metric for non-disparagement.
+  - cuad_category: Non-Transferable License
+    rationale: No standalone product metric for non-transferable licenses.
+  - cuad_category: Post-Termination Services
+    rationale: No standalone product metric for post-termination services.
+  - cuad_category: Notices
+    rationale: No standalone product field for notice mechanics.
+  - cuad_category: Miscellaneous
+    rationale: No standalone product metric for miscellaneous clauses.

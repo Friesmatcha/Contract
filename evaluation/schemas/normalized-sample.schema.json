@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contract.local/schemas/normalized-sample.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dataset_id", "split", "document_id", "question_id", "sample_id",
+    "language", "task", "category", "question", "context", "gold_answers"
+  ],
+  "properties": {
+    "dataset_id": {"type": "string", "const": "cuad-v1"},
+    "split": {"type": "string", "minLength": 1},
+    "document_id": {"type": "string", "minLength": 1},
+    "question_id": {"type": "string", "minLength": 1},
+    "sample_id": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "const": "en"},
+    "task": {"type": "string", "const": "clause_span_extraction"},
+    "category": {"type": "string", "minLength": 1},
+    "question": {"type": "string", "minLength": 1},
+    "context": {"type": "string"},
+    "gold_answers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "start_offset", "end_offset"],
+        "properties": {
+          "text": {"type": "string", "minLength": 1},
+          "start_offset": {"type": "integer", "minimum": 0},
+          "end_offset": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  }
+}

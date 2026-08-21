@@ -22,7 +22,8 @@ from backend.app.integrations.model.gateway import (
 )
 from backend.app.integrations.model.schemas import ModelCapability, ModelRequest
 
-DEFAULT_QWEN_ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
+DEFAULT_QWEN_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+DEFAULT_QWEN_ENDPOINT = f"{DEFAULT_QWEN_BASE_URL}/chat/completions"
 MAX_PROVIDER_RESPONSE_BYTES = 4 * 1024 * 1024
 
 _OUTPUT_CONTRACTS: dict[ModelCapability, str] = {
@@ -275,4 +276,17 @@ def _cost(
     ) * output_rate
 
 
-__all__ = ["DEFAULT_QWEN_ENDPOINT", "QwenModelGateway"]
+def qwen_endpoint_from_base_url(base_url: str | None) -> str:
+    """Convert the documented OpenAI-compatible base URL to the chat endpoint."""
+    normalized = (base_url or DEFAULT_QWEN_BASE_URL).strip().rstrip("/")
+    if normalized.endswith("/chat/completions"):
+        return normalized
+    return f"{normalized}/chat/completions"
+
+
+__all__ = [
+    "DEFAULT_QWEN_BASE_URL",
+    "DEFAULT_QWEN_ENDPOINT",
+    "QwenModelGateway",
+    "qwen_endpoint_from_base_url",
+]

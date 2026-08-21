@@ -54,4 +54,5 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 python_version = "3.12"
 strict = true
 ignore_missing_imports = true
+exclude = ["^evaluation/datasets/raw/", "^evaluation/outputs/"]
 plugins = ["pydantic.mypy"]

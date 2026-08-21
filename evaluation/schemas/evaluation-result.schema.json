@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contract.local/schemas/evaluation-result.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id", "dataset_id", "dataset_version", "dataset_sha256", "split",
+    "mode", "provider", "model", "prompt_version", "schema_version",
+    "mapping_version", "git_commit", "started_at", "finished_at",
+    "counts", "usage", "error_summary"
+  ],
+  "properties": {
+    "run_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "dataset_version": {"type": "string", "minLength": 1},
+    "dataset_sha256": {"type": "string", "minLength": 1},
+    "split": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["cuad-native", "cuad-product-projection"]},
+    "provider": {"type": "string", "minLength": 1},
+    "model": {"type": "string", "minLength": 1},
+    "endpoint_region": {"type": ["string", "null"]},
+    "prompt_version": {"type": "string", "minLength": 1},
+    "schema_version": {"type": "string", "minLength": 1},
+    "mapping_version": {"type": "string", "minLength": 1},
+    "git_commit": {"type": "string", "minLength": 1},
+    "rule_bundle_version": {"type": ["string", "null"]},
+    "template_version": {"type": ["string", "null"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "counts": {"type": "object"},
+    "usage": {"type": "object"},
+    "error_summary": {"type": "object"}
+  }
+}

@@ -19,7 +19,11 @@ from backend.app.integrations.model.gateway import (
     ModelServerError,
     RawModelResponse,
 )
-from backend.app.integrations.model.qwen import QwenModelGateway
+from backend.app.integrations.model.qwen import (
+    DEFAULT_QWEN_ENDPOINT,
+    QwenModelGateway,
+    qwen_endpoint_from_base_url,
+)
 from backend.app.integrations.model.schemas import (
     ClassificationRequest,
     ClauseComparisonRequest,
@@ -273,6 +277,15 @@ def test_qwen_adapter_contract_is_offline_and_records_provider_usage() -> None:
     )
     assert "no Markdown, commentary, or extra keys" in request_body["messages"][0]["content"]
     assert captured
+
+
+def test_qwen_endpoint_uses_qwencloud_documented_region() -> None:
+    assert DEFAULT_QWEN_ENDPOINT == (
+        "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions"
+    )
+    assert qwen_endpoint_from_base_url(
+        "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    ) == DEFAULT_QWEN_ENDPOINT
 
 
 def test_qwen_429_retry_after_is_offline() -> None:

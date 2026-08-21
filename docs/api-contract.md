@@ -10,7 +10,7 @@
 
 ### 1.1 业务范围
 
-接口覆盖：认证与用户、组织、合同与文件、审核任务与结果、风险规则、标准条款、预警、站内通知、HTML/PDF 报告、反馈、审计和运行健康检查。千问、OCR、病毒扫描、文件存储和 Worker 是后端内部适配边界，不对浏览器暴露供应商接口。SMTP 只负责发送邀请和密码重置令牌，不用于风险预警。
+接口覆盖：认证与用户、组织、合同与文件、审核任务与结果、风险规则、标准条款、预警、站内通知、HTML/PDF 报告、反馈、审计和运行健康检查。模型 Provider、OCR、病毒扫描、文件存储和 Worker 是后端内部适配边界，不对浏览器暴露供应商接口。SMTP 只负责发送邀请和密码重置令牌，不用于风险预警。
 
 不在本契约中：自动签署或修改原合同、最终法律意见、印章鉴定、知识图谱、多轮改约、外部风险预警邮件/企业微信通知、OIDC SSO、履约日期提醒、批量 Word/Excel 导入和内部微服务接口。
 
@@ -563,7 +563,7 @@ Request：无参数。Success `200 OK`：不返回密钥或令牌，只返回是
 Request Example：`GET /api/v1/platform/model-configuration`
 
 ```json
-{ "provider": "qwen", "model": "qwen-model-from-environment", "model_source": "environment", "timeout_seconds": 60, "max_retries": 3, "hard_budget_enabled": false, "usage_tracking_enabled": true, "organization_overrides_allowed": false, "secret_configured": true, "status": "active", "version": 1 }
+{ "provider": "deepseek", "model": "deepseek-v4-flash", "model_source": "environment", "timeout_seconds": 60, "max_retries": 3, "hard_budget_enabled": false, "usage_tracking_enabled": true, "organization_overrides_allowed": false, "secret_configured": true, "status": "active", "version": 1 }
 ```
 
 主要错误：`403 PLATFORM_ADMIN_REQUIRED`。
@@ -579,7 +579,7 @@ Request Example：`{ "timeout_seconds": 60, "max_retries": 3, "usage_tracking_en
 Success `200 OK`：返回脱敏后的模型配置。
 
 ```json
-{ "provider": "qwen", "model": "qwen-model-from-environment", "model_source": "environment", "timeout_seconds": 60, "max_retries": 3, "hard_budget_enabled": false, "usage_tracking_enabled": true, "organization_overrides_allowed": false, "secret_configured": true, "status": "active", "version": 2 }
+{ "provider": "deepseek", "model": "deepseek-v4-flash", "model_source": "environment", "timeout_seconds": 60, "max_retries": 3, "hard_budget_enabled": false, "usage_tracking_enabled": true, "organization_overrides_allowed": false, "secret_configured": true, "status": "active", "version": 2 }
 ```
 
 主要错误：`403 PLATFORM_ADMIN_REQUIRED`、`409 RESOURCE_VERSION_CONFLICT`、`422 VALIDATION_ERROR`、`503 MODEL_ENVIRONMENT_NOT_CONFIGURED`。
@@ -822,7 +822,7 @@ Request Form：
 | --- | --- | --- | --- |
 | `file` | binary | 是 | 单个 DOCX/PDF/PNG/JPG/JPEG；数量固定为 1 |
 | `make_current` | boolean | 否 | 默认 `true` |
-| `external_model_notice_acknowledged` | boolean | 是 | 必须为 `true`；确认界面已告知合同内容将用于千问分类、抽取、风险分析和条款比对 |
+| `external_model_notice_acknowledged` | boolean | 是 | 必须为 `true`；确认界面已告知合同内容将用于默认模型 Provider 的分类、抽取、风险分析和条款比对 |
 
 Request Example：表单 `file=@采购合同.pdf`, `make_current=true`, `external_model_notice_acknowledged=true`。
 
@@ -1612,7 +1612,7 @@ Request：无参数。Request Example：`GET /api/v1/health/live`。Success `200
 
 `GET /api/v1/health/ready`。权限：`Internal`，不对公网开放。
 
-Request：无参数。Request Example：`GET /api/v1/health/ready`。Success `200 OK`：`{ "status": "ready", "database": "ok", "configuration": "ok" }`。千问短暂不可用不使 API 进程失去就绪；主要错误：`503 SERVICE_NOT_READY`，不得包含密钥或连接串。
+Request：无参数。Request Example：`GET /api/v1/health/ready`。Success `200 OK`：`{ "status": "ready", "database": "ok", "configuration": "ok" }`。模型 Provider 短暂不可用不使 API 进程失去就绪；主要错误：`503 SERVICE_NOT_READY`，不得包含密钥或连接串。
 
 ## 18. 业务流程和契约边界
 
@@ -1634,7 +1634,7 @@ POST /contracts
 
 ### 18.2 异步和重试
 
-审核、报告生成和通知投递由 Worker 执行；API 只返回数据库事实状态。Worker 的超时、千问 429/5xx、OCR 低置信度、非法 JSON、通知失败和报告失败分别写入任务/页面/通知/报告状态；API 不返回伪造结论。`retry` 复用输入版本和成功阶段的指纹，人工选择重新审核则创建新的 `review_task`。
+审核、报告生成和通知投递由 Worker 执行；API 只返回数据库事实状态。Worker 的超时、模型 Provider 429/5xx、OCR 低置信度、非法 JSON、通知失败和报告失败分别写入任务/页面/通知/报告状态；API 不返回伪造结论。`retry` 复用输入版本和成功阶段的指纹，人工选择重新审核则创建新的 `review_task`。
 
 ### 18.3 删除、归档和历史版本
 
@@ -1654,7 +1654,7 @@ POST /contracts
 | 分页 | 采用架构明确的 cursor/limit，不引入需求示例中的 page/page_size |
 | 文件能力 | 一致支持 DOCX/PDF/PNG/JPG/JPEG、MIME/签名/病毒检查、页面和证据定位；默认 20 MiB、100 页、组织并发审核 3 个 |
 | 规则/模板版本 | 一致：发布后不可变，审核任务锁定版本 |
-| 外部模型/通知 | 浏览器不直接调用千问；SMTP 仅发送邀请/密码重置，业务预警首期仅站内通知，不加入企业微信或 OAuth |
+| 外部模型/通知 | 浏览器不直接调用模型 Provider；SMTP 仅发送邀请/密码重置，业务预警首期仅站内通知，不加入企业微信或 OAuth |
 | 平台临时支持 | 已补充组织管理员授权、最长 4 小时、只读 JSON、禁止下载和完整审计规则 |
 | 报告 | 产品确认第一阶段同时交付 HTML 和 PDF；该决定覆盖原分阶段建议，二者使用同一报告快照 |
 | 运营指标 | 组织级聚合接口已冻结，第三阶段启用；内部 Prometheus `/metrics` 不对公网开放 |
@@ -1667,7 +1667,7 @@ POST /contracts
 | 项目 | 已确认决策 |
 | --- | --- |
 | 文件与并发 | 默认单文件 20 MiB、最多 100 页、每组织同时审核 3 个任务 |
-| 千问配置 | 模型名由环境变量注入；超时 60 秒；瞬时错误最多重试 3 次；记录 token 和费用，不设硬预算 |
+| 模型 Provider 配置 | 默认 DeepSeek `deepseek-v4-flash`，模型名由环境变量注入；超时 60 秒；瞬时错误最多重试 3 次；记录 token 和费用，不设硬预算；Qwen 可选 |
 | OCR | 低置信度阈值 0.80；低于阈值必须提示人工复核 |
 | 保留期 | 合同/报告 180 天，审计日志 365 天，生产应用日志 30 天，本地开发日志 7 天 |
 | 认证邮件 | 邀请和密码重置通过 SMTP；风险预警不发送邮件 |
@@ -1680,7 +1680,7 @@ POST /contracts
 
 上传前必须向用户展示并记录至少包含以下语义的告知：
 
-> 您确认已获得处理该合同的合法授权。合同内容将发送至千问商用 API，用于合同分类、要素抽取、风险分析和条款比对；系统将记录调用范围与模型版本。请勿上传未获授权的数据。
+> 您确认已获得处理该合同的合法授权。合同内容将发送至默认模型 Provider（当前为 DeepSeek 商用 API），用于合同分类、要素抽取、风险分析和条款比对；系统将记录调用范围与模型版本。请勿上传未获授权的数据。
 
 ## 21. 模块与接口数量
 

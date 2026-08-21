@@ -1,0 +1,18 @@
+dataset_id: cuad-v1
+dataset_name: Contract Understanding Atticus Dataset
+dataset_version: v1
+repository: https://github.com/The-Atticus-Project/cuad
+repository_commit: 67faa0e6023b04fcaae6cc09497ab00e5d63a2a2
+data_zip_git_blob_sha: 1ae94ff0a9b70b2e3b9b8d215737c8bfae460ddc
+download_url: https://github.com/The-Atticus-Project/cuad/raw/67faa0e6023b04fcaae6cc09497ab00e5d63a2a2/data.zip
+archive_filename: cuad-v1-data.zip
+archive_sha256: f8161d18bea4e9c05e78fa6dda61c19c846fb8087ea969c172753bc2f45b999a
+extracted_dir: cuad-v1
+license: CC BY 4.0
+doi: 10.5281/zenodo.4595826
+language: en
+source_format: SQuAD v1.1 JSON
+split_files:
+  test: test.json
+  train: train_separate_questions.json
+mapping_version: cuad-product-mapping-v1

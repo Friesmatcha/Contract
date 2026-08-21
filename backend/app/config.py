@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Literal
+from urllib.parse import urlparse
 
 from pydantic import Field, SecretStr, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,9 +23,12 @@ class Settings(BaseSettings):
     smtp_from: str | None = None
     frontend_base_url: str | None = None
     trusted_proxy_hops: int = Field(default=0, ge=0, le=5)
-    model_provider: str = Field(default="qwen", min_length=1, max_length=64)
-    model_name: str | None = Field(default=None, max_length=255)
+    model_provider: Literal["qwen", "deepseek"] = "deepseek"
+    model_name: str | None = Field(default="deepseek-v4-flash", max_length=255)
     model_api_key: SecretStr | None = None
+    model_base_url: str = "https://api.deepseek.com"
+    model_max_tokens: int = Field(default=2048, ge=1, le=384_000)
+    model_thinking_mode: Literal["disabled", "enabled"] = "disabled"
     file_storage_root: str = "/var/lib/contract-review/files"
     clamav_host: str = "clamav"
     clamav_port: int = Field(default=3310, ge=1, le=65535)
@@ -65,6 +69,25 @@ class Settings(BaseSettings):
             return None
         normalized = value.strip()
         return normalized or None
+
+    @field_validator("model_base_url")
+    @classmethod
+    def normalize_model_base_url(cls, value: str) -> str:
+        normalized = value.strip().rstrip("/")
+        parsed = urlparse(normalized)
+        if (
+            not normalized
+            or parsed.scheme != "https"
+            or not parsed.hostname
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ValueError(
+                "model_base_url must be an HTTPS URL without credentials, query, or fragment"
+            )
+        return normalized
 
     @property
     def session_cookie_secure(self) -> bool:

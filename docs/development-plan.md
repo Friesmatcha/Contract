@@ -45,7 +45,7 @@
 - 待邀请成员允许暂时没有 `user_id`；邀请令牌引用待邀请成员记录，接受后在同一事务中绑定或创建用户。
 - 站内通知的已读状态与异步投递状态分列保存，避免一个 `status` 同时承担两种状态机；API 仍只返回契约定义的字段。
 - API 返回资源使用递增 `version` 的，数据库必须有对应乐观锁字段；不可变事实表不增加无意义的更新版本。
-- 普通 CI 使用 Fake Model Gateway、固定 OCR/模型样本，不调用付费千问 API；真实千问仅在受保护环境手工冒烟。
+- 普通 CI 使用 Fake Model Gateway、固定 OCR/模型样本，不调用付费模型 API；真实 Provider 仅在受保护环境手工冒烟。
 - Phase 8A 和 8B 可以在隔离分支/工作树并行。单一 Codex 顺序执行时按 8A 后 8B 处理，以减少合并成本。
 
 ## 3. Development Principles
@@ -1654,7 +1654,7 @@ python evaluation/scripts/evaluate.py
 docker compose -f deploy/compose/compose.yml build
 ```
 
-另需执行：依赖/镜像扫描、跨组织/CSRF/文件伪装/路径穿越/XSS/越权下载、Worker 崩溃、Redis 丢消息、千问超时/429/5xx/非法 JSON、OCR/通知/报告失败、备份恢复预演和 10 页合同 3 分钟目标测试。
+另需执行：依赖/镜像扫描、跨组织/CSRF/文件伪装/路径穿越/XSS/越权下载、Worker 崩溃、Redis 丢消息、模型 Provider 超时/429/5xx/非法 JSON、OCR/通知/报告失败、备份恢复预演和 10 页合同 3 分钟目标测试。
 
 ### 验收标准
 
@@ -1688,7 +1688,7 @@ test(system): complete release candidate verification
 
 ### 前置依赖
 
-- Phase 15 候选版本通过；部署域名/TLS/Secret/SMTP/千问/备份位置和 RPO/RTO 由部署方提供。
+- Phase 15 候选版本通过；部署域名/TLS/Secret/SMTP/模型 Provider/备份位置和 RPO/RTO 由部署方提供。
 
 ### 预计涉及模块
 
@@ -1731,7 +1731,7 @@ docker compose -f deploy/compose/compose.yml up -d
 ### 验收标准
 
 - reverse-proxy、api、worker、scheduler、postgres、redis、clamav 和 file-volume 按架构启动，前端同域访问。
-- ready 只受数据库/关键配置影响；千问瞬时故障进入任务错误而不使 API 失去就绪。
+- ready 只受数据库/关键配置影响；模型 Provider 瞬时故障进入任务错误而不使 API 失去就绪。
 - Secret 不进入镜像、仓库、前端或日志；内部 metrics/ready 暴露范围符合部署规则。
 - 从备份可恢复数据库和文件一致恢复点；升级/应用回滚 Runbook 经演练。
 
@@ -1765,7 +1765,7 @@ chore(release): prepare production Docker release
 
 ### Contract and Golden Tests
 
-- 固定千问响应覆盖正常、超时、429/5xx、非法 JSON、Schema 不符、重复风险和无证据结果。
+- 固定 Provider 响应覆盖正常、超时、429/5xx、非法 JSON、Schema 不符、重复风险和无证据结果。
 - 脱敏/生成 DOCX、文本 PDF、扫描 PDF、PNG/JPEG 覆盖结构、定位、OCR 低置信度、损坏/加密/MIME 伪装。
 - 每个 API 的 Method、Path、Request、Response、Error、权限和状态码至少有一项自动化断言。
 
@@ -1928,9 +1928,9 @@ Stable Baseline
 
 | 风险 | 依据 | 控制措施 |
 | --- | --- | --- |
-| 外部模型不稳定/输出漂移 | 千问存在超时、429/5xx、非法 JSON 和模型版本变化 | Gateway、Schema 二次校验、版本快照、有限重试、Fake 契约测试、禁止伪造结论 |
+| 外部模型不稳定/输出漂移 | Provider 存在超时、429/5xx、非法 JSON 和模型版本变化 | Gateway、Schema 二次校验、版本快照、有限重试、Fake 契约测试、禁止伪造结论 |
 | OCR CPU 性能和准确率 | 扫描合同、低配置单机、0.80 阈值 | 逐页状态、低置信度人工提示、金样/性能基线、Worker 隔离 |
-| 合同敏感数据外发 | 合同正文发送千问商用 API | 上传前告知确认、最小日志、Secret 注入、授权数据集和调用审计 |
+| 合同敏感数据外发 | 合同正文发送外部模型 API | 上传前告知确认、最小日志、Secret 注入、授权数据集和调用审计 |
 | 多租户越权 | 所有业务数据按组织隔离且 viewer 是细粒度授权 | 显式 tenant context、复合外键、后端 RBAC、两组织越权自动化测试 |
 | 支持授权被滥用 | 平台管理员可临时查看组织 JSON | 最长 4 小时、组织管理员主动授权、禁止写/下载、逐次审计 |
 | 状态机/并发竞争 | Worker 重试、人工编辑、预警去重和发布切换均可并发 | 条件更新、version、部分唯一索引、事务、租约和并发测试 |
